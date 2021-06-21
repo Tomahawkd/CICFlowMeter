@@ -1,0 +1,3 @@
+[submodule "JLightConfig"]
+	path = JLightConfig
+	url = https://github.com/Tomahawkd/JLightConfig.git

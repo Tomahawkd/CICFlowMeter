@@ -1,16 +1,19 @@
 package io.tomahawkd.cic.data;
 
+import com.google.common.primitives.Primitives;
 import org.jnetpcap.packet.format.FormatUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PackageInfo {
 
-    private long id;
+    private final long id;
     private String flowId = "";
     private final Map<PackageFeature, Object> data;
     private long timestamp;
+    private int payloadPacket = 0;
 
     public PackageInfo(long id) {
         data = new HashMap<>();
@@ -28,6 +31,10 @@ public class PackageInfo {
     @SuppressWarnings("all")
     public <T> T getFeature(PackageFeature feature, Class<T> type) {
         Object o = data.get(feature);
+        if (o == null) return null;
+        if (type.isPrimitive()) {
+            type = Primitives.wrap(type);
+        }
         if (type.isAssignableFrom(o.getClass())) {
             return (T) o;
         } else {
@@ -35,8 +42,22 @@ public class PackageInfo {
         }
     }
 
+    @SuppressWarnings("all")
+    public <T> T getFeatureOrDefault(PackageFeature feature, Class<T> type, T deflt) {
+        try {
+            T res = getFeature(feature, type);
+            if (res == null) return deflt;
+            else return res;
+        } catch (RuntimeException e) {
+            return deflt;
+        }
+    }
+
     public <T> boolean hasFeature(PackageFeature feature, Class<T> type) {
         if (!data.containsKey(feature)) return false;
+        if (type.isPrimitive()) {
+            type = Primitives.wrap(type);
+        }
         return type.isAssignableFrom(data.get(feature).getClass());
     }
 
@@ -49,7 +70,9 @@ public class PackageInfo {
                 hasFeature(MetaFeature.DST, byte[].class) &&
                 hasFeature(MetaFeature.SRC_PORT, int.class) &&
                 hasFeature(MetaFeature.DST_PORT, int.class) &&
-                hasFeature(MetaFeature.PROTO, int.class)) {
+                hasFeature(MetaFeature.PROTO, int.class) &&
+                hasFeature(MetaFeature.HEADER_LEN, int.class) &&
+                hasFeature(MetaFeature.PAYLOAD_LEN, int.class)) {
 
             generateFlowId();
         } else {
@@ -89,6 +112,22 @@ public class PackageInfo {
         return FormatUtils.ip(getFeature(MetaFeature.DST, byte[].class));
     }
 
+    public String fwdFlowId() {
+        int srcPort = getFeature(MetaFeature.SRC_PORT, int.class);
+        int dstPort = getFeature(MetaFeature.DST_PORT, int.class);
+        int protocol = getFeature(MetaFeature.PROTO, int.class);
+        this.flowId = this.getSourceIP() + "-" + this.getDestinationIP() + "-" + srcPort + "-" + dstPort + "-" + protocol;
+        return this.flowId;
+    }
+
+    public String bwdFlowId() {
+        int srcPort = getFeature(MetaFeature.SRC_PORT, int.class);
+        int dstPort = getFeature(MetaFeature.DST_PORT, int.class);
+        int protocol = getFeature(MetaFeature.PROTO, int.class);
+        this.flowId = this.getDestinationIP() + "-" + this.getSourceIP() + "-" + dstPort + "-" + srcPort + "-" + protocol;
+        return this.flowId;
+    }
+
     public long getId() {
         return id;
     }
@@ -103,5 +142,43 @@ public class PackageInfo {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public byte[] getSrc() {
+        byte[] src = getFeature(MetaFeature.SRC, byte[].class);
+        return Arrays.copyOf(src, src.length);
+    }
+
+    public byte[] getDst() {
+        byte[] dst = getFeature(MetaFeature.DST, byte[].class);
+        return Arrays.copyOf(dst, dst.length);
+    }
+
+    public int getSrcPort() {
+        return getFeature(MetaFeature.SRC_PORT, int.class);
+    }
+
+    public int getDstPort() {
+        return getFeature(MetaFeature.DST_PORT, int.class);
+    }
+
+    public int getProtocol() {
+        return getFeature(MetaFeature.PROTO, int.class);
+    }
+
+    public boolean isForwardPacket(byte[] sourceIP) {
+        return Arrays.equals(sourceIP, getFeature(MetaFeature.SRC, byte[].class));
+    }
+
+    public long getPayloadBytes() {
+        return getFeature(MetaFeature.PAYLOAD_LEN, int.class);
+    }
+
+    public long getHeaderBytes() {
+        return getFeature(MetaFeature.HEADER_LEN, int.class);
+    }
+
+    public int getPayloadPacket() {
+        return payloadPacket += 1;
     }
 }

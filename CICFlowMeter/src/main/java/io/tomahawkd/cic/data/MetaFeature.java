@@ -6,5 +6,5 @@ public enum MetaFeature implements PackageFeature {
     IPV4, IPV6, L2TP, TCP, UDP, HTTP,
 
     // Src and Dst information
-    SRC, DST, SRC_PORT, DST_PORT, PROTO
+    SRC, DST, SRC_PORT, DST_PORT, PROTO, PAYLOAD_LEN, HEADER_LEN
 }

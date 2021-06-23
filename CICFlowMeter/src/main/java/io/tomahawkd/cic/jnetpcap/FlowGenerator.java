@@ -1,7 +1,9 @@
 package io.tomahawkd.cic.jnetpcap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.tomahawkd.cic.data.PackageInfo;
+import io.tomahawkd.cic.data.TcpPackageDelegate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,7 +14,7 @@ import java.util.Set;
 import static io.tomahawkd.cic.jnetpcap.Utils.LINE_SEP;
 
 public class FlowGenerator {
-    public static final Logger logger = LoggerFactory.getLogger(FlowGenerator.class);
+    public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
 
     //total 85 colums
 	/*public static final String timeBasedHeader = "Flow ID, Source IP, Source Port, Destination IP, Destination Port, Protocol, "
@@ -62,13 +64,13 @@ public class FlowGenerator {
         mListener = listener;
     }
 
-    public void addPacket(BasicPacketInfo packet) {
+    public void addPacket(PackageInfo packet) {
         if (packet == null) {
             return;
         }
 
         BasicFlow flow;
-        long currentTimestamp = packet.getTimeStamp();
+        long currentTimestamp = packet.getTimestamp();
         String id;
 
         if (this.currentFlows.containsKey(packet.fwdFlowId()) || this.currentFlows.containsKey(packet.bwdFlowId())) {
@@ -105,7 +107,7 @@ public class FlowGenerator {
                 // 1.- we add the packet-in-process to the flow (it is the last packet)
                 // 2.- we move the flow to finished flow list
                 // 3.- we eliminate the flow from the current flow list
-            } else if (packet.hasFlagFIN()) {
+            } else if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.FIN, boolean.class, false)) {
                 logger.debug("FlagFIN current has {} flow", currentFlows.size());
                 flow.addPacket(packet);
                 if (mListener != null) {

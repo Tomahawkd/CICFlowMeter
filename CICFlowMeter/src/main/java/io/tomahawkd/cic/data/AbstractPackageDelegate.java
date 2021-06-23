@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.data;
 
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.lan.Ethernet;
 
 public abstract class AbstractPackageDelegate implements PackageDelegate {
 
@@ -12,7 +13,7 @@ public abstract class AbstractPackageDelegate implements PackageDelegate {
 
     @Override
     public boolean canAccept(PcapPacket packet) {
-        packet.scan(id);
+        packet.scan(Ethernet.ID);
         return packet.hasHeader(id);
     }
 }

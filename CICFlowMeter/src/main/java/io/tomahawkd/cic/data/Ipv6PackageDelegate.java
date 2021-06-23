@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.data;
 
 import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.network.Ip6;
 
 public class Ipv6PackageDelegate extends AbstractPackageDelegate {
@@ -11,7 +12,7 @@ public class Ipv6PackageDelegate extends AbstractPackageDelegate {
 
     @Override
     public void parse(PackageInfo dst, PcapPacket packet) {
-        packet.scan(Ip6.ID);
+        packet.scan(Ethernet.ID);
         Ip6 ipv6 = new Ip6();
         if (!packet.hasHeader(ipv6)) {
             throw new IllegalArgumentException("Not an IPv6 header.");
@@ -21,9 +22,4 @@ public class Ipv6PackageDelegate extends AbstractPackageDelegate {
         dst.addFeature(MetaFeature.DST, ipv6.destination());
         dst.addFeature(MetaFeature.IPV6, true);
     }
-
-    enum Feature implements PackageFeature {
-        SRC, DST
-    }
-
 }

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import io.tomahawkd.cic.data.PackageInfo;
+import io.tomahawkd.cic.data.TcpPackageDelegate;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.jnetpcap.packet.format.FormatUtils;
 
@@ -13,8 +15,8 @@ public class BasicFlow {
     private final static String separator = ",";
     private SummaryStatistics fwdPktStats = null;
     private SummaryStatistics bwdPktStats = null;
-    private List<BasicPacketInfo> forward = null;
-    private List<BasicPacketInfo> backward = null;
+    private List<PackageInfo> forward = null;
+    private List<PackageInfo> backward = null;
 
     private long forwardBytes;
     private long backwardBytes;
@@ -58,7 +60,7 @@ public class BasicFlow {
     private long backwardLastSeen;
 
 
-    public BasicFlow(boolean isBidirectional, BasicPacketInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort) {
+    public BasicFlow(boolean isBidirectional, PackageInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort) {
         super();
         this.initParameters();
         this.isBidirectional = isBidirectional;
@@ -69,14 +71,14 @@ public class BasicFlow {
         this.dstPort = flowDstPort;
     }
 
-    public BasicFlow(boolean isBidirectional, BasicPacketInfo packet) {
+    public BasicFlow(boolean isBidirectional, PackageInfo packet) {
         super();
         this.initParameters();
         this.isBidirectional = isBidirectional;
         this.firstPacket(packet);
     }
 
-    public BasicFlow(BasicPacketInfo packet) {
+    public BasicFlow(PackageInfo packet) {
         super();
         this.initParameters();
         this.isBidirectional = true;
@@ -112,14 +114,14 @@ public class BasicFlow {
     }
 
 
-    public void firstPacket(BasicPacketInfo packet) {
+    public void firstPacket(PackageInfo packet) {
         updateFlowBulk(packet);
         detectUpdateSubflows(packet);
         checkFlags(packet);
-        this.flowStartTime = packet.getTimeStamp();
-        this.flowLastSeen = packet.getTimeStamp();
-        this.startActiveTime = packet.getTimeStamp();
-        this.endActiveTime = packet.getTimeStamp();
+        this.flowStartTime = packet.getTimestamp();
+        this.flowLastSeen = packet.getTimestamp();
+        this.startActiveTime = packet.getTimestamp();
+        this.endActiveTime = packet.getTimestamp();
         this.flowLengthStats.addValue((double) packet.getPayloadBytes());
 
         if (this.src == null) {
@@ -132,31 +134,31 @@ public class BasicFlow {
         }
         if (Arrays.equals(this.src, packet.getSrc())) {
             this.min_seg_size_forward = packet.getHeaderBytes();
-            Init_Win_bytes_forward = packet.getTCPWindow();
+            Init_Win_bytes_forward = packet.getFeatureOrDefault(TcpPackageDelegate.Feature.TCP_WINDOW, int.class, 0);
             this.flowLengthStats.addValue((double) packet.getPayloadBytes());
             this.fwdPktStats.addValue((double) packet.getPayloadBytes());
             this.fHeaderBytes = packet.getHeaderBytes();
-            this.forwardLastSeen = packet.getTimeStamp();
+            this.forwardLastSeen = packet.getTimestamp();
             this.forwardBytes += packet.getPayloadBytes();
             this.forward.add(packet);
-            if (packet.hasFlagPSH()) {
+            if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.PSH, boolean.class, false)) {
                 this.fPSH_cnt++;
             }
-            if (packet.hasFlagURG()) {
+            if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.URG, boolean.class, false)) {
                 this.fURG_cnt++;
             }
         } else {
-            Init_Win_bytes_backward = packet.getTCPWindow();
+            Init_Win_bytes_backward = packet.getFeatureOrDefault(TcpPackageDelegate.Feature.TCP_WINDOW, int.class, 0);
             this.flowLengthStats.addValue((double) packet.getPayloadBytes());
             this.bwdPktStats.addValue((double) packet.getPayloadBytes());
             this.bHeaderBytes = packet.getHeaderBytes();
-            this.backwardLastSeen = packet.getTimeStamp();
+            this.backwardLastSeen = packet.getTimestamp();
             this.backwardBytes += packet.getPayloadBytes();
             this.backward.add(packet);
-            if (packet.hasFlagPSH()) {
+            if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.PSH, boolean.class, false)) {
                 this.bPSH_cnt++;
             }
-            if (packet.hasFlagURG()) {
+            if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.URG, boolean.class, false)) {
                 this.bURG_cnt++;
             }
         }
@@ -164,11 +166,11 @@ public class BasicFlow {
         this.flowId = packet.getFlowId();
     }
 
-    public void addPacket(BasicPacketInfo packet) {
+    public void addPacket(PackageInfo packet) {
         updateFlowBulk(packet);
         detectUpdateSubflows(packet);
         checkFlags(packet);
-        long currentTimestamp = packet.getTimeStamp();
+        long currentTimestamp = packet.getTimestamp();
         if (isBidirectional) {
             this.flowLengthStats.addValue((double) packet.getPayloadBytes());
 
@@ -187,7 +189,7 @@ public class BasicFlow {
 
             } else {
                 this.bwdPktStats.addValue((double) packet.getPayloadBytes());
-                Init_Win_bytes_backward = packet.getTCPWindow();
+                Init_Win_bytes_backward = packet.getFeatureOrDefault(TcpPackageDelegate.Feature.TCP_WINDOW, int.class, 0);
                 this.bHeaderBytes += packet.getHeaderBytes();
                 this.backward.add(packet);
                 this.backwardBytes += packet.getPayloadBytes();
@@ -209,8 +211,8 @@ public class BasicFlow {
             this.min_seg_size_forward = Math.min(packet.getHeaderBytes(), this.min_seg_size_forward);
         }
 
-        this.flowIAT.addValue(packet.getTimeStamp() - this.flowLastSeen);
-        this.flowLastSeen = packet.getTimeStamp();
+        this.flowIAT.addValue(packet.getTimestamp() - this.flowLastSeen);
+        this.flowLastSeen = packet.getTimestamp();
 
     }
 
@@ -267,29 +269,29 @@ public class BasicFlow {
         flagCounts.put("ECE", new MutableInt());
     }
 
-    public void checkFlags(BasicPacketInfo packet) {
-        if (packet.hasFlagFIN()) {
+    public void checkFlags(PackageInfo packet) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.FIN, boolean.class, false)) {
             flagCounts.get("FIN").increment();
         }
-        if (packet.hasFlagSYN()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.SYN, boolean.class, false)) {
             flagCounts.get("SYN").increment();
         }
-        if (packet.hasFlagRST()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.RST, boolean.class, false)) {
             flagCounts.get("RST").increment();
         }
-        if (packet.hasFlagPSH()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.PSH, boolean.class, false)) {
             flagCounts.get("PSH").increment();
         }
-        if (packet.hasFlagACK()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.ACK, boolean.class, false)) {
             flagCounts.get("ACK").increment();
         }
-        if (packet.hasFlagURG()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.URG, boolean.class, false)) {
             flagCounts.get("URG").increment();
         }
-        if (packet.hasFlagCWR()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.CWR, boolean.class, false)) {
             flagCounts.get("CWR").increment();
         }
-        if (packet.hasFlagECE()) {
+        if (packet.getFeatureOrDefault(TcpPackageDelegate.Feature.ECE, boolean.class, false)) {
             flagCounts.get("ECE").increment();
         }
     }
@@ -318,19 +320,19 @@ public class BasicFlow {
     private int sfCount = 0;
     private long sfAcHelper = -1;
 
-    void detectUpdateSubflows(BasicPacketInfo packet) {
+    void detectUpdateSubflows(PackageInfo packet) {
         if (sfLastPacketTS == -1) {
-            sfLastPacketTS = packet.getTimeStamp();
-            sfAcHelper = packet.getTimeStamp();
+            sfLastPacketTS = packet.getTimestamp();
+            sfAcHelper = packet.getTimestamp();
         }
         //System.out.print(" - "+(packet.timeStamp - sfLastPacketTS));
-        if ((packet.getTimeStamp() - (sfLastPacketTS) / (double) 1000000) > 1.0) {
+        if ((packet.getTimestamp() - (sfLastPacketTS) / (double) 1000000) > 1.0) {
             sfCount++;
-            long lastSFduration = packet.getTimeStamp() - sfAcHelper;
-            updateActiveIdleTime(packet.getTimeStamp() - sfLastPacketTS, 5000000L);
-            sfAcHelper = packet.getTimeStamp();
+            long lastSFduration = packet.getTimestamp() - sfAcHelper;
+            updateActiveIdleTime(packet.getTimestamp() - sfLastPacketTS, 5000000L);
+            sfAcHelper = packet.getTimestamp();
         }
-        sfLastPacketTS = packet.getTimeStamp();
+        sfLastPacketTS = packet.getTimestamp();
     }
 
     //////////////////////////////
@@ -352,7 +354,7 @@ public class BasicFlow {
     private long blastBulkTS = 0;
 
 
-    public void updateFlowBulk(BasicPacketInfo packet) {
+    public void updateFlowBulk(PackageInfo packet) {
         if (this.src == packet.getSrc()) {
             updateForwardBulk(packet, blastBulkTS);
         } else {
@@ -360,7 +362,7 @@ public class BasicFlow {
         }
     }
 
-    public void updateForwardBulk(BasicPacketInfo packet, long tsOflastBulkInOther) {
+    public void updateForwardBulk(PackageInfo packet, long tsOflastBulkInOther) {
         long size = packet.getPayloadBytes();
         if (tsOflastBulkInOther > fbulkStartHelper) fbulkStartHelper = 0;
         if (size <= 0) return;
@@ -368,16 +370,16 @@ public class BasicFlow {
         packet.getPayloadPacket();
 
         if (fbulkStartHelper == 0) {
-            fbulkStartHelper = packet.getTimeStamp();
+            fbulkStartHelper = packet.getTimestamp();
             fbulkPacketCountHelper = 1;
             fbulkSizeHelper = size;
-            flastBulkTS = packet.getTimeStamp();
+            flastBulkTS = packet.getTimestamp();
         } //possible bulk
         else {
             // Too much idle time?
-            if (((packet.getTimeStamp() - flastBulkTS) / (double) 1000000) > 1.0) {
-                fbulkStartHelper = packet.getTimeStamp();
-                flastBulkTS = packet.getTimeStamp();
+            if (((packet.getTimestamp() - flastBulkTS) / (double) 1000000) > 1.0) {
+                fbulkStartHelper = packet.getTimestamp();
+                flastBulkTS = packet.getTimestamp();
                 fbulkPacketCountHelper = 1;
                 fbulkSizeHelper = size;
             }// Add to bulk
@@ -389,19 +391,19 @@ public class BasicFlow {
                     fbulkStateCount += 1;
                     fbulkPacketCount += fbulkPacketCountHelper;
                     fbulkSizeTotal += fbulkSizeHelper;
-                    fbulkDuration += packet.getTimeStamp() - fbulkStartHelper;
+                    fbulkDuration += packet.getTimestamp() - fbulkStartHelper;
                 } //Continuation of existing bulk
                 else if (fbulkPacketCountHelper > 4) {
                     fbulkPacketCount += 1;
                     fbulkSizeTotal += size;
-                    fbulkDuration += packet.getTimeStamp() - flastBulkTS;
+                    fbulkDuration += packet.getTimestamp() - flastBulkTS;
                 }
-                flastBulkTS = packet.getTimeStamp();
+                flastBulkTS = packet.getTimestamp();
             }
         }
     }
 
-    public void updateBackwardBulk(BasicPacketInfo packet, long tsOflastBulkInOther) {
+    public void updateBackwardBulk(PackageInfo packet, long tsOflastBulkInOther) {
 		/*bAvgBytesPerBulk =0;
 		bbulkSizeTotal=0;
 		bbulkStateCount=0;*/
@@ -412,16 +414,16 @@ public class BasicFlow {
         packet.getPayloadPacket();
 
         if (bbulkStartHelper == 0) {
-            bbulkStartHelper = packet.getTimeStamp();
+            bbulkStartHelper = packet.getTimestamp();
             bbulkPacketCountHelper = 1;
             bbulkSizeHelper = size;
-            blastBulkTS = packet.getTimeStamp();
+            blastBulkTS = packet.getTimestamp();
         } //possible bulk
         else {
             // Too much idle time?
-            if (((packet.getTimeStamp() - blastBulkTS) / (double) 1000000) > 1.0) {
-                bbulkStartHelper = packet.getTimeStamp();
-                blastBulkTS = packet.getTimeStamp();
+            if (((packet.getTimestamp() - blastBulkTS) / (double) 1000000) > 1.0) {
+                bbulkStartHelper = packet.getTimestamp();
+                blastBulkTS = packet.getTimestamp();
                 bbulkPacketCountHelper = 1;
                 bbulkSizeHelper = size;
             }// Add to bulk
@@ -433,14 +435,14 @@ public class BasicFlow {
                     bbulkStateCount += 1;
                     bbulkPacketCount += bbulkPacketCountHelper;
                     bbulkSizeTotal += bbulkSizeHelper;
-                    bbulkDuration += packet.getTimeStamp() - bbulkStartHelper;
+                    bbulkDuration += packet.getTimestamp() - bbulkStartHelper;
                 } //Continuation of existing bulk
                 else if (bbulkPacketCountHelper > 4) {
                     bbulkPacketCount += 1;
                     bbulkSizeTotal += size;
-                    bbulkDuration += packet.getTimeStamp() - blastBulkTS;
+                    bbulkDuration += packet.getTimestamp() - blastBulkTS;
                 }
-                blastBulkTS = packet.getTimeStamp();
+                blastBulkTS = packet.getTimestamp();
             }
         }
 
@@ -568,19 +570,19 @@ public class BasicFlow {
         }
     }
 
-    public List<BasicPacketInfo> getForward() {
+    public List<PackageInfo> getForward() {
         return new ArrayList<>(forward);
     }
 
-    public void setForward(List<BasicPacketInfo> forward) {
+    public void setForward(List<PackageInfo> forward) {
         this.forward = forward;
     }
 
-    public List<BasicPacketInfo> getBackward() {
+    public List<PackageInfo> getBackward() {
         return new ArrayList<>(backward);
     }
 
-    public void setBackward(List<BasicPacketInfo> backward) {
+    public void setBackward(List<PackageInfo> backward) {
         this.backward = backward;
     }
 

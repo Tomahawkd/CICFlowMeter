@@ -5,6 +5,11 @@ import com.beust.jcommander.Parameter;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
 import io.tomahawkd.config.commandline.CommandlineConfig;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.tika.Tika;
 
 import java.io.IOException;
@@ -29,6 +34,12 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     @Parameter(names = {"-a", "--act_time"}, description = "Setting timeout interval for an activity.")
     private long activityTimeout = 5000000L;
+
+    @Parameter(names = "--debug", description = "Show debug output (sets logLevel to DEBUG)")
+    private boolean debug = false;
+
+    @Parameter(names = "--quiet", description = "No output (sets logLevel to NONE)")
+    private boolean quiet = false;
 
     @Parameter(required = true, description = "Pcap file or directory.")
     private List<String> pcapPathStringList = new ArrayList<>();
@@ -63,6 +74,21 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Override
     public void postParsing() {
         super.postParsing();
+
+        if (debug) {
+            LoggerContext ctx = LoggerContext.getContext(false);
+            Configuration config = ctx.getConfiguration();
+            LoggerConfig loggerConfig = config.getLoggerConfig("io.tomahawkd.tlstester");
+            loggerConfig.removeAppender("Console");
+            loggerConfig.addAppender(
+                    config.getAppender("DebugConsole"), Level.DEBUG, null);
+            ctx.updateLoggers();
+            return;
+        }
+
+        if (quiet) {
+            Configurator.setAllLevels("io.tomahawkd.cic", Level.OFF);
+        }
 
         // input list
         for (String pathString : pcapPathStringList) {

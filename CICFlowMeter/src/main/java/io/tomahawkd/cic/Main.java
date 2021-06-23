@@ -1,6 +1,7 @@
 package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
+import io.tomahawkd.cic.data.PackageInfo;
 import io.tomahawkd.cic.jnetpcap.*;
 import io.tomahawkd.cic.jnetpcap.FlowGenListener;
 import io.tomahawkd.config.ConfigManager;
@@ -8,9 +9,9 @@ import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
 import io.tomahawkd.config.sources.SourceManager;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -20,7 +21,7 @@ import java.util.Objects;
 
 public class Main {
 
-    public static final Logger logger = LoggerFactory.getLogger(Main.class);
+    public static final Logger logger = LogManager.getLogger(Main.class);
     private static final String DividingLine = "-------------------------------------------------------------------------------";
 
     public static void main(String[] args) {
@@ -75,7 +76,7 @@ public class Main {
             // i = (i)%animationChars.length;
             // System.out.print("Working on "+ inputFile+" "+ animationChars[i] +"\r");
             try {
-                BasicPacketInfo basicPacket = packetReader.nextPacket();
+                PackageInfo basicPacket = packetReader.nextPacket();
                 nTotal++;
                 if (basicPacket != null) {
                     flowGen.addPacket(basicPacket);
@@ -128,8 +129,7 @@ public class Main {
             flowStringList.add(flowDump);
             Utils.insertToFile(FlowFeature.getHeader(), flowStringList, outPath, fileName + Utils.FLOW_SUFFIX);
             cnt++;
-            String console = String.format("%s -> %d flows \r", fileName, cnt);
-            System.out.print(console);
+            System.out.printf("%s -> %d flows \r", fileName, cnt);
         }
     }
 }

@@ -1,7 +1,6 @@
 package io.tomahawkd.cic.data;
 
 import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
 public class TcpPackageDelegate extends AbstractPackageDelegate {
@@ -11,31 +10,24 @@ public class TcpPackageDelegate extends AbstractPackageDelegate {
     }
 
     @Override
-    public void parse(PackageInfo dst, PcapPacket packet) {
-        packet.scan(Ethernet.ID);
+    public boolean parse(PackageInfo dst, PcapPacket packet) {
         Tcp tcp = new Tcp();
         if (!packet.hasHeader(tcp)) {
-            throw new IllegalArgumentException("Not an TCP header.");
+            return false;
         }
 
         dst.addFeature(MetaFeature.SRC_PORT, tcp.source());
         dst.addFeature(MetaFeature.DST_PORT, tcp.destination());
         dst.addFeature(Feature.TCP_WINDOW, tcp.window());
         dst.addFeature(MetaFeature.PROTO, 6);
-        dst.addFeature(Feature.FIN, tcp.flags_FIN());
-        dst.addFeature(Feature.PSH, tcp.flags_PSH());
-        dst.addFeature(Feature.URG, tcp.flags_URG());
-        dst.addFeature(Feature.SYN, tcp.flags_SYN());
-        dst.addFeature(Feature.ACK, tcp.flags_ACK());
-        dst.addFeature(Feature.ECE, tcp.flags_ECE());
-        dst.addFeature(Feature.CWR, tcp.flags_CWR());
-        dst.addFeature(Feature.RST, tcp.flags_RST());
+        dst.addFeature(Feature.FLAG, tcp.flags());
         dst.addFeature(MetaFeature.PAYLOAD_LEN, tcp.getPayloadLength());
         dst.addFeature(MetaFeature.HEADER_LEN, tcp.getHeaderLength());
         dst.addFeature(MetaFeature.TCP, true);
+        return true;
     }
 
     public enum Feature implements PackageFeature {
-        TCP_WINDOW, FIN, PSH, URG, SYN, ACK, ECE, CWR, RST
+        TCP_WINDOW, FLAG
     }
 }

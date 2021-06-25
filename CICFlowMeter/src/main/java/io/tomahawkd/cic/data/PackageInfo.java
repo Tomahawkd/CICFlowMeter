@@ -5,6 +5,7 @@ import org.jnetpcap.packet.format.FormatUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class PackageInfo {
 
@@ -23,13 +24,16 @@ public class PackageInfo {
     private int payloadLen;
     private int headerLen;
 
+    // tcp data
+    private int tcpWindow;
+    private int flags;
+
+    // http data
+
+
     public PackageInfo(long id) {
         data = new HashMap<>();
         this.id = id;
-    }
-
-    public Map<PackageFeature, Object> getMap() {
-        return data;
     }
 
     public void addFeature(PackageFeature feature, Object data) {
@@ -37,71 +41,26 @@ public class PackageInfo {
     }
 
     @SuppressWarnings("all")
-    public <T> T getFeature(PackageFeature feature, Class<T> type) {
-        Object o = data.get(feature);
-        return (T) o;
-    }
-
-    @SuppressWarnings("all")
-    public <T> T getFeatureOrDefault(PackageFeature feature, Class<T> type, T deflt) {
-        try {
-            T res = getFeature(feature, type);
-            if (res == null) return deflt;
-            else return res;
-        } catch (RuntimeException e) {
-            return deflt;
-        }
-    }
-
-    public boolean hasFeature(PackageFeature feature) {
-        return data.containsKey(feature);
+    private <T> T get(PackageFeature feature, Class<T> type) {
+        return (T) Objects.requireNonNull(data.get(feature));
     }
 
     public void finishParse() {
-        // check compulsory elements
-        if ((hasFeature(MetaFeature.IPV4) || hasFeature(MetaFeature.IPV6)) &&
-                (hasFeature(MetaFeature.TCP) || hasFeature(MetaFeature.UDP)) &&
-                //hasFeature(MetaFeature.HTTP, boolean.class) &&
-                hasFeature(MetaFeature.SRC) &&
-                hasFeature(MetaFeature.DST) &&
-                hasFeature(MetaFeature.SRC_PORT) &&
-                hasFeature(MetaFeature.DST_PORT) &&
-                hasFeature(MetaFeature.PROTO) &&
-                hasFeature(MetaFeature.HEADER_LEN) &&
-                hasFeature(MetaFeature.PAYLOAD_LEN)) {
-
-            this.src = getFeature(MetaFeature.SRC, byte[].class);
-            this.dst = getFeature(MetaFeature.DST, byte[].class);
-            this.srcPort = getFeature(MetaFeature.SRC_PORT, int.class);
-            this.dstPort = getFeature(MetaFeature.DST_PORT, int.class);
-            this.protocol = getFeature(MetaFeature.PROTO, int.class);
-            this.payloadLen = getFeature(MetaFeature.PAYLOAD_LEN, int.class);
-            this.headerLen = getFeature(MetaFeature.HEADER_LEN, int.class);
-            generateFlowId();
-        } else {
-            throw new RuntimeException("Package is not complete.");
-        }
+        this.src = get(MetaFeature.SRC, byte[].class);
+        this.dst = get(MetaFeature.DST, byte[].class);
+        this.srcPort = get(MetaFeature.SRC_PORT, int.class);
+        this.dstPort = get(MetaFeature.DST_PORT, int.class);
+        this.protocol = get(MetaFeature.PROTO, int.class);
+        this.payloadLen = get(MetaFeature.PAYLOAD_LEN, int.class);
+        this.headerLen = get(MetaFeature.HEADER_LEN, int.class);
+        this.tcpWindow = get(TcpPackageDelegate.Feature.TCP_WINDOW, int.class);
+        this.flags = get(TcpPackageDelegate.Feature.FLAG, int.class);
+        generateFlowId();
     }
 
     private void generateFlowId() {
-        boolean forward = true;
-
-        for (int i = 0; i < this.src.length; i++) {
-            if (((Byte) (this.src[i])).intValue() != ((Byte) (this.dst[i])).intValue()) {
-                if (((Byte) (this.src[i])).intValue() > ((Byte) (this.dst[i])).intValue()) {
-                    forward = false;
-                }
-                i = this.src.length;
-            }
-        }
-
-        if (forward) {
-            this.flowId = this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
-                    this.srcPort + "-" + this.dstPort + "-" + this.protocol;
-        } else {
-            this.flowId = this.getDestinationIP() + "-" + this.getSourceIP() + "-" +
-                    this.dstPort + "-" + this.srcPort + "-" + this.protocol;
-        }
+        this.flowId = this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
+                this.srcPort + "-" + this.dstPort + "-" + this.protocol;
     }
 
     public String getSourceIP() {
@@ -113,15 +72,23 @@ public class PackageInfo {
     }
 
     public String fwdFlowId() {
-        this.flowId = this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
+        return this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
                 this.srcPort + "-" + this.dstPort + "-" + this.protocol;
-        return this.flowId;
     }
 
     public String bwdFlowId() {
-        this.flowId = this.getDestinationIP() + "-" + this.getSourceIP() + "-" +
+        return this.getDestinationIP() + "-" + this.getSourceIP() + "-" +
                 this.dstPort + "-" + this.srcPort + "-" + this.protocol;
-        return this.flowId;
+    }
+
+    public PackageInfo setFwd() {
+        this.flowId = fwdFlowId();
+        return this;
+    }
+
+    public PackageInfo setBwd() {
+        this.flowId = bwdFlowId();
+        return this;
     }
 
     public long getId() {
@@ -160,10 +127,6 @@ public class PackageInfo {
         return this.protocol;
     }
 
-    public boolean isForwardPacket(byte[] sourceIP) {
-        return Arrays.equals(sourceIP, this.src);
-    }
-
     public long getPayloadBytes() {
         return this.payloadLen;
     }
@@ -175,4 +138,53 @@ public class PackageInfo {
     public int getPayloadPacket() {
         return payloadPacket += 1;
     }
+
+    public int getTcpWindow() {
+        return tcpWindow;
+    }
+
+    public boolean getFlag(int id) {
+        return (flags & id) != 0;
+    }
+
+    // Copied from org.jnetpcap.protocol.tcpip.Tcp
+    /**
+     * The Constant FLAG_ACK.
+     */
+    public static final int FLAG_ACK = 0x10;
+
+    /**
+     * The Constant FLAG_CWR.
+     */
+    public static final int FLAG_CWR = 0x80;
+
+    /**
+     * The Constant FLAG_ECE.
+     */
+    public static final int FLAG_ECE = 0x40;
+
+    /**
+     * The Constant FLAG_FIN.
+     */
+    public static final int FLAG_FIN = 0x01;
+
+    /**
+     * The Constant FLAG_PSH.
+     */
+    public static final int FLAG_PSH = 0x08;
+
+    /**
+     * The Constant FLAG_RST.
+     */
+    public static final int FLAG_RST = 0x04;
+
+    /**
+     * The Constant FLAG_SYN.
+     */
+    public static final int FLAG_SYN = 0x02;
+
+    /**
+     * The Constant FLAG_URG.
+     */
+    public static final int FLAG_URG = 0x20;
 }

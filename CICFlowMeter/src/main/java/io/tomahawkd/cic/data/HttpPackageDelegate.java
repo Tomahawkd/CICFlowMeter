@@ -11,14 +11,14 @@ public class HttpPackageDelegate extends AbstractPackageDelegate {
     }
 
     @Override
-    public void parse(PackageInfo dst, PcapPacket packet) {
-        packet.scan(Ethernet.ID);
+    public boolean parse(PackageInfo dst, PcapPacket packet) {
         Http http = new Http();
         if (!packet.hasHeader(http)) {
-            throw new IllegalArgumentException("Not an HTTP header.");
+            return false;
         }
 
         dst.addFeature(MetaFeature.HTTP, true);
+        return true;
     }
 
     public enum Feature implements PackageFeature {

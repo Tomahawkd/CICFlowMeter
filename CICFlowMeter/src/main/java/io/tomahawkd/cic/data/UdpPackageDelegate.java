@@ -1,7 +1,6 @@
 package io.tomahawkd.cic.data;
 
 import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.protocol.lan.Ethernet;
 import org.jnetpcap.protocol.tcpip.Udp;
 
 public class UdpPackageDelegate extends AbstractPackageDelegate {
@@ -11,11 +10,10 @@ public class UdpPackageDelegate extends AbstractPackageDelegate {
     }
 
     @Override
-    public void parse(PackageInfo dst, PcapPacket packet) {
-        packet.scan(Ethernet.ID);
+    public boolean parse(PackageInfo dst, PcapPacket packet) {
         Udp udp = new Udp();
         if (!packet.hasHeader(udp)) {
-            throw new IllegalArgumentException("Not an UDP header.");
+            return false;
         }
 
         dst.addFeature(MetaFeature.SRC_PORT, udp.source());
@@ -24,5 +22,6 @@ public class UdpPackageDelegate extends AbstractPackageDelegate {
         dst.addFeature(MetaFeature.PAYLOAD_LEN, udp.getPayloadLength());
         dst.addFeature(MetaFeature.HEADER_LEN, udp.getHeaderLength());
         dst.addFeature(MetaFeature.UDP, true);
+        return true;
     }
 }

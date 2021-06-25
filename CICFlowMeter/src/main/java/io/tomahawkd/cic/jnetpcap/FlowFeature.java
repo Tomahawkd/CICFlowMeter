@@ -2,8 +2,8 @@ package io.tomahawkd.cic.jnetpcap;
 
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,7 +98,7 @@ public enum FlowFeature {
     Label("Label", "LBL", new String[] {"CIC"});                    //85
 
 
-    protected static final Logger logger = LoggerFactory.getLogger(FlowFeature.class);
+    protected static final Logger logger = LogManager.getLogger(FlowFeature.class);
     private static String HEADER;
     private final String name;
     private final String abbr;

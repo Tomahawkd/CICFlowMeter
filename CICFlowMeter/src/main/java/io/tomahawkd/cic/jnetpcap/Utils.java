@@ -1,13 +1,13 @@
 package io.tomahawkd.cic.jnetpcap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.List;
 
 public class Utils {
-    protected static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    protected static final Logger logger = LogManager.getLogger(Utils.class);
     public static final String FILE_SEP = System.getProperty("file.separator");
     public static final String LINE_SEP = System.lineSeparator();
     public final static String PCAP = "application/vnd.tcpdump.pcap";

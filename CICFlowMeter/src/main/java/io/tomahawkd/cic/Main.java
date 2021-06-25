@@ -8,9 +8,9 @@ import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
 import io.tomahawkd.config.sources.SourceManager;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -20,7 +20,7 @@ import java.util.Objects;
 
 public class Main {
 
-    public static final Logger logger = LoggerFactory.getLogger(Main.class);
+    public static final Logger logger = LogManager.getLogger(Main.class);
     private static final String DividingLine = "-------------------------------------------------------------------------------";
 
     public static void main(String[] args) {

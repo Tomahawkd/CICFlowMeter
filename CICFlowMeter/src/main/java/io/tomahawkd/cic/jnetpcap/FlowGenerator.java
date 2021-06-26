@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.tomahawkd.cic.jnetpcap.Utils.LINE_SEP;
 
@@ -66,14 +69,10 @@ public class FlowGenerator {
         // 3.- we create a new flow with the packet-in-process
         if ((currentTimestamp - flow.getFlowStartTime()) > flowTimeOut) {
             if (flow.packetCount() > 1) {
-                if (mListener != null) {
-                    mListener.onFlowGenerated(flow);
-                } else {
-                    finishedFlows.put(getFlowCount(), flow);
-                }
+                listenerCallback(flow);
             }
             currentFlows.remove(id);
-            currentFlows.put(id, new BasicFlow(bidirectional, packet, flow.getSrc(), flow.getDst(), flow.getSrcPort(), flow.getDstPort()));
+            currentFlows.put(id, new BasicFlow(bidirectional, packet, flow));
 
             int cfsize = currentFlows.size();
             if (cfsize % 50 == 0) {
@@ -87,11 +86,7 @@ public class FlowGenerator {
         } else if (packet.getFlag(PackageInfo.FLAG_FIN)) {
             logger.debug("FlagFIN current has {} flow", currentFlows.size());
             flow.addPacket(packet);
-            if (mListener != null) {
-                mListener.onFlowGenerated(flow);
-            } else {
-                finishedFlows.put(getFlowCount(), flow);
-            }
+            listenerCallback(flow);
             currentFlows.remove(id);
         } else {
             flow.updateActiveIdleTime(currentTimestamp, this.flowActivityTimeOut);
@@ -149,6 +144,34 @@ public class FlowGenerator {
             } catch (IOException e) {
                 logger.debug(e.getMessage());
             }
+        }
+    }
+
+    public void flushTimeoutFlows(PackageInfo packet) {
+        List<Map.Entry<String, BasicFlow>> list = currentFlows.entrySet().stream()
+                .filter(e -> packet.getTimestamp() - e.getValue().getFlowStartTime() > this.flowTimeOut)
+                .filter(e -> e.getValue().packetCount() > 1)
+                .collect(Collectors.toList());
+
+        list.forEach(e -> {
+            String id = e.getKey();
+            BasicFlow flow = e.getValue();
+            listenerCallback(flow);
+            currentFlows.remove(id);
+
+            int cfsize = currentFlows.size();
+            if (cfsize % 50 == 0) {
+                logger.debug("Timeout current has {} flow", cfsize);
+            }
+
+        });
+    }
+
+    private void listenerCallback(BasicFlow flow) {
+        if (mListener != null) {
+            mListener.onFlowGenerated(flow);
+        } else {
+            finishedFlows.put(getFlowCount(), flow);
         }
     }
 

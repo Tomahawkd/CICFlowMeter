@@ -58,10 +58,7 @@ public class BasicFlow {
     private long backwardLastSeen = 0L;
 
     public BasicFlow(boolean isBidirectional, PackageInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort) {
-        super();
-        this.initFlags();
-        this.isBidirectional = isBidirectional;
-        this.firstPacket(packet);
+        this(isBidirectional, packet);
         this.src = flowSrc;
         this.dst = flowDst;
         this.srcPort = flowSrcPort;
@@ -69,17 +66,17 @@ public class BasicFlow {
     }
 
     public BasicFlow(boolean isBidirectional, PackageInfo packet) {
-        super();
         this.initFlags();
         this.isBidirectional = isBidirectional;
         this.firstPacket(packet);
     }
 
+    public BasicFlow(boolean isBidirectional, PackageInfo packet, BasicFlow flow) {
+        this(isBidirectional, packet, flow.getSrc(), flow.getDst(), flow.srcPort, flow.dstPort);
+    }
+
     public BasicFlow(PackageInfo packet) {
-        super();
-        this.initFlags();
-        this.isBidirectional = true;
-        firstPacket(packet);
+        this(true, packet);
     }
 
     public void initFlags() {

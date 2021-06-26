@@ -70,11 +70,8 @@ public class Main {
         int nValid = 0;
         int nTotal = 0;
         int nDiscarded = 0;
-        long start = System.currentTimeMillis();
         int i = 0;
         while (true) {
-            // i = (i)%animationChars.length;
-            // System.out.print("Working on "+ inputFile+" "+ animationChars[i] +"\r");
             try {
                 PackageInfo basicPacket = packetReader.nextPacket();
                 nTotal++;
@@ -83,6 +80,13 @@ public class Main {
                     nValid++;
                 } else {
                     nDiscarded++;
+                }
+
+                if (i > 1024) {
+                    if (basicPacket != null)  {
+                        flowGen.flushTimeoutFlows(basicPacket);
+                        i = 0;
+                    }
                 }
             } catch (PcapClosedException e) {
                 break;

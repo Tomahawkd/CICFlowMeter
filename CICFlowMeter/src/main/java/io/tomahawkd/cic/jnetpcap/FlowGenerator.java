@@ -18,6 +18,7 @@ public class FlowGenerator {
     public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
 
     private FlowGenListener mListener;
+    private FlowLabelSupplier flowLabelSupplier = f -> "No Label";
     private HashMap<String, BasicFlow> currentFlows;
     private HashMap<Integer, BasicFlow> finishedFlows;
 
@@ -58,7 +59,7 @@ public class FlowGenerator {
         } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
             id = packet.setBwd().bwdFlowId();
         } else {
-            currentFlows.put(packet.setFwd().fwdFlowId(), new BasicFlow(bidirectional, packet));
+            currentFlows.put(packet.setFwd().fwdFlowId(), new BasicFlow(bidirectional, packet, flowLabelSupplier));
             return;
         }
 
@@ -158,13 +159,16 @@ public class FlowGenerator {
             BasicFlow flow = e.getValue();
             listenerCallback(flow);
             currentFlows.remove(id);
-
-            int cfsize = currentFlows.size();
-            if (cfsize % 50 == 0) {
-                logger.debug("Timeout current has {} flow", cfsize);
-            }
-
+            logger.debug("Timeout current has {} flow", currentFlows.size());
         });
+    }
+
+    public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
+        flowLabelSupplier = supplier;
+    }
+
+    public FlowLabelSupplier getFlowLabelSupplier() {
+        return flowLabelSupplier;
     }
 
     private void listenerCallback(BasicFlow flow) {

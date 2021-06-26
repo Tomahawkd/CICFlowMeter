@@ -62,6 +62,24 @@ public class Main {
         }
 
         FlowGenerator flowGen = new FlowGenerator(true, flowTimeout, activityTimeout);
+
+        // This is hard-coded
+        if (inputFile.getFileName().toString().contains("Wednesday-WorkingHours")) {
+            // 172.16.0.1 -> 192.168.10.50:80
+            flowGen.setFlowLabelSupplier(f -> {
+                if (f.getSrc().equals("172.16.0.1") && f.getDst().equals("192.168.10.50") && f.getDstPort() == 80) {
+                    return "SLOWDOS";
+                } else return "NORMAL";
+            });
+        } else if (inputFile.getFileName().toString().contains("Friday-WorkingHours")) {
+            flowGen.setFlowLabelSupplier(f -> {
+                if (f.getSrc().equals("172.16.0.1") && f.getDst().equals("192.168.10.50") && f.getDstPort() == 80) {
+                    return "DOS";
+                } else return "NORMAL";
+            });
+        } else {
+            flowGen.setFlowLabelSupplier(f -> "NONE");
+        }
         flowGen.setFlowListener(new FlowListener(fileName, outPath.toString()));
         PacketReader packetReader = new PacketReader(inputFile.toString());
 

@@ -18,6 +18,8 @@ public class BasicFlow {
     private int dstPort;
     private int protocol;
 
+    private final FlowLabelSupplier labelSupplier;
+
     private final boolean isBidirectional;
 
     private final List<PackageInfo> forward = new ArrayList<>();
@@ -57,26 +59,27 @@ public class BasicFlow {
     private long forwardLastSeen = 0L;
     private long backwardLastSeen = 0L;
 
-    public BasicFlow(boolean isBidirectional, PackageInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort) {
-        this(isBidirectional, packet);
+    public BasicFlow(boolean isBidirectional, PackageInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort, FlowLabelSupplier supplier) {
+        this(isBidirectional, packet, supplier);
         this.src = flowSrc;
         this.dst = flowDst;
         this.srcPort = flowSrcPort;
         this.dstPort = flowDstPort;
     }
 
-    public BasicFlow(boolean isBidirectional, PackageInfo packet) {
+    public BasicFlow(boolean isBidirectional, PackageInfo packet, FlowLabelSupplier supplier) {
         this.initFlags();
         this.isBidirectional = isBidirectional;
         this.firstPacket(packet);
+        this.labelSupplier = supplier;
     }
 
     public BasicFlow(boolean isBidirectional, PackageInfo packet, BasicFlow flow) {
-        this(isBidirectional, packet, flow.getSrc(), flow.getDst(), flow.srcPort, flow.dstPort);
-    }
-
-    public BasicFlow(PackageInfo packet) {
-        this(true, packet);
+        this(isBidirectional, packet,
+                Arrays.copyOf(flow.src, flow.src.length),
+                Arrays.copyOf(flow.dst, flow.dst.length),
+                flow.srcPort, flow.dstPort,
+                flow.labelSupplier);
     }
 
     public void initFlags() {
@@ -190,6 +193,22 @@ public class BasicFlow {
         this.flowIAT.addValue(packet.getTimestamp() - this.flowLastSeen);
         this.flowLastSeen = packet.getTimestamp();
 
+    }
+
+    public String getSrc() {
+        return FormatUtils.ip(src);
+    }
+
+    public String getDst() {
+        return FormatUtils.ip(dst);
+    }
+
+    public int getSrcPort() {
+        return srcPort;
+    }
+
+    public int getDstPort() {
+        return dstPort;
     }
 
     public double getfPktsPerSecond() {
@@ -369,9 +388,6 @@ public class BasicFlow {
     }
 
     public void updateBackwardBulk(PackageInfo packet, long tsOflastBulkInOther) {
-		/*bAvgBytesPerBulk =0;
-		bbulkSizeTotal=0;
-		bbulkStateCount=0;*/
         long size = packet.getPayloadBytes();
         if (tsOflastBulkInOther > bbulkStartHelper) bbulkStartHelper = 0;
         if (size <= 0) return;
@@ -510,10 +526,8 @@ public class BasicFlow {
             }
             this.flowIdle.addValue(currentTime - this.endActiveTime);
             this.startActiveTime = currentTime;
-            this.endActiveTime = currentTime;
-        } else {
-            this.endActiveTime = currentTime;
         }
+        this.endActiveTime = currentTime;
     }
 
     public int packetCount() {
@@ -524,39 +538,12 @@ public class BasicFlow {
         }
     }
 
-    public byte[] getSrc() {
-        return Arrays.copyOf(src, src.length);
-    }
-
-    public byte[] getDst() {
-        return Arrays.copyOf(dst, dst.length);
-    }
-
-    public int getSrcPort() {
-        return srcPort;
-    }
-
-    public int getDstPort() {
-        return dstPort;
-    }
-
     public long getFlowStartTime() {
         return flowStartTime;
     }
 
     public String getFlowId() {
         return flowId;
-    }
-
-    public String getLabel() {
-        //the original is "|". I think it should be "||" need to check,
-		/*if(FormatUtils.ip(src).equals("147.32.84.165") || FormatUtils.ip(dst).equals("147.32.84.165")){
-			return "BOTNET";													
-		}
-		else{
-			return "BENIGN";
-		}*/
-        return "No Label";
     }
 
     public String dumpFlowBasedFeaturesEx() {
@@ -663,14 +650,14 @@ public class BasicFlow {
             dump.append(0).append(SEPARATOR);
         }
 
-        dump.append(flagCounts.get("FIN").value).append(SEPARATOR);                 //50
-        dump.append(flagCounts.get("SYN").value).append(SEPARATOR);                 //51
-        dump.append(flagCounts.get("RST").value).append(SEPARATOR);                  //52
-        dump.append(flagCounts.get("PSH").value).append(SEPARATOR);                  //53
-        dump.append(flagCounts.get("ACK").value).append(SEPARATOR);                  //54
-        dump.append(flagCounts.get("URG").value).append(SEPARATOR);                  //55
-        dump.append(flagCounts.get("CWR").value).append(SEPARATOR);                  //56
-        dump.append(flagCounts.get("ECE").value).append(SEPARATOR);                  //57
+        dump.append(flagCounts.get("FIN").get()).append(SEPARATOR);                 //50
+        dump.append(flagCounts.get("SYN").get()).append(SEPARATOR);                 //51
+        dump.append(flagCounts.get("RST").get()).append(SEPARATOR);                  //52
+        dump.append(flagCounts.get("PSH").get()).append(SEPARATOR);                  //53
+        dump.append(flagCounts.get("ACK").get()).append(SEPARATOR);                  //54
+        dump.append(flagCounts.get("URG").get()).append(SEPARATOR);                  //55
+        dump.append(flagCounts.get("CWR").get()).append(SEPARATOR);                  //56
+        dump.append(flagCounts.get("ECE").get()).append(SEPARATOR);                  //57
 
         dump.append(getDownUpRatio()).append(SEPARATOR);                            //58
         dump.append(getAvgPacketSize()).append(SEPARATOR);                            //59
@@ -719,10 +706,7 @@ public class BasicFlow {
             dump.append(0).append(SEPARATOR);
             dump.append(0).append(SEPARATOR);
         }
-
-        dump.append(getLabel());
-
-
+        dump.append(labelSupplier.get(this));
         return dump.toString();
     }
 }

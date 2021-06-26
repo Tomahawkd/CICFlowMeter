@@ -16,6 +16,8 @@ public class PackageInfo {
     private int payloadPacket = 0;
 
     // Cached Meta-data of the package
+    // typically we use the map above to store data, however, to make it
+    // more faster we use pre-defined fields instead
     private byte[] src;
     private byte[] dst;
     private int srcPort;

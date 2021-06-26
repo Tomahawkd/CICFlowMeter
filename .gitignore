@@ -111,3 +111,5 @@ logs/**
 target/**
 
 *.iml
+
+*.log.gz

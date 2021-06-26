@@ -107,7 +107,7 @@ buildNumber.properties
 
 build/**
 .idea/**
-logs/**
+log/**
 target/**
 
 *.iml

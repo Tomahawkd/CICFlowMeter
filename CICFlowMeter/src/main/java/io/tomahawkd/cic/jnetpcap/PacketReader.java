@@ -84,12 +84,12 @@ public class PacketReader {
         if (internetLayerDelegates[0].parse(info, packet)) {
             info.setTimestamp(packet.getCaptureHeader().timestampInMicros());
             if (transportLayerDelegates[0].parse(info, packet)) {
-                // TODO: ignore app layer for now
-
-                // post-parse works
-                info.finishParse();
-                logger.debug("Parse successfully.");
-                return info;
+                if (appLayerDelegates[0].parse(info, packet)) {
+                    // post-parse works
+                    info.finishParse();
+                    logger.debug("Parse successfully.");
+                    return info;
+                }
             }
         }
         return null;

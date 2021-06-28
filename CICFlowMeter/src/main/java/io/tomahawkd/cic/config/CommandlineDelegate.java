@@ -78,7 +78,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         if (debug) {
             LoggerContext ctx = LoggerContext.getContext(false);
             Configuration config = ctx.getConfiguration();
-            LoggerConfig loggerConfig = config.getLoggerConfig("io.tomahawkd.tlstester");
+            LoggerConfig loggerConfig = config.getLoggerConfig("io.tomahawkd.cic");
             loggerConfig.removeAppender("Console");
             loggerConfig.addAppender(
                     config.getAppender("DebugConsole"), Level.DEBUG, null);

@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class PackageInfo {
+public class PacketInfo {
 
     private final long id;
     private String flowId = "";
-    private final Map<PackageFeature, Object> data;
+    private final Map<PacketFeature, Object> data;
     private long timestamp;
     private int payloadPacket = 0;
 
@@ -33,17 +33,17 @@ public class PackageInfo {
     // http data
 
 
-    public PackageInfo(long id) {
+    public PacketInfo(long id) {
         data = new HashMap<>();
         this.id = id;
     }
 
-    public void addFeature(PackageFeature feature, Object data) {
+    public void addFeature(PacketFeature feature, Object data) {
         this.data.put(feature, data);
     }
 
     @SuppressWarnings("all")
-    private <T> T get(PackageFeature feature, Class<T> type) {
+    private <T> T get(PacketFeature feature, Class<T> type) {
         return (T) Objects.requireNonNull(data.get(feature));
     }
 
@@ -55,8 +55,8 @@ public class PackageInfo {
         this.protocol = get(MetaFeature.PROTO, int.class);
         this.payloadLen = get(MetaFeature.PAYLOAD_LEN, int.class);
         this.headerLen = get(MetaFeature.HEADER_LEN, int.class);
-        this.tcpWindow = get(TcpPackageDelegate.Feature.TCP_WINDOW, int.class);
-        this.flags = get(TcpPackageDelegate.Feature.FLAG, int.class);
+        this.tcpWindow = get(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
+        this.flags = get(TcpPacketDelegate.Feature.FLAG, int.class);
         generateFlowId();
     }
 
@@ -83,12 +83,12 @@ public class PackageInfo {
                 this.dstPort + "-" + this.srcPort + "-" + this.protocol;
     }
 
-    public PackageInfo setFwd() {
+    public PacketInfo setFwd() {
         this.flowId = fwdFlowId();
         return this;
     }
 
-    public PackageInfo setBwd() {
+    public PacketInfo setBwd() {
         this.flowId = bwdFlowId();
         return this;
     }

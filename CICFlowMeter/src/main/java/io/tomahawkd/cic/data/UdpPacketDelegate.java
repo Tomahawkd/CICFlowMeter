@@ -3,14 +3,14 @@ package io.tomahawkd.cic.data;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Udp;
 
-public class UdpPackageDelegate extends AbstractPackageDelegate {
+public class UdpPacketDelegate extends AbstractPacketDelegate {
 
-    public UdpPackageDelegate() {
+    public UdpPacketDelegate() {
         super(Udp.ID);
     }
 
     @Override
-    public boolean parse(PackageInfo dst, PcapPacket packet) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
         Udp udp = new Udp();
         if (!packet.hasHeader(udp)) {
             return false;

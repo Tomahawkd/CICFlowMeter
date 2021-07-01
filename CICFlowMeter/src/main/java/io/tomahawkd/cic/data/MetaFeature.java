@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.data;
 
-public enum MetaFeature implements PackageFeature {
+public enum MetaFeature implements PacketFeature {
 
     // Protocols
     IPV4, IPV6, TCP, UDP, HTTP,

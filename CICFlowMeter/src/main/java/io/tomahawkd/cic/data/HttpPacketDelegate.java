@@ -3,14 +3,14 @@ package io.tomahawkd.cic.data;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Http;
 
-public class HttpPackageDelegate extends AbstractPackageDelegate {
+public class HttpPacketDelegate extends AbstractPacketDelegate {
 
-    public HttpPackageDelegate() {
+    public HttpPacketDelegate() {
         super(Http.ID);
     }
 
     @Override
-    public boolean parse(PackageInfo dst, PcapPacket packet) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
         Http http = new Http();
         if (!packet.hasHeader(http)) {
             return false;
@@ -43,7 +43,7 @@ public class HttpPackageDelegate extends AbstractPackageDelegate {
         return true;
     }
 
-    public enum Feature implements PackageFeature {
+    public enum Feature implements PacketFeature {
         // Common
         CONTENT_LEN, REQUEST,
 

@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.jnetpcap;
 
 import io.tomahawkd.cic.data.*;
+import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.Pcap;
@@ -22,21 +23,21 @@ public class PacketReader {
     private final String file;
 
     // e.g., IPv4
-    private final PackageDelegate[] internetLayerDelegates =
-            new PackageDelegate[] {
-                    new Ipv4PackageDelegate(),
+    private final PacketDelegate[] internetLayerDelegates =
+            new PacketDelegate[] {
+                    new Ipv4PacketDelegate(),
                     //new Ipv6PackageDelegate()
             };
     // e.g., TCP
-    private final PackageDelegate[] transportLayerDelegates =
-            new PackageDelegate[] {
-                    new TcpPackageDelegate(),
+    private final PacketDelegate[] transportLayerDelegates =
+            new PacketDelegate[] {
+                    new TcpPacketDelegate(),
                     //new UdpPackageDelegate()
             };
     // e.g., HTTP
-    private final PackageDelegate[] appLayerDelegates =
-            new PackageDelegate[] {
-                    new HttpPackageDelegate()
+    private final PacketDelegate[] appLayerDelegates =
+            new PacketDelegate[] {
+                    new HttpPacketDelegate()
             };
 
     public PacketReader(String filename) {
@@ -53,14 +54,14 @@ public class PacketReader {
         }
     }
 
-    public PackageInfo nextPacket() {
+    public PacketInfo nextPacket() {
         try {
             if (pcapReader.nextEx(hdr, buf) == Pcap.NEXT_EX_OK) {
-                PackageInfo info = new PackageInfo(generator.nextId());
+                PacketInfo info = new PacketInfo(generator.nextId());
                 PcapPacket packet = new PcapPacket(hdr, buf);
                 packet.scan(Ethernet.ID);
 
-                PackageInfo temp = parse(packet, info);
+                PacketInfo temp = parse(packet, info);
                 if (temp == null) {
                     packet.scan(L2TP.ID);
                     temp = parse(packet, info);
@@ -80,7 +81,7 @@ public class PacketReader {
         }
     }
 
-    private PackageInfo parse(PcapPacket packet, PackageInfo info) {
+    private PacketInfo parse(PcapPacket packet, PacketInfo info) {
         if (internetLayerDelegates[0].parse(info, packet)) {
             info.setTimestamp(packet.getCaptureHeader().timestampInMicros());
             if (transportLayerDelegates[0].parse(info, packet)) {

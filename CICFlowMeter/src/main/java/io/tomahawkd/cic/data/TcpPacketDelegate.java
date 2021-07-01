@@ -3,14 +3,14 @@ package io.tomahawkd.cic.data;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
-public class TcpPackageDelegate extends AbstractPackageDelegate {
+public class TcpPacketDelegate extends AbstractPacketDelegate {
 
-    public TcpPackageDelegate() {
+    public TcpPacketDelegate() {
         super(Tcp.ID);
     }
 
     @Override
-    public boolean parse(PackageInfo dst, PcapPacket packet) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
         Tcp tcp = new Tcp();
         if (!packet.hasHeader(tcp)) {
             return false;
@@ -27,7 +27,7 @@ public class TcpPackageDelegate extends AbstractPackageDelegate {
         return true;
     }
 
-    public enum Feature implements PackageFeature {
+    public enum Feature implements PacketFeature {
         TCP_WINDOW, FLAG
     }
 }

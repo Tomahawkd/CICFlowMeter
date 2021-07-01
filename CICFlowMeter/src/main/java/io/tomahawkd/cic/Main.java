@@ -1,9 +1,10 @@
 package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
-import io.tomahawkd.cic.data.PackageInfo;
+import io.tomahawkd.cic.data.PacketInfo;
 import io.tomahawkd.cic.jnetpcap.*;
-import io.tomahawkd.cic.jnetpcap.FlowGenListener;
+import io.tomahawkd.cic.util.FlowGenListener;
+import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
@@ -91,7 +92,7 @@ public class Main {
         int i = 0;
         while (true) {
             try {
-                PackageInfo basicPacket = packetReader.nextPacket();
+                PacketInfo basicPacket = packetReader.nextPacket();
                 nTotal++;
                 if (basicPacket != null) {
                     flowGen.addPacket(basicPacket);

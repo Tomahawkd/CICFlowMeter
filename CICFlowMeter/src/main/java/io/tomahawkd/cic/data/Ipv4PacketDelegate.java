@@ -3,15 +3,15 @@ package io.tomahawkd.cic.data;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.network.Ip4;
 
-public class Ipv4PackageDelegate extends AbstractPackageDelegate {
+public class Ipv4PacketDelegate extends AbstractPacketDelegate {
 
 
-    public Ipv4PackageDelegate() {
+    public Ipv4PacketDelegate() {
         super(Ip4.ID);
     }
 
     @Override
-    public boolean parse(PackageInfo dst, PcapPacket packet) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
         Ip4 ipv4 = new Ip4();
         if (!packet.hasHeader(ipv4)) {
             return false;

@@ -1,6 +1,8 @@
 package io.tomahawkd.cic.jnetpcap;
 
-import io.tomahawkd.cic.data.PackageInfo;
+import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.util.FlowGenListener;
+import io.tomahawkd.cic.util.FlowLabelSupplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static io.tomahawkd.cic.jnetpcap.Utils.LINE_SEP;
+import static io.tomahawkd.cic.util.Utils.LINE_SEP;
 
 public class FlowGenerator {
     public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
@@ -45,7 +47,7 @@ public class FlowGenerator {
         mListener = listener;
     }
 
-    public void addPacket(PackageInfo packet) {
+    public void addPacket(PacketInfo packet) {
         if (packet == null) {
             return;
         }
@@ -84,7 +86,7 @@ public class FlowGenerator {
             // 1.- we add the packet-in-process to the flow (it is the last packet)
             // 2.- we move the flow to finished flow list
             // 3.- we eliminate the flow from the current flow list
-        } else if (packet.getFlag(PackageInfo.FLAG_FIN)) {
+        } else if (packet.getFlag(PacketInfo.FLAG_FIN)) {
             logger.debug("FlagFIN current has {} flow", currentFlows.size());
             flow.addPacket(packet);
             listenerCallback(flow);
@@ -148,7 +150,7 @@ public class FlowGenerator {
         }
     }
 
-    public void flushTimeoutFlows(PackageInfo packet) {
+    public void flushTimeoutFlows(PacketInfo packet) {
         List<Map.Entry<String, BasicFlow>> list = currentFlows.entrySet().stream()
                 .filter(e -> packet.getTimestamp() - e.getValue().getFlowStartTime() > this.flowTimeOut)
                 .filter(e -> e.getValue().packetCount() > 1)

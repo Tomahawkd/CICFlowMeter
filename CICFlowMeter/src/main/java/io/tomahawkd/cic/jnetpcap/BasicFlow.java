@@ -1,6 +1,8 @@
 package io.tomahawkd.cic.jnetpcap;
 
-import io.tomahawkd.cic.data.PackageInfo;
+import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.util.DateFormatter;
+import io.tomahawkd.cic.util.FlowLabelSupplier;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.jnetpcap.packet.format.FormatUtils;
 
@@ -22,8 +24,8 @@ public class BasicFlow {
 
     private final boolean isBidirectional;
 
-    private final List<PackageInfo> forward = new ArrayList<>();
-    private final List<PackageInfo> backward = new ArrayList<>();
+    private final List<PacketInfo> forward = new ArrayList<>();
+    private final List<PacketInfo> backward = new ArrayList<>();
 
     private long forwardBytes = 0L;
     private long backwardBytes = 0L;
@@ -59,7 +61,7 @@ public class BasicFlow {
     private long forwardLastSeen = 0L;
     private long backwardLastSeen = 0L;
 
-    public BasicFlow(boolean isBidirectional, PackageInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort, FlowLabelSupplier supplier) {
+    public BasicFlow(boolean isBidirectional, PacketInfo packet, byte[] flowSrc, byte[] flowDst, int flowSrcPort, int flowDstPort, FlowLabelSupplier supplier) {
         this(isBidirectional, packet, supplier);
         this.src = flowSrc;
         this.dst = flowDst;
@@ -67,14 +69,14 @@ public class BasicFlow {
         this.dstPort = flowDstPort;
     }
 
-    public BasicFlow(boolean isBidirectional, PackageInfo packet, FlowLabelSupplier supplier) {
+    public BasicFlow(boolean isBidirectional, PacketInfo packet, FlowLabelSupplier supplier) {
         this.initFlags();
         this.isBidirectional = isBidirectional;
         this.firstPacket(packet);
         this.labelSupplier = supplier;
     }
 
-    public BasicFlow(boolean isBidirectional, PackageInfo packet, BasicFlow flow) {
+    public BasicFlow(boolean isBidirectional, PacketInfo packet, BasicFlow flow) {
         this(isBidirectional, packet,
                 Arrays.copyOf(flow.src, flow.src.length),
                 Arrays.copyOf(flow.dst, flow.dst.length),
@@ -93,7 +95,7 @@ public class BasicFlow {
         flagCounts.put("ECE", new MutableInt());
     }
 
-    public void firstPacket(PackageInfo packet) {
+    public void firstPacket(PacketInfo packet) {
         updateFlowBulk(packet);
         detectUpdateSubflows(packet);
         checkFlags(packet);
@@ -120,10 +122,10 @@ public class BasicFlow {
             this.forwardLastSeen = packet.getTimestamp();
             this.forwardBytes += packet.getPayloadBytes();
             this.forward.add(packet);
-            if (packet.getFlag(PackageInfo.FLAG_PSH)) {
+            if (packet.getFlag(PacketInfo.FLAG_PSH)) {
                 this.fPSH_cnt++;
             }
-            if (packet.getFlag(PackageInfo.FLAG_URG)) {
+            if (packet.getFlag(PacketInfo.FLAG_URG)) {
                 this.fURG_cnt++;
             }
         } else {
@@ -134,10 +136,10 @@ public class BasicFlow {
             this.backwardLastSeen = packet.getTimestamp();
             this.backwardBytes += packet.getPayloadBytes();
             this.backward.add(packet);
-            if (packet.getFlag(PackageInfo.FLAG_PSH)) {
+            if (packet.getFlag(PacketInfo.FLAG_PSH)) {
                 this.bPSH_cnt++;
             }
-            if (packet.getFlag(PackageInfo.FLAG_URG)) {
+            if (packet.getFlag(PacketInfo.FLAG_URG)) {
                 this.bURG_cnt++;
             }
         }
@@ -145,7 +147,7 @@ public class BasicFlow {
         this.flowId = packet.getFlowId();
     }
 
-    public void addPacket(PackageInfo packet) {
+    public void addPacket(PacketInfo packet) {
         updateFlowBulk(packet);
         detectUpdateSubflows(packet);
         checkFlags(packet);
@@ -253,29 +255,29 @@ public class BasicFlow {
         return 0;
     }
 
-    public void checkFlags(PackageInfo packet) {
-        if (packet.getFlag(PackageInfo.FLAG_FIN)) {
+    public void checkFlags(PacketInfo packet) {
+        if (packet.getFlag(PacketInfo.FLAG_FIN)) {
             flagCounts.get("FIN").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_SYN)) {
+        if (packet.getFlag(PacketInfo.FLAG_SYN)) {
             flagCounts.get("SYN").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_RST)) {
+        if (packet.getFlag(PacketInfo.FLAG_RST)) {
             flagCounts.get("RST").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_PSH)) {
+        if (packet.getFlag(PacketInfo.FLAG_PSH)) {
             flagCounts.get("PSH").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_ACK)) {
+        if (packet.getFlag(PacketInfo.FLAG_ACK)) {
             flagCounts.get("ACK").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_URG)) {
+        if (packet.getFlag(PacketInfo.FLAG_URG)) {
             flagCounts.get("URG").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_CWR)) {
+        if (packet.getFlag(PacketInfo.FLAG_CWR)) {
             flagCounts.get("CWR").increment();
         }
-        if (packet.getFlag(PackageInfo.FLAG_ECE)) {
+        if (packet.getFlag(PacketInfo.FLAG_ECE)) {
             flagCounts.get("ECE").increment();
         }
     }
@@ -304,7 +306,7 @@ public class BasicFlow {
     private int sfCount = 0;
     private long sfAcHelper = -1;
 
-    void detectUpdateSubflows(PackageInfo packet) {
+    void detectUpdateSubflows(PacketInfo packet) {
         if (sfLastPacketTS == -1) {
             sfLastPacketTS = packet.getTimestamp();
             sfAcHelper = packet.getTimestamp();
@@ -338,7 +340,7 @@ public class BasicFlow {
     private long blastBulkTS = 0;
 
 
-    public void updateFlowBulk(PackageInfo packet) {
+    public void updateFlowBulk(PacketInfo packet) {
         if (this.src == packet.getSrc()) {
             updateForwardBulk(packet, blastBulkTS);
         } else {
@@ -346,7 +348,7 @@ public class BasicFlow {
         }
     }
 
-    public void updateForwardBulk(PackageInfo packet, long tsOflastBulkInOther) {
+    public void updateForwardBulk(PacketInfo packet, long tsOflastBulkInOther) {
         long size = packet.getPayloadBytes();
         if (tsOflastBulkInOther > fbulkStartHelper) fbulkStartHelper = 0;
         if (size <= 0) return;
@@ -387,7 +389,7 @@ public class BasicFlow {
         }
     }
 
-    public void updateBackwardBulk(PackageInfo packet, long tsOflastBulkInOther) {
+    public void updateBackwardBulk(PacketInfo packet, long tsOflastBulkInOther) {
         long size = packet.getPayloadBytes();
         if (tsOflastBulkInOther > bbulkStartHelper) bbulkStartHelper = 0;
         if (size <= 0) return;

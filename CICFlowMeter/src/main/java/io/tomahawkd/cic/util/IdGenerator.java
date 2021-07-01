@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.jnetpcap;
+package io.tomahawkd.cic.util;
 
 public class IdGenerator {
 	

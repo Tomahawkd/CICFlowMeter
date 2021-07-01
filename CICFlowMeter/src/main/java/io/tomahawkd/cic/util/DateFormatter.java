@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.jnetpcap;
+package io.tomahawkd.cic.util;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;

@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.config;
 
-import io.tomahawkd.cic.jnetpcap.Utils;
+import io.tomahawkd.cic.util.Utils;
 import com.beust.jcommander.Parameter;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;

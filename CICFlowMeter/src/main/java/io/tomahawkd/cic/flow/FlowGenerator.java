@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.jnetpcap;
+package io.tomahawkd.cic.flow;
 
 import io.tomahawkd.cic.data.PacketInfo;
 import io.tomahawkd.cic.util.FlowGenListener;
@@ -21,17 +21,15 @@ public class FlowGenerator {
 
     private FlowGenListener mListener;
     private FlowLabelSupplier flowLabelSupplier = f -> "No Label";
-    private HashMap<String, BasicFlow> currentFlows;
-    private HashMap<Integer, BasicFlow> finishedFlows;
+    private HashMap<String, Flow> currentFlows;
+    private HashMap<Integer, Flow> finishedFlows;
 
-    private final boolean bidirectional;
     private final long flowTimeOut;
     private final long flowActivityTimeOut;
     private int finishedFlowCount;
 
-    public FlowGenerator(boolean bidirectional, long flowTimeout, long activityTimeout) {
+    public FlowGenerator(long flowTimeout, long activityTimeout) {
         super();
-        this.bidirectional = bidirectional;
         this.flowTimeOut = flowTimeout;
         this.flowActivityTimeOut = activityTimeout;
         init();
@@ -52,7 +50,7 @@ public class FlowGenerator {
             return;
         }
 
-        BasicFlow flow;
+        Flow flow;
         long currentTimestamp = packet.getTimestamp();
         String id;
 
@@ -61,7 +59,7 @@ public class FlowGenerator {
         } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
             id = packet.setBwd().bwdFlowId();
         } else {
-            currentFlows.put(packet.setFwd().fwdFlowId(), new BasicFlow(bidirectional, packet, flowLabelSupplier));
+            currentFlows.put(packet.setFwd().fwdFlowId(), new Flow(packet, flowActivityTimeOut, flowLabelSupplier));
             return;
         }
 
@@ -71,11 +69,9 @@ public class FlowGenerator {
         // 2.- we eliminate the flow from the current flow list
         // 3.- we create a new flow with the packet-in-process
         if ((currentTimestamp - flow.getFlowStartTime()) > flowTimeOut) {
-            if (flow.packetCount() > 1) {
-                listenerCallback(flow);
-            }
+            listenerCallback(flow);
             currentFlows.remove(id);
-            currentFlows.put(id, new BasicFlow(bidirectional, packet, flow));
+            currentFlows.put(id, new Flow(packet, flow));
 
             int cfsize = currentFlows.size();
             if (cfsize % 50 == 0) {
@@ -92,7 +88,6 @@ public class FlowGenerator {
             listenerCallback(flow);
             currentFlows.remove(id);
         } else {
-            flow.updateActiveIdleTime(currentTimestamp, this.flowActivityTimeOut);
             flow.addPacket(packet);
             currentFlows.put(id, flow);
         }
@@ -112,28 +107,20 @@ public class FlowGenerator {
             } else {
                 if (file.createNewFile()) {
                     output = new FileOutputStream(file);
-                    output.write((FlowFeature.getHeader() + LINE_SEP).getBytes());
+                    output.write((FlowFeatureTag.getHeader() + LINE_SEP).getBytes());
                 } else {
                     throw new IOException("File cannot be created.");
                 }
             }
 
             if (mListener == null) {
-                for (BasicFlow flow : finishedFlows.values()) {
-                    if (flow.packetCount() > 1) {
-                        output.write((flow.dumpFlowBasedFeaturesEx() + LINE_SEP).getBytes());
-                    } else {
-                        logger.warn("Flow " + flow.getFlowId() + " is discarded since there is only one package.");
-                    }
+                for (Flow flow : finishedFlows.values()) {
+                    output.write((flow.exportData() + LINE_SEP).getBytes());
                 }
             }
 
-            for (BasicFlow flow : currentFlows.values()) {
-                if (flow.packetCount() > 1) {
-                    output.write((flow.dumpFlowBasedFeaturesEx() + LINE_SEP).getBytes());
-                } else {
-                    logger.warn("Flow " + flow.getFlowId() + " is discarded since there is only one package.");
-                }
+            for (Flow flow : currentFlows.values()) {
+                output.write((flow.exportData() + LINE_SEP).getBytes());
             }
 
         } catch (IOException e) {
@@ -151,14 +138,13 @@ public class FlowGenerator {
     }
 
     public void flushTimeoutFlows(PacketInfo packet) {
-        List<Map.Entry<String, BasicFlow>> list = currentFlows.entrySet().stream()
+        List<Map.Entry<String, Flow>> list = currentFlows.entrySet().stream()
                 .filter(e -> packet.getTimestamp() - e.getValue().getFlowStartTime() > this.flowTimeOut)
-                .filter(e -> e.getValue().packetCount() > 1)
                 .collect(Collectors.toList());
 
         list.forEach(e -> {
             String id = e.getKey();
-            BasicFlow flow = e.getValue();
+            Flow flow = e.getValue();
             listenerCallback(flow);
             currentFlows.remove(id);
             logger.debug("Timeout current has {} flow", currentFlows.size());
@@ -173,7 +159,7 @@ public class FlowGenerator {
         return flowLabelSupplier;
     }
 
-    private void listenerCallback(BasicFlow flow) {
+    private void listenerCallback(Flow flow) {
         if (mListener != null) {
             mListener.onFlowGenerated(flow);
         } else {

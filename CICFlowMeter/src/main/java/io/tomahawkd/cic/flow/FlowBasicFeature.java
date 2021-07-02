@@ -23,27 +23,12 @@ public class FlowBasicFeature extends AbstractFlowFeature {
     // settings
     private final long flowActivityTimeOut;
 
-    public static FlowBasicFeature empty() {
-        return new FlowBasicFeature();
-    }
-
-    private FlowBasicFeature() {
-        super(new FlowFeatureTag[0]);
-        flowId = "";
-        src = null;
-        dst = null;
-        srcPort = 0;
-        dstPort = 0;
-        supplier = null;
-        flowActivityTimeOut = 0;
-    }
-
     public FlowBasicFeature(String flowId,
                             byte[] src, byte[] dst,
                             int srcPort, int dstPort,
                             FlowLabelSupplier supplier,
                             long flowActivityTimeOut) {
-        super(empty(), new FlowFeatureTag[]{
+        super(new FlowFeatureTag[]{
                 FlowFeatureTag.fid,
                 FlowFeatureTag.src_ip,
                 FlowFeatureTag.src_port,

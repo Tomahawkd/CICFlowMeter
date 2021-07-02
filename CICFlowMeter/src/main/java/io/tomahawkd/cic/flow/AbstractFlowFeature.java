@@ -11,7 +11,7 @@ public abstract class AbstractFlowFeature implements FlowFeature {
     protected final FlowBasicFeature basicInfo;
 
     public AbstractFlowFeature(@NotNull FlowFeatureTag[] headers) {
-        this(FlowBasicFeature.empty(), headers);
+        this(null, headers);
     }
 
     public AbstractFlowFeature(FlowBasicFeature basicInfo, @NotNull FlowFeatureTag[] headers) {

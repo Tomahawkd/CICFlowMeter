@@ -2,14 +2,16 @@ package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.data.PacketInfo;
-import io.tomahawkd.cic.jnetpcap.*;
+import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.cic.flow.FlowFeatureTag;
+import io.tomahawkd.cic.flow.FlowGenerator;
 import io.tomahawkd.cic.util.FlowGenListener;
+import io.tomahawkd.cic.util.PacketReader;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
 import io.tomahawkd.config.sources.SourceManager;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
@@ -54,7 +56,7 @@ public class Main {
             return;
         }
 
-        String fileName = FilenameUtils.getName(inputFile.toString());
+        String fileName = inputFile.getFileName().toString();
         File saveFileFullPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX).toFile();
         if (saveFileFullPath.exists()) {
             if (!saveFileFullPath.delete()) {
@@ -62,7 +64,7 @@ public class Main {
             }
         }
 
-        FlowGenerator flowGen = new FlowGenerator(true, flowTimeout, activityTimeout);
+        FlowGenerator flowGen = new FlowGenerator(flowTimeout, activityTimeout);
 
         // This is hard-coded
         if (inputFile.getFileName().toString().contains("Wednesday-WorkingHours")) {
@@ -134,11 +136,11 @@ public class Main {
         }
 
         @Override
-        public void onFlowGenerated(BasicFlow flow) {
-            String flowDump = flow.dumpFlowBasedFeaturesEx();
+        public void onFlowGenerated(Flow flow) {
+            String flowDump = flow.exportData();
             List<String> flowStringList = new ArrayList<>();
             flowStringList.add(flowDump);
-            Utils.insertToFile(FlowFeature.getHeader(), flowStringList, outPath, fileName + Utils.FLOW_SUFFIX);
+            Utils.insertToFile(FlowFeatureTag.getHeader(), flowStringList, outPath, fileName + Utils.FLOW_SUFFIX);
             cnt++;
             System.out.printf("%s -> %d flows \r", fileName, cnt);
         }

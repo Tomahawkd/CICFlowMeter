@@ -1,7 +1,6 @@
-package io.tomahawkd.cic.jnetpcap;
+package io.tomahawkd.cic.util;
 
 import io.tomahawkd.cic.data.*;
-import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.Pcap;
@@ -88,7 +87,6 @@ public class PacketReader {
                 if (appLayerDelegates[0].parse(info, packet)) {
                     // post-parse works
                     info.finishParse();
-                    logger.debug("Parse successfully.");
                     return info;
                 }
             }

@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.util;
 
-import io.tomahawkd.cic.jnetpcap.BasicFlow;
+import io.tomahawkd.cic.flow.Flow;
 
 public interface FlowGenListener {
-    void onFlowGenerated(BasicFlow flow);
+    void onFlowGenerated(Flow flow);
 }

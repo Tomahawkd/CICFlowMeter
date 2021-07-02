@@ -1,9 +1,9 @@
 package io.tomahawkd.cic.util;
 
-import io.tomahawkd.cic.jnetpcap.BasicFlow;
+import io.tomahawkd.cic.flow.Flow;
 
 @FunctionalInterface
 public interface FlowLabelSupplier {
 
-    String get(BasicFlow flow);
+    String get(Flow flow);
 }

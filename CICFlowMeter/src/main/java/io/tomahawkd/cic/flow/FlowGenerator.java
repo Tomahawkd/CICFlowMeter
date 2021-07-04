@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,8 +97,8 @@ public class FlowGenerator {
         if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
     }
 
-    public void dumpLabeledCurrentFlow(String fileFullPath) {
-        File file = new File(fileFullPath);
+    public void dumpLabeledCurrentFlow(Path fileFullPath) {
+        File file = fileFullPath.toFile();
         FileOutputStream output = null;
         try {
             if (file.exists()) {

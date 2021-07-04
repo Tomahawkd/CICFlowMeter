@@ -16,11 +16,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Main {
 
@@ -57,10 +56,12 @@ public class Main {
         }
 
         String fileName = inputFile.getFileName().toString();
-        File saveFileFullPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX).toFile();
-        if (saveFileFullPath.exists()) {
-            if (!saveFileFullPath.delete()) {
-                System.out.println("Save file can not be deleted");
+        Path saveFileFullPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
+        if (Files.exists(saveFileFullPath)) {
+            try {
+                Files.delete(saveFileFullPath);
+            } catch (IOException e) {
+                logger.warn("Save file {} can not be deleted.", saveFileFullPath.toString(), e);
             }
         }
 
@@ -83,7 +84,18 @@ public class Main {
         } else {
             flowGen.setFlowLabelSupplier(f -> "NONE");
         }
-        flowGen.setFlowListener(new FlowListener(fileName, outPath.toString()));
+
+        flowGen.setFlowListener(new FlowGenListener() {
+            private long cnt;
+
+            @Override
+            public void onFlowGenerated(Flow flow) {
+                String flowDump = flow.exportData();
+                Utils.insertToFile(FlowFeatureTag.getHeader(), Collections.singletonList(flowDump), saveFileFullPath);
+                cnt++;
+                System.out.printf("%s -> %d flows \r", fileName, cnt);
+            }
+        });
         PacketReader packetReader = new PacketReader(inputFile.toString());
 
         System.out.printf("Working on... %s%n", fileName);
@@ -103,34 +115,11 @@ public class Main {
             }
         }
 
-        flowGen.dumpLabeledCurrentFlow(saveFileFullPath.getPath());
-        long lines = Utils.countLines(saveFileFullPath.getPath());
+        flowGen.dumpLabeledCurrentFlow(saveFileFullPath);
+        long lines = Utils.countLines(saveFileFullPath);
 
         System.out.printf("%s is done. total %d flows %n", fileName, lines);
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
         System.out.println(DividingLine);
-    }
-
-    static class FlowListener implements FlowGenListener {
-
-        private final String fileName;
-        private final String outPath;
-
-        private long cnt;
-
-        public FlowListener(String fileName, String outPath) {
-            this.fileName = fileName;
-            this.outPath = outPath;
-        }
-
-        @Override
-        public void onFlowGenerated(Flow flow) {
-            String flowDump = flow.exportData();
-            List<String> flowStringList = new ArrayList<>();
-            flowStringList.add(flowDump);
-            Utils.insertToFile(FlowFeatureTag.getHeader(), flowStringList, outPath, fileName + Utils.FLOW_SUFFIX);
-            cnt++;
-            System.out.printf("%s -> %d flows \r", fileName, cnt);
-        }
     }
 }

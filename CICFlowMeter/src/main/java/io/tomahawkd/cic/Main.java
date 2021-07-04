@@ -90,8 +90,6 @@ public class Main {
 
         int nValid = 0;
         int nTotal = 0;
-        int nDiscarded = 0;
-        int i = 0;
         while (true) {
             try {
                 PacketInfo basicPacket = packetReader.nextPacket();
@@ -99,27 +97,17 @@ public class Main {
                 if (basicPacket != null) {
                     flowGen.addPacket(basicPacket);
                     nValid++;
-                } else {
-                    nDiscarded++;
-                }
-
-                if (i > 1024) {
-                    if (basicPacket != null)  {
-                        flowGen.flushTimeoutFlows(basicPacket);
-                        i = 0;
-                    }
                 }
             } catch (PcapClosedException e) {
                 break;
             }
-            i++;
         }
 
         flowGen.dumpLabeledCurrentFlow(saveFileFullPath.getPath());
         long lines = Utils.countLines(saveFileFullPath.getPath());
 
         System.out.printf("%s is done. total %d flows %n", fileName, lines);
-        System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nDiscarded);
+        System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
         System.out.println(DividingLine);
     }
 

@@ -21,24 +21,23 @@ public class FlowGenerator {
 
     private FlowGenListener mListener;
     private FlowLabelSupplier flowLabelSupplier = f -> "No Label";
-    private HashMap<String, Flow> currentFlows;
-    private HashMap<Integer, Flow> finishedFlows;
+    private final HashMap<String, Flow> currentFlows;
+    private final HashMap<Integer, Flow> finishedFlows;
 
     private final long flowTimeOut;
     private final long flowActivityTimeOut;
     private int finishedFlowCount;
 
+    private int packetCounter;
+
     public FlowGenerator(long flowTimeout, long activityTimeout) {
         super();
         this.flowTimeOut = flowTimeout;
         this.flowActivityTimeOut = activityTimeout;
-        init();
-    }
-
-    private void init() {
         currentFlows = new HashMap<>();
         finishedFlows = new HashMap<>();
         finishedFlowCount = 0;
+        packetCounter = 0;
     }
 
     public void setFlowListener(FlowGenListener listener) {
@@ -53,13 +52,15 @@ public class FlowGenerator {
         Flow flow;
         long currentTimestamp = packet.getTimestamp();
         String id;
+        packetCounter++;
 
         if (this.currentFlows.containsKey(packet.fwdFlowId())) {
-            id = packet.setFwd().fwdFlowId();
+            id = packet.setFwd().getFlowId();
         } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
-            id = packet.setBwd().bwdFlowId();
+            id = packet.setBwd().getFlowId();
         } else {
-            currentFlows.put(packet.setFwd().fwdFlowId(), new Flow(packet, flowActivityTimeOut, flowLabelSupplier));
+            currentFlows.put(packet.setFwd().getFlowId(), new Flow(packet, flowActivityTimeOut, flowLabelSupplier));
+            if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
             return;
         }
 
@@ -91,14 +92,11 @@ public class FlowGenerator {
             flow.addPacket(packet);
             currentFlows.put(id, flow);
         }
+
+        if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
     }
 
     public void dumpLabeledCurrentFlow(String fileFullPath) {
-        if (fileFullPath == null) {
-            String ex = String.format("fullFilePath=%s", fileFullPath);
-            throw new IllegalArgumentException(ex);
-        }
-
         File file = new File(fileFullPath);
         FileOutputStream output = null;
         try {
@@ -137,9 +135,9 @@ public class FlowGenerator {
         }
     }
 
-    public void flushTimeoutFlows(PacketInfo packet) {
+    private void flushTimeoutFlows(long timestamp) {
         List<Map.Entry<String, Flow>> list = currentFlows.entrySet().stream()
-                .filter(e -> packet.getTimestamp() - e.getValue().getFlowStartTime() > this.flowTimeOut)
+                .filter(e -> timestamp - e.getValue().getFlowStartTime() > this.flowTimeOut)
                 .collect(Collectors.toList());
 
         list.forEach(e -> {
@@ -149,14 +147,12 @@ public class FlowGenerator {
             currentFlows.remove(id);
             logger.debug("Timeout current has {} flow", currentFlows.size());
         });
+
+        packetCounter = 0;
     }
 
     public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
         flowLabelSupplier = supplier;
-    }
-
-    public FlowLabelSupplier getFlowLabelSupplier() {
-        return flowLabelSupplier;
     }
 
     private void listenerCallback(Flow flow) {

@@ -81,13 +81,19 @@ public class PacketReader {
     }
 
     private PacketInfo parse(PcapPacket packet, PacketInfo info) {
-        if (internetLayerDelegates[0].parse(info, packet)) {
-            info.setTimestamp(packet.getCaptureHeader().timestampInMicros());
-            if (transportLayerDelegates[0].parse(info, packet)) {
-                if (appLayerDelegates[0].parse(info, packet)) {
-                    // post-parse works
-                    info.finishParse();
-                    return info;
+        for (PacketDelegate delegate : internetLayerDelegates) {
+            if (delegate.parse(info, packet)) {
+                info.setTimestamp(packet.getCaptureHeader().timestampInMicros());
+                for (PacketDelegate transport: transportLayerDelegates) {
+                    if (transport.parse(info, packet)) {
+                        for (PacketDelegate app: appLayerDelegates) {
+                            if (app.parse(info, packet)) {
+                                // post-parse works
+                                info.finishParse();
+                                return info;
+                            }
+                        }
+                    }
                 }
             }
         }

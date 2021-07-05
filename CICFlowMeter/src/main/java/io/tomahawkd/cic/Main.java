@@ -56,17 +56,17 @@ public class Main {
         }
 
         String fileName = inputFile.getFileName().toString();
-        Path saveFileFullPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
-        if (Files.exists(saveFileFullPath)) {
+        Path outputPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
+        if (Files.exists(outputPath)) {
             try {
-                Files.delete(saveFileFullPath);
+                Files.delete(outputPath);
             } catch (IOException e) {
-                logger.warn("Save file {} can not be deleted.", saveFileFullPath.toString(), e);
+                logger.warn("Save file {} can not be deleted.", outputPath.toString(), e);
             }
         }
 
         try {
-            Files.createFile(saveFileFullPath);
+            Files.createFile(outputPath);
         } catch (IOException e) {
             logger.fatal("Failed to create file");
             throw new RuntimeException(e);
@@ -98,8 +98,7 @@ public class Main {
         AtomicLong flowCount = new AtomicLong(0);
         flowGen.addFlowListener(flow -> flowCount.incrementAndGet());
         // data export
-        flowGen.addFlowListener(flow ->
-                Utils.insertToFile(FlowFeatureTag.getHeader(), flow.exportData(), saveFileFullPath));
+        flowGen.addFlowListener(flow -> Utils.insertToFile(FlowFeatureTag.getHeader(), flow.exportData(), outputPath));
 
         PacketReader packetReader = new PacketReader(inputFile.toString());
         long nTotal = 0;
@@ -119,8 +118,8 @@ public class Main {
             }
         }
 
-        flowGen.dumpLabeledCurrentFlow(saveFileFullPath);
-        long lines = Utils.countLines(saveFileFullPath);
+        flowGen.dumpLabeledCurrentFlow(outputPath);
+        long lines = Utils.countLines(outputPath);
 
         System.out.printf("%s is done. total %d flows %n", fileName, lines);
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);

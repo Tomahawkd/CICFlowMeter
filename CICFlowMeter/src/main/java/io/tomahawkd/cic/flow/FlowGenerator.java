@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,14 +21,12 @@ import static io.tomahawkd.cic.util.Utils.LINE_SEP;
 public class FlowGenerator {
     public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
 
-    private FlowGenListener mListener;
+    private final List<FlowGenListener> listeners;
     private FlowLabelSupplier flowLabelSupplier = f -> "No Label";
     private final HashMap<String, Flow> currentFlows;
-    private final HashMap<Integer, Flow> finishedFlows;
 
     private final long flowTimeOut;
     private final long flowActivityTimeOut;
-    private int finishedFlowCount;
 
     private int packetCounter;
 
@@ -36,19 +35,17 @@ public class FlowGenerator {
         this.flowTimeOut = flowTimeout;
         this.flowActivityTimeOut = activityTimeout;
         currentFlows = new HashMap<>();
-        finishedFlows = new HashMap<>();
-        finishedFlowCount = 0;
         packetCounter = 0;
+        listeners = new ArrayList<>();
     }
 
-    public void setFlowListener(FlowGenListener listener) {
-        mListener = listener;
+    public void addFlowListener(FlowGenListener listener) {
+        listeners.add(listener);
     }
 
     public void addPacket(PacketInfo packet) {
-        if (packet == null) {
-            return;
-        }
+        if (packet == null) return;
+        if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
 
         Flow flow;
         long currentTimestamp = packet.getTimestamp();
@@ -61,7 +58,6 @@ public class FlowGenerator {
             id = packet.setBwd().getFlowId();
         } else {
             currentFlows.put(packet.setFwd().getFlowId(), new Flow(packet, flowActivityTimeOut, flowLabelSupplier));
-            if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
             return;
         }
 
@@ -71,7 +67,7 @@ public class FlowGenerator {
         // 2.- we eliminate the flow from the current flow list
         // 3.- we create a new flow with the packet-in-process
         if ((currentTimestamp - flow.getFlowStartTime()) > flowTimeOut) {
-            listenerCallback(flow);
+            listeners.forEach(l -> l.onFlowGenerated(flow));
             currentFlows.remove(id);
             currentFlows.put(id, new Flow(packet, flow));
 
@@ -87,14 +83,12 @@ public class FlowGenerator {
         } else if (packet.getFlag(PacketInfo.FLAG_FIN)) {
             logger.debug("FlagFIN current has {} flow", currentFlows.size());
             flow.addPacket(packet);
-            listenerCallback(flow);
+            listeners.forEach(l -> l.onFlowGenerated(flow));
             currentFlows.remove(id);
         } else {
             flow.addPacket(packet);
             currentFlows.put(id, flow);
         }
-
-        if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
     }
 
     public void dumpLabeledCurrentFlow(Path fileFullPath) {
@@ -109,12 +103,6 @@ public class FlowGenerator {
                     output.write((FlowFeatureTag.getHeader() + LINE_SEP).getBytes());
                 } else {
                     throw new IOException("File cannot be created.");
-                }
-            }
-
-            if (mListener == null) {
-                for (Flow flow : finishedFlows.values()) {
-                    output.write((flow.exportData() + LINE_SEP).getBytes());
                 }
             }
 
@@ -144,7 +132,7 @@ public class FlowGenerator {
         list.forEach(e -> {
             String id = e.getKey();
             Flow flow = e.getValue();
-            listenerCallback(flow);
+            listeners.forEach(l -> l.onFlowGenerated(flow));
             currentFlows.remove(id);
             logger.debug("Timeout current has {} flow", currentFlows.size());
         });
@@ -154,18 +142,5 @@ public class FlowGenerator {
 
     public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
         flowLabelSupplier = supplier;
-    }
-
-    private void listenerCallback(Flow flow) {
-        if (mListener != null) {
-            mListener.onFlowGenerated(flow);
-        } else {
-            finishedFlows.put(getFlowCount(), flow);
-        }
-    }
-
-    private int getFlowCount() {
-        this.finishedFlowCount++;
-        return this.finishedFlowCount;
     }
 }

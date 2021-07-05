@@ -2,10 +2,8 @@ package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.data.PacketInfo;
-import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowFeatureTag;
 import io.tomahawkd.cic.flow.FlowGenerator;
-import io.tomahawkd.cic.util.FlowGenListener;
 import io.tomahawkd.cic.util.PacketReader;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
@@ -19,7 +17,9 @@ import org.jnetpcap.PcapClosedException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Main {
 
@@ -65,6 +65,15 @@ public class Main {
             }
         }
 
+        try {
+            Files.createFile(saveFileFullPath);
+        } catch (IOException e) {
+            logger.fatal("Failed to create file");
+            throw new RuntimeException(e);
+        }
+        System.out.printf("Working on... %s%n", fileName);
+
+        // setting up
         FlowGenerator flowGen = new FlowGenerator(flowTimeout, activityTimeout);
 
         // This is hard-coded
@@ -85,23 +94,16 @@ public class Main {
             flowGen.setFlowLabelSupplier(f -> "NONE");
         }
 
-        flowGen.setFlowListener(new FlowGenListener() {
-            private long cnt;
+        // counter
+        AtomicLong flowCount = new AtomicLong(0);
+        flowGen.addFlowListener(flow -> flowCount.incrementAndGet());
+        // data export
+        flowGen.addFlowListener(flow ->
+                Utils.insertToFile(FlowFeatureTag.getHeader(), flow.exportData(), saveFileFullPath));
 
-            @Override
-            public void onFlowGenerated(Flow flow) {
-                String flowDump = flow.exportData();
-                Utils.insertToFile(FlowFeatureTag.getHeader(), Collections.singletonList(flowDump), saveFileFullPath);
-                cnt++;
-                System.out.printf("%s -> %d flows \r", fileName, cnt);
-            }
-        });
         PacketReader packetReader = new PacketReader(inputFile.toString());
-
-        System.out.printf("Working on... %s%n", fileName);
-
-        int nValid = 0;
-        int nTotal = 0;
+        long nTotal = 0;
+        long nValid = 0;
         while (true) {
             try {
                 PacketInfo basicPacket = packetReader.nextPacket();
@@ -110,6 +112,8 @@ public class Main {
                     flowGen.addPacket(basicPacket);
                     nValid++;
                 }
+
+                System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
             } catch (PcapClosedException e) {
                 break;
             }

@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 public class Utils {
     protected static final Logger logger = LogManager.getLogger(Utils.class);
@@ -17,62 +16,41 @@ public class Utils {
     public static long countLines(Path fileName) {
         File file = fileName.toFile();
         int linenumber = 0;
-        FileReader fr;
-        LineNumberReader lnr = null;
-        try {
-            fr = new FileReader(file);
-            lnr = new LineNumberReader(fr);
-
+        try (LineNumberReader lnr = new LineNumberReader(new FileReader(file))) {
             while (lnr.readLine() != null) {
                 linenumber++;
             }
 
         } catch (IOException e) {
-            logger.debug(e.getMessage());
-        } finally {
-
-            if (lnr != null) {
-                try {
-                    lnr.close();
-                } catch (IOException e) {
-                    logger.debug(e.getMessage());
-                }
-            }
+            logger.warn(e.getMessage());
         }
         return linenumber;
     }
 
-    public static void insertToFile(String header, List<String> rows, Path path) {
-        if (path == null || rows == null || rows.size() <= 0) {
+    public static void initFile(Path path, String header) throws IOException {
+        if (Files.exists(path)) return;
+        Files.createFile(path);
+        try (FileOutputStream output = new FileOutputStream(path.toFile())) {
+            output.write((header + LINE_SEP).getBytes());
+        }
+    }
+
+    public static void insertToFile(String header, String line, Path path) {
+        if (path == null || line == null) {
             String ex = String.format("path=%s", path);
             throw new IllegalArgumentException(ex);
         }
 
-        FileOutputStream output = null;
         try {
-            if (Files.exists(path)) {
-                output = new FileOutputStream(path.toFile(), true);
-            } else {
-                Files.createFile(path);
-                output = new FileOutputStream(path.toFile());
-                if (header != null) {
-                    output.write((header + LINE_SEP).getBytes());
-                }
-            }
-            for (String row : rows) {
-                output.write((row + LINE_SEP).getBytes());
-            }
+            initFile(path, header);
+        } catch (IOException e) {
+            throw new RuntimeException("File initialization failed.", e);
+        }
+
+        try (FileOutputStream output = new FileOutputStream(path.toFile(), true)) {
+            output.write((line + LINE_SEP).getBytes());
         } catch (IOException e) {
             logger.warn(e);
-        } finally {
-            try {
-                if (output != null) {
-                    output.flush();
-                    output.close();
-                }
-            } catch (IOException e) {
-                logger.warn(e);
-            }
         }
     }
 }

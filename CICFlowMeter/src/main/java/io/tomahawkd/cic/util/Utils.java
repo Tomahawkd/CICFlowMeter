@@ -35,16 +35,10 @@ public class Utils {
         }
     }
 
-    public static void insertToFile(String header, String line, Path path) {
+    public static void insertToFile(String line, Path path) {
         if (path == null || line == null) {
             String ex = String.format("path=%s", path);
             throw new IllegalArgumentException(ex);
-        }
-
-        try {
-            initFile(path, header);
-        } catch (IOException e) {
-            throw new RuntimeException("File initialization failed.", e);
         }
 
         try (FileOutputStream output = new FileOutputStream(path.toFile(), true)) {

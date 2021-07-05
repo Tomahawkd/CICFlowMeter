@@ -6,17 +6,11 @@ import io.tomahawkd.cic.util.FlowLabelSupplier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static io.tomahawkd.cic.util.Utils.LINE_SEP;
 
 public class FlowGenerator {
     public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
@@ -43,15 +37,20 @@ public class FlowGenerator {
         listeners.add(listener);
     }
 
+    public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
+        flowLabelSupplier = supplier;
+    }
+
     public void addPacket(PacketInfo packet) {
         if (packet == null) return;
-        if (packetCounter > 1024) flushTimeoutFlows(packet.getTimestamp());
 
-        Flow flow;
-        long currentTimestamp = packet.getTimestamp();
-        String id;
         packetCounter++;
+        if (packetCounter > 0x8000) {
+            flushTimeoutFlows(packet.getTimestamp());
+            packetCounter = 0;
+        }
 
+        String id;
         if (this.currentFlows.containsKey(packet.fwdFlowId())) {
             id = packet.setFwd().getFlowId();
         } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
@@ -61,7 +60,9 @@ public class FlowGenerator {
             return;
         }
 
-        flow = currentFlows.get(id);
+        Flow flow = currentFlows.get(id);
+        long currentTimestamp = packet.getTimestamp();
+
         // Flow finished due flowtimeout:
         // 1.- we move the flow to finished flow list
         // 2.- we eliminate the flow from the current flow list
@@ -70,11 +71,6 @@ public class FlowGenerator {
             listeners.forEach(l -> l.onFlowGenerated(flow));
             currentFlows.remove(id);
             currentFlows.put(id, new Flow(packet, flow));
-
-            int cfsize = currentFlows.size();
-            if (cfsize % 50 == 0) {
-                logger.debug("Timeout current has {} flow", cfsize);
-            }
 
             // Flow finished due FIN flag (tcp only):
             // 1.- we add the packet-in-process to the flow (it is the last packet)
@@ -91,37 +87,9 @@ public class FlowGenerator {
         }
     }
 
-    public void dumpLabeledCurrentFlow(Path fileFullPath) {
-        File file = fileFullPath.toFile();
-        FileOutputStream output = null;
-        try {
-            if (file.exists()) {
-                output = new FileOutputStream(file, true);
-            } else {
-                if (file.createNewFile()) {
-                    output = new FileOutputStream(file);
-                    output.write((FlowFeatureTag.getHeader() + LINE_SEP).getBytes());
-                } else {
-                    throw new IOException("File cannot be created.");
-                }
-            }
-
-            for (Flow flow : currentFlows.values()) {
-                output.write((flow.exportData() + LINE_SEP).getBytes());
-            }
-
-        } catch (IOException e) {
-            logger.warn(e.getMessage());
-        } finally {
-            try {
-                if (output != null) {
-                    output.flush();
-                    output.close();
-                }
-            } catch (IOException e) {
-                logger.debug(e.getMessage());
-            }
-        }
+    public void dumpLabeledCurrentFlow() {
+        // treat the left flows as completed
+        currentFlows.values().forEach(f -> listeners.forEach(l -> l.onFlowGenerated(f)));
     }
 
     private void flushTimeoutFlows(long timestamp) {
@@ -130,17 +98,11 @@ public class FlowGenerator {
                 .collect(Collectors.toList());
 
         list.forEach(e -> {
-            String id = e.getKey();
-            Flow flow = e.getValue();
-            listeners.forEach(l -> l.onFlowGenerated(flow));
-            currentFlows.remove(id);
-            logger.debug("Timeout current has {} flow", currentFlows.size());
+            listeners.forEach(l -> l.onFlowGenerated(e.getValue()));
+            currentFlows.remove(e.getKey());
         });
 
+        logger.debug("Timeout current has {} flow", currentFlows.size());
         packetCounter = 0;
-    }
-
-    public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
-        flowLabelSupplier = supplier;
     }
 }

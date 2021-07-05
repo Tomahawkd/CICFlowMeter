@@ -111,10 +111,9 @@ public class Main {
                     flowGen.addPacket(basicPacket);
                     nValid++;
                 }
+                System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
             } catch (PcapClosedException e) {
                 break;
-            } finally {
-                System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
             }
         }
 

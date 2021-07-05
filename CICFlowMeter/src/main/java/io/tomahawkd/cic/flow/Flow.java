@@ -40,7 +40,7 @@ public class Flow implements FlowFeature {
 
     public static String getHeaders() {
         Flow flow = new Flow(new FlowBasicFeature(
-                "", null, null, 0, 0, null, 0));
+                "", new byte[0], new byte[0], 0, 0, null, 0));
         return flow.headers();
     }
 

@@ -55,7 +55,8 @@ public class PacketReader {
 
     public PacketInfo nextPacket() {
         try {
-            if (pcapReader.nextEx(hdr, buf) == Pcap.NEXT_EX_OK) {
+            int status;
+            if ((status = pcapReader.nextEx(hdr, buf)) == Pcap.NEXT_EX_OK) {
                 PacketInfo info = new PacketInfo(generator.nextId());
                 PcapPacket packet = new PcapPacket(hdr, buf);
                 packet.scan(Ethernet.ID);
@@ -66,14 +67,16 @@ public class PacketReader {
                     temp = parse(packet, info);
                 }
                 return temp;
-            } else {
+            } else if (status == Pcap.NEXT_EX_EOF) {
+                logger.info("Reach the EOF of the file {}", file);
                 throw new PcapClosedException();
+            } else {
+                logger.error("Unexpected Exception while reading pcap file {}", file);
+                throw new IllegalStateException("Unexpected Exception");
             }
         } catch (PcapClosedException e) {
-            logger.debug("Read All packets on {}", file);
             throw e;
-        } catch (Exception ex) {
-            logger.error(ex.getMessage());
+        } catch (IllegalStateException e) {
             return null;
         }
     }

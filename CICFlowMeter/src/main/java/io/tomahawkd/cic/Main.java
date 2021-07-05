@@ -2,7 +2,7 @@ package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.data.PacketInfo;
-import io.tomahawkd.cic.flow.FlowFeatureTag;
+import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
 import io.tomahawkd.cic.util.PacketReader;
 import io.tomahawkd.cic.util.Utils;
@@ -66,7 +66,7 @@ public class Main {
         }
 
         try {
-            Files.createFile(outputPath);
+            Utils.initFile(outputPath, Flow.getHeaders());
         } catch (IOException e) {
             logger.fatal("Failed to create file");
             throw new RuntimeException(e);
@@ -98,7 +98,7 @@ public class Main {
         AtomicLong flowCount = new AtomicLong(0);
         flowGen.addFlowListener(flow -> flowCount.incrementAndGet());
         // data export
-        flowGen.addFlowListener(flow -> Utils.insertToFile(FlowFeatureTag.getHeader(), flow.exportData(), outputPath));
+        flowGen.addFlowListener(flow -> Utils.insertToFile(flow.exportData(), outputPath));
 
         PacketReader packetReader = new PacketReader(inputFile.toString());
         long nTotal = 0;
@@ -111,14 +111,14 @@ public class Main {
                     flowGen.addPacket(basicPacket);
                     nValid++;
                 }
-
-                System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
             } catch (PcapClosedException e) {
                 break;
+            } finally {
+                System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
             }
         }
 
-        flowGen.dumpLabeledCurrentFlow(outputPath);
+        flowGen.dumpLabeledCurrentFlow();
         long lines = Utils.countLines(outputPath);
 
         System.out.printf("%s is done. total %d flows %n", fileName, lines);

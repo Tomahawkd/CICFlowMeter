@@ -1,9 +1,11 @@
 package io.tomahawkd.cic.config;
 
+import com.beust.jcommander.ParameterException;
 import io.tomahawkd.cic.util.Utils;
 import com.beust.jcommander.Parameter;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
+import io.tomahawkd.config.annotation.HiddenField;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -42,6 +44,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     private boolean quiet = false;
 
     @Parameter(required = true, description = "Pcap file or directory.")
+    @HiddenField
     private List<String> pcapPathStringList = new ArrayList<>();
     private List<Path> pcapPath = new ArrayList<>();
 
@@ -106,6 +109,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                             }).collect(Collectors.toList()));
                 } catch (IOException e) {
                     System.err.println("Error occured while opening the directory: " + p.toAbsolutePath().toString());
+                    throw new ParameterException(e);
                 }
             } else if (Files.isRegularFile(p)) {
                 boolean isPcap = false;
@@ -117,9 +121,12 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                     pcapPath.add(p);
                 } else {
                     System.err.println("Not a Pcap file: " + p.toAbsolutePath().toString());
+                    throw new ParameterException("Not a Pcap file: " + p.toAbsolutePath().toString());
                 }
             } else {
                 System.err.println("Path is not a regular file or directory: " + p.toAbsolutePath().toString());
+                throw new ParameterException("Path is not a regular file or directory: " +
+                        p.toAbsolutePath().toString());
             }
         }
     }

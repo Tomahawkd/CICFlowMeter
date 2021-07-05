@@ -38,6 +38,12 @@ public class Flow implements FlowFeature {
         addPacket(info);
     }
 
+    public static String getHeaders() {
+        Flow flow = new Flow(new FlowBasicFeature(
+                "", null, null, 0, 0, null, 0));
+        return flow.headers();
+    }
+
     @Override
     public String headers() {
         return basicInfo.headers() +

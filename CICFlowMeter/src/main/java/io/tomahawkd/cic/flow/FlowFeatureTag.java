@@ -87,8 +87,6 @@ public enum FlowFeatureTag {
     idl_min("Idle Min", "IlMI"),                    //84
     Label("Label", "LBL", new String[] {"CIC"});                    //85
 
-
-    private static String HEADER;
     private final String name;
     private final String abbr;
     private final boolean isNumeric;
@@ -125,21 +123,6 @@ public enum FlowFeatureTag {
     public boolean isNumeric() {
         return isNumeric;
     }
-
-    public static String getHeader() {
-
-        if (HEADER == null || HEADER.length() == 0) {
-            StringBuilder header = new StringBuilder();
-
-            for (FlowFeatureTag feature : FlowFeatureTag.values()) {
-                header.append(feature.getName()).append(",");
-            }
-            header.deleteCharAt(header.length() - 1);
-            HEADER = header.toString();
-        }
-        return HEADER;
-    }
-
 
     @Override
     public String toString() {

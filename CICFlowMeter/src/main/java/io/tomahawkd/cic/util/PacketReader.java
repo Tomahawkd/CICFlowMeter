@@ -69,12 +69,10 @@ public class PacketReader {
             } else {
                 throw new PcapClosedException();
             }
-        } catch (
-                PcapClosedException e) {
+        } catch (PcapClosedException e) {
             logger.debug("Read All packets on {}", file);
             throw e;
-        } catch (
-                Exception ex) {
+        } catch (Exception ex) {
             logger.error(ex.getMessage());
             return null;
         }

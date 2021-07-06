@@ -31,7 +31,8 @@ public class TcpFlagFeature extends AbstractFlowFeature {
     @Override
     public void addPacket(PacketInfo info, boolean fwd) {
         if (info.getFlag(PacketInfo.FLAG_FIN)) {
-            flagCounts[FIN]++;
+            if (fwd) flagCounts[FW_FIN]++;
+            else flagCounts[BW_FIN]++;
         }
         if (info.getFlag(PacketInfo.FLAG_SYN)) {
             flagCounts[SYN]++;
@@ -60,7 +61,7 @@ public class TcpFlagFeature extends AbstractFlowFeature {
 
     @Override
     public String exportData() {
-        return flagCounts[FIN] + SEPARATOR + // fin_cnt
+        return (flagCounts[FW_FIN] + flagCounts[BW_FIN]) + SEPARATOR + // fin_cnt
                 flagCounts[SYN] + SEPARATOR + // syn_cnt
                 flagCounts[RST] + SEPARATOR + // rst_cnt
                 (flagCounts[FW_PSH] + flagCounts[BW_PSH]) + SEPARATOR + // psh_cnt
@@ -74,14 +75,23 @@ public class TcpFlagFeature extends AbstractFlowFeature {
                 flagCounts[BW_URG] + SEPARATOR;// bw_urg_flag
     }
 
-    private static final int FIN = 0;
-    private static final int SYN = 1;
-    private static final int RST = 2;
-    private static final int ACK = 3;
-    private static final int CWR = 4;
-    private static final int ECE = 5;
-    private static final int FW_PSH = 6;
-    private static final int BW_PSH = 7;
-    private static final int FW_URG = 8;
-    private static final int BW_URG = 9;
+    public int getForwardFIN() {
+        return flagCounts[FW_FIN];
+    }
+
+    public int getBackwardFIN() {
+        return flagCounts[BW_FIN];
+    }
+
+    private static final int FW_FIN = 0;
+    private static final int BW_FIN = 1;
+    private static final int SYN = 2;
+    private static final int RST = 3;
+    private static final int ACK = 4;
+    private static final int CWR = 5;
+    private static final int ECE = 6;
+    private static final int FW_PSH = 7;
+    private static final int BW_PSH = 8;
+    private static final int FW_URG = 9;
+    private static final int BW_URG = 10;
 }

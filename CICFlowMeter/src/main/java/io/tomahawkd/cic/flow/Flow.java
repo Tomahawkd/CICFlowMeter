@@ -107,6 +107,13 @@ public class Flow implements FlowFeature {
         return getBasicInfo().getDstPort();
     }
 
+    public int getForwardFIN() {
+        return getDep(TcpFlagFeature.class).getForwardFIN();
+    }
+
+    public int getBackwardFIN() {
+        return getDep(TcpFlagFeature.class).getBackwardFIN();
+    }
 
     public final <T extends FlowFeature> T getDep(Class<T> depClass) {
         for (FlowFeature item: features) {

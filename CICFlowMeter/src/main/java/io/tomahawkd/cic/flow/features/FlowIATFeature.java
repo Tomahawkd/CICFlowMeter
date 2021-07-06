@@ -5,8 +5,6 @@ import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-import java.util.List;
-
 @Feature(name = "FlowIATFeature", tags = {
         FlowFeatureTag.fl_iat_avg,
         FlowFeatureTag.fl_iat_std,
@@ -32,6 +30,8 @@ public class FlowIATFeature extends AbstractFlowFeature {
     private final SummaryStatistics forwardIAT = new SummaryStatistics();
     private final SummaryStatistics backwardIAT = new SummaryStatistics();
 
+    private boolean first = true;
+
     public FlowIATFeature(Flow flow) {
         super(flow);
     }
@@ -41,11 +41,11 @@ public class FlowIATFeature extends AbstractFlowFeature {
         long currentTimestamp = info.getTimestamp();
 
         // not first packet
-        if (currentTimestamp != 0L) {
+        if (!first) {
             this.flowIAT.addValue(currentTimestamp - getBasicInfo().getFlowLastSeen());
             if (fwd) this.forwardIAT.addValue(currentTimestamp - this.forwardLastSeen);
             else this.backwardIAT.addValue(currentTimestamp - this.backwardLastSeen);
-        }
+        } else first = false;
 
         // finally update the last seen field
         if (fwd) forwardLastSeen = currentTimestamp;

@@ -1,9 +1,18 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.flow.Flow;
 
-import java.util.Arrays;
+import java.util.List;
 
+@Feature(name = "BulkFeature", tags = {
+        FlowFeatureTag.fw_byt_blk_avg,
+        FlowFeatureTag.fw_pkt_blk_avg,
+        FlowFeatureTag.fw_blk_rate_avg,
+        FlowFeatureTag.bw_byt_blk_avg,
+        FlowFeatureTag.bw_pkt_blk_avg,
+        FlowFeatureTag.bw_blk_rate_avg,
+})
 public class BulkFeature extends AbstractFlowFeature {
 
     // almost copy from BasicFlow
@@ -24,25 +33,14 @@ public class BulkFeature extends AbstractFlowFeature {
     private long bbulkSizeHelper = 0;
     private long blastBulkTS = 0;
 
-    public BulkFeature(FlowBasicFeature basicInfo) {
-        super(basicInfo, new FlowFeatureTag[]{
-                FlowFeatureTag.fw_byt_blk_avg,
-                FlowFeatureTag.fw_pkt_blk_avg,
-                FlowFeatureTag.fw_blk_rate_avg,
-                FlowFeatureTag.bw_byt_blk_avg,
-                FlowFeatureTag.bw_pkt_blk_avg,
-                FlowFeatureTag.bw_blk_rate_avg,
-        });
+    public BulkFeature(Flow flow) {
+        super(flow);
     }
-
 
     @Override
     public void addPacket(PacketInfo info, boolean fwd) {
-        if (Arrays.equals(basicInfo.src(), info.getSrc())) {
-            updateForwardBulk(info, blastBulkTS);
-        } else {
-            updateBackwardBulk(info, flastBulkTS);
-        }
+        if (fwd)  updateForwardBulk(info, blastBulkTS);
+        else updateBackwardBulk(info, flastBulkTS);
     }
 
     @Override

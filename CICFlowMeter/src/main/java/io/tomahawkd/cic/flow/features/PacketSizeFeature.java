@@ -1,9 +1,42 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import java.util.List;
+
+@Feature(name = "PacketSizeFeature", tags = {
+        FlowFeatureTag.pkt_len_max,
+        FlowFeatureTag.pkt_len_min,
+        FlowFeatureTag.pkt_len_avg,
+        FlowFeatureTag.pkt_len_std,
+        FlowFeatureTag.pkt_len_var,
+        FlowFeatureTag.fw_pkt_len_max,
+        FlowFeatureTag.fw_pkt_len_min,
+        FlowFeatureTag.fw_pkt_len_avg,
+        FlowFeatureTag.fw_pkt_len_std,
+        FlowFeatureTag.fw_pkt_len_total,
+        FlowFeatureTag.fw_pkt_count,
+        FlowFeatureTag.fw_hdr_len,
+        FlowFeatureTag.fw_hdr_min,
+        FlowFeatureTag.bw_pkt_len_max,
+        FlowFeatureTag.bw_pkt_len_min,
+        FlowFeatureTag.bw_pkt_len_avg,
+        FlowFeatureTag.bw_pkt_len_std,
+        FlowFeatureTag.bw_pkt_len_total,
+        FlowFeatureTag.bw_pkt_count,
+        FlowFeatureTag.bw_hdr_len,
+        FlowFeatureTag.down_up_ratio,
+        FlowFeatureTag.fl_byt_s,
+        FlowFeatureTag.fl_pkt_s,
+        FlowFeatureTag.fw_pkt_s,
+        FlowFeatureTag.bw_pkt_s,
+        FlowFeatureTag.fw_win_byt,
+        FlowFeatureTag.bw_win_byt,
+        FlowFeatureTag.fw_act_pkt,
+})
 public class PacketSizeFeature extends AbstractFlowFeature {
 
     private final SummaryStatistics flowPacketStats = new SummaryStatistics();
@@ -19,37 +52,8 @@ public class PacketSizeFeature extends AbstractFlowFeature {
     private int initWinBytes_forward = 0;
     private int initWinBytes_backward = 0;
 
-    public PacketSizeFeature(FlowBasicFeature basicInfo) {
-        super(basicInfo, new FlowFeatureTag[]{
-                FlowFeatureTag.pkt_len_max,
-                FlowFeatureTag.pkt_len_min,
-                FlowFeatureTag.pkt_len_avg,
-                FlowFeatureTag.pkt_len_std,
-                FlowFeatureTag.pkt_len_var,
-                FlowFeatureTag.fw_pkt_len_max,
-                FlowFeatureTag.fw_pkt_len_min,
-                FlowFeatureTag.fw_pkt_len_avg,
-                FlowFeatureTag.fw_pkt_len_std,
-                FlowFeatureTag.fw_pkt_len_total,
-                FlowFeatureTag.fw_pkt_count,
-                FlowFeatureTag.fw_hdr_len,
-                FlowFeatureTag.fw_hdr_min,
-                FlowFeatureTag.bw_pkt_len_max,
-                FlowFeatureTag.bw_pkt_len_min,
-                FlowFeatureTag.bw_pkt_len_avg,
-                FlowFeatureTag.bw_pkt_len_std,
-                FlowFeatureTag.bw_pkt_len_total,
-                FlowFeatureTag.bw_pkt_count,
-                FlowFeatureTag.bw_hdr_len,
-                FlowFeatureTag.down_up_ratio,
-                FlowFeatureTag.fl_byt_s,
-                FlowFeatureTag.fl_pkt_s,
-                FlowFeatureTag.fw_pkt_s,
-                FlowFeatureTag.bw_pkt_s,
-                FlowFeatureTag.fw_win_byt,
-                FlowFeatureTag.bw_win_byt,
-                FlowFeatureTag.fw_act_pkt,
-        });
+    public PacketSizeFeature(Flow flow) {
+        super(flow);
     }
 
     @Override
@@ -100,11 +104,11 @@ public class PacketSizeFeature extends AbstractFlowFeature {
             addZeroesToBuilder(builder, 1);
         }
 
-        if (basicInfo.getDuration() > 0) {
-            builder.append(flowPacketStats.getSum() / basicInfo.getDuration() / 1000000L).append(SEPARATOR); // fl_byt_s,
-            builder.append(flowPacketStats.getN() / basicInfo.getDuration() / 1000000L).append(SEPARATOR); //   fl_pkt_s,
-            builder.append(fwdPacketStats.getN() / basicInfo.getDuration() / 1000000L).append(SEPARATOR); //  fw_pkt_s,
-            builder.append(bwdPacketStats.getN() / basicInfo.getDuration() / 1000000L).append(SEPARATOR); //  bw_pkt_s,
+        if (getBasicInfo().getDuration() > 0) {
+            builder.append(flowPacketStats.getSum() / getBasicInfo().getDuration() / 1000000L).append(SEPARATOR); // fl_byt_s,
+            builder.append(flowPacketStats.getN() / getBasicInfo().getDuration() / 1000000L).append(SEPARATOR); //   fl_pkt_s,
+            builder.append(fwdPacketStats.getN() / getBasicInfo().getDuration() / 1000000L).append(SEPARATOR); //  fw_pkt_s,
+            builder.append(bwdPacketStats.getN() / getBasicInfo().getDuration() / 1000000L).append(SEPARATOR); //  bw_pkt_s,
         } else {
             addZeroesToBuilder(builder, 4);
         }
@@ -126,5 +130,22 @@ public class PacketSizeFeature extends AbstractFlowFeature {
         } else {
             addZeroesToBuilder(builder, 6);
         }
+    }
+
+    //getters
+    public double getForwardPacketBytes() {
+        return fwdPacketStats.getSum();
+    }
+
+    public long getForwardPacketCount() {
+        return fwdPacketStats.getN();
+    }
+
+    public double getBackwardPacketBytes() {
+        return bwdPacketStats.getSum();
+    }
+
+    public long getBackwardPacketCount() {
+        return bwdPacketStats.getN();
     }
 }

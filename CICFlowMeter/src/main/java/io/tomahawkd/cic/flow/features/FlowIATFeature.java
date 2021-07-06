@@ -1,9 +1,28 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
+import java.util.List;
+
+@Feature(name = "FlowIATFeature", tags = {
+        FlowFeatureTag.fl_iat_avg,
+        FlowFeatureTag.fl_iat_std,
+        FlowFeatureTag.fl_iat_max,
+        FlowFeatureTag.fl_iat_min,
+        FlowFeatureTag.fw_iat_tot,
+        FlowFeatureTag.fw_iat_avg,
+        FlowFeatureTag.fw_iat_std,
+        FlowFeatureTag.fw_iat_max,
+        FlowFeatureTag.fw_iat_min,
+        FlowFeatureTag.bw_iat_tot,
+        FlowFeatureTag.bw_iat_avg,
+        FlowFeatureTag.bw_iat_std,
+        FlowFeatureTag.bw_iat_max,
+        FlowFeatureTag.bw_iat_min,
+})
 public class FlowIATFeature extends AbstractFlowFeature {
 
     private long forwardLastSeen = 0L;
@@ -13,23 +32,8 @@ public class FlowIATFeature extends AbstractFlowFeature {
     private final SummaryStatistics forwardIAT = new SummaryStatistics();
     private final SummaryStatistics backwardIAT = new SummaryStatistics();
 
-    public FlowIATFeature(FlowBasicFeature feature) {
-        super(feature, new FlowFeatureTag[]{
-                FlowFeatureTag.fl_iat_avg,
-                FlowFeatureTag.fl_iat_std,
-                FlowFeatureTag.fl_iat_max,
-                FlowFeatureTag.fl_iat_min,
-                FlowFeatureTag.fw_iat_tot,
-                FlowFeatureTag.fw_iat_avg,
-                FlowFeatureTag.fw_iat_std,
-                FlowFeatureTag.fw_iat_max,
-                FlowFeatureTag.fw_iat_min,
-                FlowFeatureTag.bw_iat_tot,
-                FlowFeatureTag.bw_iat_avg,
-                FlowFeatureTag.bw_iat_std,
-                FlowFeatureTag.bw_iat_max,
-                FlowFeatureTag.bw_iat_min,
-        });
+    public FlowIATFeature(Flow flow) {
+        super(flow);
     }
 
     @Override
@@ -38,7 +42,7 @@ public class FlowIATFeature extends AbstractFlowFeature {
 
         // not first packet
         if (currentTimestamp != 0L) {
-            this.flowIAT.addValue(currentTimestamp - basicInfo.getFlowLastSeen());
+            this.flowIAT.addValue(currentTimestamp - getBasicInfo().getFlowLastSeen());
             if (fwd) this.forwardIAT.addValue(currentTimestamp - this.forwardLastSeen);
             else this.backwardIAT.addValue(currentTimestamp - this.backwardLastSeen);
         }

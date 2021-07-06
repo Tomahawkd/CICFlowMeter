@@ -1,22 +1,21 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
+import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public abstract class AbstractFlowFeature implements FlowFeature {
 
     private final FlowFeatureTag[] headers;
-    protected final FlowBasicFeature basicInfo;
+    protected final Flow flow;
 
-    public AbstractFlowFeature(@NotNull FlowFeatureTag[] headers) {
-        this(null, headers);
-    }
-
-    public AbstractFlowFeature(FlowBasicFeature basicInfo, @NotNull FlowFeatureTag[] headers) {
-        this.basicInfo = basicInfo;
-        this.headers = headers;
+    public AbstractFlowFeature(Flow flow) {
+        Feature feature = Objects.requireNonNull(this.getClass().getAnnotation(Feature.class));
+        this.headers = feature.tags();
+        this.flow = flow;
     }
 
     @Override
@@ -38,5 +37,18 @@ public abstract class AbstractFlowFeature implements FlowFeature {
         for (int i = 0; i < count; i++) {
             builder.append(0).append(SEPARATOR);
         }
+    }
+
+    @Override
+    public void postAddPacket(PacketInfo info) {
+
+    }
+
+    protected final <T extends FlowFeature> T getDep(Class<T> depClass) {
+        return flow.getDep(depClass);
+    }
+
+    protected final FlowBasicFeature getBasicInfo() {
+        return flow.getBasicInfo();
     }
 }

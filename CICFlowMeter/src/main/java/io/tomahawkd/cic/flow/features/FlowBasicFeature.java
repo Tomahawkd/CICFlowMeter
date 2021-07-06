@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.data.PacketInfo;
 import io.tomahawkd.cic.util.DateFormatter;
@@ -7,6 +7,15 @@ import org.jnetpcap.packet.format.FormatUtils;
 
 import java.util.Arrays;
 
+@Feature(name = "FlowBasicFeature", tags = {
+        FlowFeatureTag.fid,
+        FlowFeatureTag.src_ip,
+        FlowFeatureTag.src_port,
+        FlowFeatureTag.dst_ip,
+        FlowFeatureTag.dst_port,
+        FlowFeatureTag.tstp,
+        FlowFeatureTag.fl_dur
+}, manual = true)
 public class FlowBasicFeature extends AbstractFlowFeature {
 
     private final String flowId;
@@ -28,15 +37,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
                             int srcPort, int dstPort,
                             FlowLabelSupplier supplier,
                             long flowActivityTimeOut) {
-        super(new FlowFeatureTag[]{
-                FlowFeatureTag.fid,
-                FlowFeatureTag.src_ip,
-                FlowFeatureTag.src_port,
-                FlowFeatureTag.dst_ip,
-                FlowFeatureTag.dst_port,
-                FlowFeatureTag.tstp,
-                FlowFeatureTag.fl_dur
-        });
+        super(null);
 
         this.flowId = flowId;
         this.src = Arrays.copyOf(src, src.length);
@@ -49,6 +50,11 @@ public class FlowBasicFeature extends AbstractFlowFeature {
 
     @Override
     public void addPacket(PacketInfo info, boolean fwd) {
+
+    }
+
+    @Override
+    public void postAddPacket(PacketInfo info) {
         // first packet
         if (flowStartTime == -1L) {
             flowStartTime = info.getTimestamp();

@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 public enum FlowFeatureTag {
 
@@ -69,10 +69,10 @@ public enum FlowFeatureTag {
     bw_byt_blk_avg("Bwd Bytes/b Avg"),            //66
     bw_pkt_blk_avg("Bwd Packets/b Avg"),        //67
     bw_blk_rate_avg("Bwd Bulk Rate Avg"),            //68
-//    subfl_fw_pkt("Subflow Fwd Packets"),            //69 not available
-//    subfl_fw_byt("Subflow Fwd Bytes"),            //70
-//    subfl_bw_pkt("Subflow Bwd Packets"),            //71
-//    subfl_bw_byt("Subflow Bwd Bytes"),            //72
+    subfl_fw_pkt("Subflow Fwd Packets"),            //69 not available
+    subfl_fw_byt("Subflow Fwd Bytes"),            //70
+    subfl_bw_pkt("Subflow Bwd Packets"),            //71
+    subfl_bw_byt("Subflow Bwd Bytes"),            //72
     fw_win_byt("Init Fwd Win Bytes"),        //73
     bw_win_byt("Init Bwd Win Bytes"),        //74
     fw_act_pkt("Fwd Act Data Packets"),            //75

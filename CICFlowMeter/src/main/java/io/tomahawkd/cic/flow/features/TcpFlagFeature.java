@@ -1,28 +1,30 @@
-package io.tomahawkd.cic.flow;
+package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.flow.Flow;
 
 import java.util.Arrays;
 
+@Feature(name = "TcpFlagFeature", tags = {
+        FlowFeatureTag.fin_cnt,
+        FlowFeatureTag.syn_cnt,
+        FlowFeatureTag.rst_cnt,
+        FlowFeatureTag.psh_cnt,
+        FlowFeatureTag.ack_cnt,
+        FlowFeatureTag.urg_cnt,
+        FlowFeatureTag.cwr_cnt,
+        FlowFeatureTag.ece_cnt,
+        FlowFeatureTag.fw_psh_flag,
+        FlowFeatureTag.bw_psh_flag,
+        FlowFeatureTag.fw_urg_flag,
+        FlowFeatureTag.bw_urg_flag
+})
 public class TcpFlagFeature extends AbstractFlowFeature {
 
     private static final int[] flagCounts = new int[10];
 
-    public TcpFlagFeature() {
-        super(null, new FlowFeatureTag[]{
-                FlowFeatureTag.fin_cnt,
-                FlowFeatureTag.syn_cnt,
-                FlowFeatureTag.rst_cnt,
-                FlowFeatureTag.psh_cnt,
-                FlowFeatureTag.ack_cnt,
-                FlowFeatureTag.urg_cnt,
-                FlowFeatureTag.cwr_cnt,
-                FlowFeatureTag.ece_cnt,
-                FlowFeatureTag.fw_psh_flag,
-                FlowFeatureTag.bw_psh_flag,
-                FlowFeatureTag.fw_urg_flag,
-                FlowFeatureTag.bw_urg_flag
-        });
+    public TcpFlagFeature(Flow flow) {
+        super(null);
         Arrays.fill(flagCounts, 0);
     }
 

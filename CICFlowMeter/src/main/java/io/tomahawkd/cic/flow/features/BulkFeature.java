@@ -3,8 +3,6 @@ package io.tomahawkd.cic.flow.features;
 import io.tomahawkd.cic.data.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 
-import java.util.List;
-
 @Feature(name = "BulkFeature", tags = {
         FlowFeatureTag.fw_byt_blk_avg,
         FlowFeatureTag.fw_pkt_blk_avg,

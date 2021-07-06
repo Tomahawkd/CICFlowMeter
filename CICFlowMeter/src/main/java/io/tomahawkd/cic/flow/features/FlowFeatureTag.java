@@ -60,9 +60,9 @@ public enum FlowFeatureTag {
     cwr_cnt("CWR Flag Count"),                //56
     ece_cnt("ECE Flag Count"),                //57
     down_up_ratio("Down/Up Ratio"),                //58
-    // pkt_size_avg("Packet Size Avg"),            //59 duplicated with 47 (bidirectional) or 15/19
-    //fw_seg_avg("Fwd Seg Size Avg"),        //60
-    //bw_seg_avg("Bwd Seg Size Avg"),        //61
+    pkt_size_avg("Packet Size Avg"),            //59
+    fw_seg_avg("Fwd Seg Size Avg"),        //60
+    bw_seg_avg("Bwd Seg Size Avg"),        //61
     fw_byt_blk_avg("Fwd Bytes/b Avg"),            //63   62 is duplicated with 41,so has been deleted
     fw_pkt_blk_avg("Fwd Packets/b Avg"),        //64
     fw_blk_rate_avg("Fwd Bulk Rate Avg"),            //65

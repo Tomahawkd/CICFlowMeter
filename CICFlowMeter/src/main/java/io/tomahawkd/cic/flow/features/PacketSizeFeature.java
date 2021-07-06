@@ -34,6 +34,9 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
         FlowFeatureTag.fw_win_byt,
         FlowFeatureTag.bw_win_byt,
         FlowFeatureTag.fw_act_pkt,
+        FlowFeatureTag.pkt_size_avg,
+        FlowFeatureTag.fw_seg_avg,
+        FlowFeatureTag.bw_seg_avg,
 })
 public class PacketSizeFeature extends AbstractFlowFeature {
 
@@ -79,6 +82,29 @@ public class PacketSizeFeature extends AbstractFlowFeature {
         }
     }
 
+    public long packetCount() {
+        return this.flowPacketStats.getN();
+    }
+
+    public double getAvgPacketSize() {
+        if (this.packetCount() > 0) {
+            return (flowPacketStats.getSum() / this.packetCount());
+        }
+        return 0;
+    }
+
+    public double fAvgSegmentSize() {
+        if (fwdPacketStats.getN() != 0)
+            return (this.fwdPacketStats.getSum() / (double) fwdPacketStats.getN());
+        return 0;
+    }
+
+    public double bAvgSegmentSize() {
+        if (this.bwdPacketStats.getN() != 0)
+            return (this.bwdPacketStats.getSum() / (double) fwdPacketStats.getN());
+        return 0;
+    }
+
     @Override
     public String exportData() {
         StringBuilder builder = new StringBuilder();
@@ -114,6 +140,10 @@ public class PacketSizeFeature extends AbstractFlowFeature {
         builder.append(actualDataPacket_forward).append(SEPARATOR); // fw_act_pkt
         builder.append(initWinBytes_forward).append(SEPARATOR); // fw_win_byt
         builder.append(initWinBytes_backward).append(SEPARATOR); // bw_win_byt
+
+        builder.append(getAvgPacketSize()).append(SEPARATOR); // FlowFeatureTag.pkt_size_avg,
+        builder.append(fAvgSegmentSize()).append(SEPARATOR); // FlowFeatureTag.fw_seg_avg,
+        builder.append(bAvgSegmentSize()).append(SEPARATOR); // FlowFeatureTag.bw_seg_avg,
         return builder.toString();
     }
 

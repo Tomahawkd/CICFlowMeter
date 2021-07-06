@@ -9,7 +9,7 @@
     <parent>
         <artifactId>CICFlowMeterParent</artifactId>
         <groupId>io.tomahawkd</groupId>
-        <version>0.2.1</version>
+        <version>0.3.0</version>
     </parent>
 
     <packaging>jar</packaging>

@@ -5,8 +5,6 @@ import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-import java.util.List;
-
 @Feature(name = "PacketSizeFeature", tags = {
         FlowFeatureTag.pkt_len_max,
         FlowFeatureTag.pkt_len_min,

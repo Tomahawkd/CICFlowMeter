@@ -60,17 +60,17 @@ public class PacketInfo {
     }
 
     @SuppressWarnings("all")
-    private <T> T get(PacketFeature feature, Class<T> type) {
+    private <T> T unsafeGet(PacketFeature feature, Class<T> type) {
         return (T) Objects.requireNonNull(data.get(feature));
     }
 
     public void finishParse() {
-        this.src = get(MetaFeature.SRC, byte[].class);
-        this.dst = get(MetaFeature.DST, byte[].class);
-        this.srcPort = get(MetaFeature.SRC_PORT, int.class);
-        this.dstPort = get(MetaFeature.DST_PORT, int.class);
-        this.tcpWindow = get(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
-        this.flags = get(TcpPacketDelegate.Feature.FLAG, int.class);
+        this.src = unsafeGet(MetaFeature.SRC, byte[].class);
+        this.dst = unsafeGet(MetaFeature.DST, byte[].class);
+        this.srcPort = unsafeGet(MetaFeature.SRC_PORT, int.class);
+        this.dstPort = unsafeGet(MetaFeature.DST_PORT, int.class);
+        this.tcpWindow = unsafeGet(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
+        this.flags = unsafeGet(TcpPacketDelegate.Feature.FLAG, int.class);
         generateFlowId();
     }
 
@@ -140,11 +140,11 @@ public class PacketInfo {
     }
 
     public long getPayloadBytes() {
-        return this.get(MetaFeature.PAYLOAD_LEN, long.class);
+        return this.unsafeGet(MetaFeature.PAYLOAD_LEN, long.class);
     }
 
     public long getHeaderBytes() {
-        return this.get(MetaFeature.HEADER_LEN, long.class);
+        return this.unsafeGet(MetaFeature.HEADER_LEN, long.class);
     }
 
     public int getPayloadPacket() {

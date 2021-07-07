@@ -85,6 +85,16 @@ public enum FlowFeatureTag {
     idl_std("Idle Std"),                    //82
     idl_max("Idle Max"),                    //83
     idl_min("Idle Min"),                    //84
+
+    // HTTP layer features
+
+    content_length_avg("Content Length Avg"),
+    content_length_std("Content Length Std"),
+    content_length_max("Content Length Max"),
+    content_length_min("Content Length Min"),
+    content_length_total("Content Length Total"),
+    keep_alive_packet_ratio("Keep Alive Packet/Packets"),
+
     Label("Label");                    //85
 
     private final String name;

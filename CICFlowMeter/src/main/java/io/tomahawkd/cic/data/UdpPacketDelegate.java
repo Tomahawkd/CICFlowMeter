@@ -18,7 +18,6 @@ public class UdpPacketDelegate extends AbstractPacketDelegate {
 
         dst.addFeature(MetaFeature.SRC_PORT, udp.source());
         dst.addFeature(MetaFeature.DST_PORT, udp.destination());
-        dst.addFeature(MetaFeature.PROTO, 17);
         dst.addFeature(MetaFeature.PAYLOAD_LEN, udp.getPayloadLength());
         dst.addFeature(MetaFeature.HEADER_LEN, udp.getHeaderLength());
         dst.addFeature(MetaFeature.UDP, true);

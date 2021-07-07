@@ -45,12 +45,23 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN, REQUEST,
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class),
 
         // Request
-        UA, CONNECTION, CACHE, URL, CHARSET,
+        UA(String.class), CONNECTION(String.class), CACHE(String.class), URL(String.class), CHARSET(String.class),
 
         // Response
-        STATUS, CONTENT_TYPE
+        STATUS(Integer.class), CONTENT_TYPE(String.class);
+
+        private final Class<?> type;
+
+        Feature(Class<?> type) {
+            this.type = type;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
     }
 }

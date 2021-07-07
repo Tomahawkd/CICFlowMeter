@@ -22,7 +22,6 @@ public class PacketInfo {
     private byte[] dst;
     private int srcPort;
     private int dstPort;
-    private int protocol;
     private int payloadLen;
     private int headerLen;
 
@@ -39,7 +38,22 @@ public class PacketInfo {
     }
 
     public void addFeature(PacketFeature feature, Object data) {
-        this.data.put(feature, data);
+        if (feature.getType().isAssignableFrom(data.getClass())) {
+            this.data.put(feature, data);
+        } else throw new IllegalArgumentException(
+                "Expecting type " + feature.getType().getName() +
+                        " but receiving " + data.getClass().getName());
+    }
+
+    @SuppressWarnings("all")
+    public Object getFeature(PacketFeature feature) {
+        Object o = data.get(feature);
+        if (o == null) return null;
+        if (feature.getType().isAssignableFrom(o.getClass())) {
+            return o;
+        } else throw new IllegalArgumentException(
+                "Expecting type " + feature.getType().getName() +
+                        " but get " + data.getClass().getName());
     }
 
     @SuppressWarnings("all")
@@ -52,7 +66,6 @@ public class PacketInfo {
         this.dst = get(MetaFeature.DST, byte[].class);
         this.srcPort = get(MetaFeature.SRC_PORT, int.class);
         this.dstPort = get(MetaFeature.DST_PORT, int.class);
-        this.protocol = get(MetaFeature.PROTO, int.class);
         this.payloadLen = get(MetaFeature.PAYLOAD_LEN, int.class);
         this.headerLen = get(MetaFeature.HEADER_LEN, int.class);
         this.tcpWindow = get(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
@@ -62,7 +75,7 @@ public class PacketInfo {
 
     private void generateFlowId() {
         this.flowId = this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
-                this.srcPort + "-" + this.dstPort + "-" + this.protocol;
+                this.srcPort + "-" + this.dstPort;
     }
 
     public String getSourceIP() {
@@ -75,12 +88,12 @@ public class PacketInfo {
 
     public String fwdFlowId() {
         return this.getSourceIP() + "-" + this.getDestinationIP() + "-" +
-                this.srcPort + "-" + this.dstPort + "-" + this.protocol;
+                this.srcPort + "-" + this.dstPort;
     }
 
     public String bwdFlowId() {
         return this.getDestinationIP() + "-" + this.getSourceIP() + "-" +
-                this.dstPort + "-" + this.srcPort + "-" + this.protocol;
+                this.dstPort + "-" + this.srcPort;
     }
 
     public PacketInfo setFwd() {
@@ -123,10 +136,6 @@ public class PacketInfo {
 
     public int getDstPort() {
         return this.dstPort;
-    }
-
-    public int getProtocol() {
-        return this.protocol;
     }
 
     public long getPayloadBytes() {

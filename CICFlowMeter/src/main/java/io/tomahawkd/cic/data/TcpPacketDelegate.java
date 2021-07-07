@@ -19,7 +19,6 @@ public class TcpPacketDelegate extends AbstractPacketDelegate {
         dst.addFeature(MetaFeature.SRC_PORT, tcp.source());
         dst.addFeature(MetaFeature.DST_PORT, tcp.destination());
         dst.addFeature(Feature.TCP_WINDOW, tcp.window());
-        dst.addFeature(MetaFeature.PROTO, 6);
         dst.addFeature(Feature.FLAG, tcp.flags());
         dst.addFeature(MetaFeature.PAYLOAD_LEN, tcp.getPayloadLength());
         dst.addFeature(MetaFeature.HEADER_LEN, tcp.getHeaderLength());
@@ -28,6 +27,17 @@ public class TcpPacketDelegate extends AbstractPacketDelegate {
     }
 
     public enum Feature implements PacketFeature {
-        TCP_WINDOW, FLAG
+        TCP_WINDOW(Integer.class), FLAG(Integer.class);
+
+        private final Class<?> type;
+
+        Feature(Class<?> type) {
+            this.type = type;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return type;
+        }
     }
 }

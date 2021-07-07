@@ -1,5 +1,7 @@
 package io.tomahawkd.cic.data;
 
+import com.google.common.primitives.Primitives;
+import org.jetbrains.annotations.Nullable;
 import org.jnetpcap.packet.format.FormatUtils;
 
 import java.util.Arrays;
@@ -22,15 +24,10 @@ public class PacketInfo {
     private byte[] dst;
     private int srcPort;
     private int dstPort;
-    private int payloadLen;
-    private int headerLen;
 
     // tcp data
     private int tcpWindow;
     private int flags;
-
-    // http data
-
 
     public PacketInfo(long id) {
         data = new HashMap<>();
@@ -45,15 +42,21 @@ public class PacketInfo {
                         " but receiving " + data.getClass().getName());
     }
 
-    @SuppressWarnings("all")
+    @Nullable
     public Object getFeature(PacketFeature feature) {
+        return data.get(feature);
+    }
+
+    @SuppressWarnings("all")
+    public <T> T getFeature(PacketFeature feature, Class<T> type) {
         Object o = data.get(feature);
         if (o == null) return null;
-        if (feature.getType().isAssignableFrom(o.getClass())) {
-            return o;
+
+        if (Primitives.wrap(type).isAssignableFrom(Primitives.wrap(feature.getType()))) {
+            return (T) o;
         } else throw new IllegalArgumentException(
                 "Expecting type " + feature.getType().getName() +
-                        " but get " + data.getClass().getName());
+                        " but request " + type.getName());
     }
 
     @SuppressWarnings("all")
@@ -66,8 +69,6 @@ public class PacketInfo {
         this.dst = get(MetaFeature.DST, byte[].class);
         this.srcPort = get(MetaFeature.SRC_PORT, int.class);
         this.dstPort = get(MetaFeature.DST_PORT, int.class);
-        this.payloadLen = get(MetaFeature.PAYLOAD_LEN, int.class);
-        this.headerLen = get(MetaFeature.HEADER_LEN, int.class);
         this.tcpWindow = get(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
         this.flags = get(TcpPacketDelegate.Feature.FLAG, int.class);
         generateFlowId();
@@ -139,11 +140,11 @@ public class PacketInfo {
     }
 
     public long getPayloadBytes() {
-        return this.payloadLen;
+        return this.get(MetaFeature.PAYLOAD_LEN, long.class);
     }
 
     public long getHeaderBytes() {
-        return this.headerLen;
+        return this.get(MetaFeature.HEADER_LEN, long.class);
     }
 
     public int getPayloadPacket() {

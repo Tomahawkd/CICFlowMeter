@@ -24,12 +24,12 @@ public class HttpFeature extends AbstractFlowFeature {
 
     @Override
     public void addPacket(PacketInfo info, boolean fwd) {
-        Integer contentLength = (Integer) info.getFeature(HttpPacketDelegate.Feature.CONTENT_LEN);
+        Integer contentLength = info.getFeature(HttpPacketDelegate.Feature.CONTENT_LEN, Integer.class);
         if (contentLength == null) {
             content_length.addValue(0);
         } else content_length.addValue(contentLength);
 
-        String connection = (String) info.getFeature(HttpPacketDelegate.Feature.CONNECTION);
+        String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);
         if (connection != null) {
             if (connection.equalsIgnoreCase("keep-alive")) keepAliveCount++;
         }

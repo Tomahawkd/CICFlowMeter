@@ -94,6 +94,9 @@ public enum FlowFeatureTag {
     content_length_min("Content Length Min"),
     content_length_total("Content Length Total"),
     keep_alive_packet_ratio("Keep Alive Packet/Packets"),
+    method_get_count("Total GET method count"),
+    method_post_count("Total POST method count"),
+    referer_count("Total referer count"),
 
     Label("Label");                    //85
 

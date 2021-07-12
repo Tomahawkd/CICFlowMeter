@@ -4,7 +4,7 @@ import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.data.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
-import io.tomahawkd.cic.util.PacketReader;
+import io.tomahawkd.cic.data.PacketReader;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;

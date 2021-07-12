@@ -45,13 +45,16 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         // Common
         CONTENT_LEN(Integer.class), REQUEST(Boolean.class), URL(String.class),
 
+        // for request it refers header Accept
+        CONTENT_TYPE(String.class),
+
         // Request
         UA(String.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
         PROXY(String.class),
 
         // Response
-        STATUS(Integer.class), CONTENT_TYPE(String.class);
+        STATUS(Integer.class);
 
         private final Class<?> type;
 

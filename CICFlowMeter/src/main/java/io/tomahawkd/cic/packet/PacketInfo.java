@@ -35,6 +35,7 @@ public class PacketInfo {
     }
 
     public void addFeature(PacketFeature feature, Object data) {
+        if (data == null) return;
         if (feature.getType().isAssignableFrom(data.getClass())) {
             this.data.put(feature, data);
         } else throw new IllegalArgumentException(

@@ -31,7 +31,6 @@ public enum FlowFeatureBuilder {
                             .stream()
                             .filter(f -> !Modifier.isAbstract(f.getModifiers()))
                             .filter(f -> !Modifier.isInterface(f.getModifiers()))
-                            .filter(Flow.class::equals)
                             .sorted(Comparator.comparing(Class::getName))
                             .collect(Collectors.toList());
         }

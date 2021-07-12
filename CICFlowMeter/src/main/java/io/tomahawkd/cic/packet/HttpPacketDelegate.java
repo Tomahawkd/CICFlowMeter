@@ -54,7 +54,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         PROXY(String.class),
 
         // Response
-        STATUS(Integer.class);
+        STATUS(String.class);
 
         private final Class<?> type;
 

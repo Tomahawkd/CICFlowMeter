@@ -57,6 +57,10 @@ public class HttpFeature extends AbstractFlowFeature {
         // we only care about the request
         if (request) {
             content_length_req.addValue(contentLength);
+
+            // TODO: URL query and more
+            String url = info.getFeature(HttpPacketDelegate.Feature.URL, String.class);
+
             String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);
             if (connection != null) {
                 if (connection.equalsIgnoreCase("keep-alive")) keepAliveCount++;
@@ -76,6 +80,14 @@ public class HttpFeature extends AbstractFlowFeature {
 
             // TODO check ua
             String ua = info.getFeature(HttpPacketDelegate.Feature.UA, String.class);
+            if (ua != null) {
+
+            }
+
+            // TODO: check accept headers
+            String accept = info.getFeature(HttpPacketDelegate.Feature.CONTENT_TYPE, String.class);
+            String encoding = info.getFeature(HttpPacketDelegate.Feature.ENCODING, String.class);
+            String lang = info.getFeature(HttpPacketDelegate.Feature.LANGUAGE, String.class);
         } else {
             content_length_res.addValue(contentLength);
         }

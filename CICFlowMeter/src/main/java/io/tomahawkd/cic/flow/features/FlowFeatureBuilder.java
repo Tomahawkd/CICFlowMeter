@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,7 +28,11 @@ public enum FlowFeatureBuilder {
             cachedFeatureClass =
                     new ArrayList<>(ClassManager.createManager(null)
                             .loadClasses(FlowFeature.class, "io.tomahawkd.cic.flow.features"))
-                            .stream().sorted(Comparator.comparing(Class::getName))
+                            .stream()
+                            .filter(f -> !Modifier.isAbstract(f.getModifiers()))
+                            .filter(f -> !Modifier.isInterface(f.getModifiers()))
+                            .filter(Flow.class::equals)
+                            .sorted(Comparator.comparing(Class::getName))
                             .collect(Collectors.toList());
         }
     }

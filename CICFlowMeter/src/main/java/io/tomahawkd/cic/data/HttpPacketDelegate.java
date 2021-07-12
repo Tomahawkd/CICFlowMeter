@@ -1,5 +1,6 @@
 package io.tomahawkd.cic.data;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Http;
 
@@ -19,11 +20,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         dst.addFeature(MetaFeature.HTTP, true);
         if (!http.isResponse()) {
             dst.addFeature(Feature.REQUEST, true);
-            try {
-                dst.addFeature(Feature.CONTENT_LEN, Integer.parseInt(http.fieldValue(Http.Request.Content_Length)));
-            } catch (NumberFormatException e) {
-                dst.addFeature(Feature.CONTENT_LEN, 0);
-            }
+            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, http.fieldValue(Http.Request.RequestMethod));
             dst.addFeature(Feature.UA, http.fieldValue(Http.Request.User_Agent));
             dst.addFeature(Feature.CONNECTION, http.fieldValue(Http.Request.Connection));
@@ -31,14 +28,13 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.URL, http.fieldValue(Http.Request.RequestUrl));
             dst.addFeature(Feature.CHARSET, http.fieldValue(Http.Request.Accept_Charset));
             dst.addFeature(Feature.REFERER, http.fieldValue(Http.Request.Referer));
-
+            dst.addFeature(Feature.LANGUAGE, http.fieldValue(Http.Request.Accept_Language));
+            dst.addFeature(Feature.ENCODING, http.fieldValue(Http.Request.Accept_Encoding));
+            dst.addFeature(Feature.PROXY, http.fieldValue(Http.Request.Proxy_Connection));
         } else {
             dst.addFeature(Feature.REQUEST, false);
-            try {
-                dst.addFeature(Feature.CONTENT_LEN, Integer.parseInt(http.fieldValue(Http.Response.Content_Length)));
-            } catch (NumberFormatException e) {
-                dst.addFeature(Feature.CONTENT_LEN, 0);
-            }
+            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Response.Content_Length)));
+            dst.addFeature(Feature.URL, http.fieldValue(Http.Response.RequestUrl));
             dst.addFeature(Feature.STATUS, http.fieldValue(Http.Response.ResponseCode));
             dst.addFeature(Feature.CONTENT_TYPE, http.fieldValue(Http.Response.Content_Type));
         }
@@ -47,11 +43,12 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN(Integer.class), REQUEST(Boolean.class),
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), URL(String.class),
 
         // Request
-        UA(String.class), CONNECTION(String.class), CACHE(String.class), URL(String.class), CHARSET(String.class),
-        REFERER(String.class), METHOD(String.class),
+        UA(String.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
+        REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
+        PROXY(String.class),
 
         // Response
         STATUS(Integer.class), CONTENT_TYPE(String.class);

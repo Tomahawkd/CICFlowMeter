@@ -142,11 +142,11 @@ public class PacketInfo {
     }
 
     public long getPayloadBytes() {
-        return this.unsafeGet(MetaFeature.PAYLOAD_LEN, long.class);
+        return this.unsafeGet(MetaFeature.PAYLOAD_LEN, int.class);
     }
 
     public long getHeaderBytes() {
-        return this.unsafeGet(MetaFeature.HEADER_LEN, long.class);
+        return this.unsafeGet(MetaFeature.HEADER_LEN, int.class);
     }
 
     public int getPayloadPacket() {

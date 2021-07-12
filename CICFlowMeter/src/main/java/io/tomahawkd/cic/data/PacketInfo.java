@@ -47,6 +47,7 @@ public class PacketInfo {
         return data.get(feature);
     }
 
+    @Nullable
     @SuppressWarnings("all")
     public <T> T getFeature(PacketFeature feature, Class<T> type) {
         Object o = data.get(feature);
@@ -56,7 +57,7 @@ public class PacketInfo {
             return (T) o;
         } else throw new IllegalArgumentException(
                 "Expecting type " + feature.getType().getName() +
-                        " but request " + type.getName());
+                        " but requesting " + type.getName());
     }
 
     @SuppressWarnings("all")

@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.flow.features;
 
-import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.lang3.StringUtils;
 

@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.data;
+package io.tomahawkd.cic.packet;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jnetpcap.packet.PcapPacket;

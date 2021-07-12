@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.flow.features;
 
-import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 
 @Feature(name = "BulkFeature", tags = {

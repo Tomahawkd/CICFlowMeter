@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.data;
+package io.tomahawkd.cic.packet;
 
 import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;

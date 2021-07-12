@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.flow;
 
-import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.FlowGenListener;
 import io.tomahawkd.cic.util.FlowLabelSupplier;
 import org.apache.logging.log4j.LogManager;

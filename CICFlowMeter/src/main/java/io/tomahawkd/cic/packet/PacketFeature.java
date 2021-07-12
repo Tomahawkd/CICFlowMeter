@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.data;
+package io.tomahawkd.cic.packet;
 
 public interface PacketFeature {
 

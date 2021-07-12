@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.data;
+package io.tomahawkd.cic.packet;
 
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;

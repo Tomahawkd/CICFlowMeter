@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.flow.features;
 
-import io.tomahawkd.cic.data.HttpPacketDelegate;
-import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.packet.HttpPacketDelegate;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 

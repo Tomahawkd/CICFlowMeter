@@ -1,6 +1,6 @@
 package io.tomahawkd.cic.flow.features;
 
-import io.tomahawkd.cic.data.PacketInfo;
+import io.tomahawkd.cic.packet.PacketInfo;
 
 public interface FlowFeature {
 

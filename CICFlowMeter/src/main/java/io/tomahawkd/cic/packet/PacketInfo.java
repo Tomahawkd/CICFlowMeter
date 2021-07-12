@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.data;
+package io.tomahawkd.cic.packet;
 
 import com.google.common.primitives.Primitives;
 import org.jetbrains.annotations.Nullable;

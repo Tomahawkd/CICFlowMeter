@@ -31,10 +31,10 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.LANGUAGE, http.fieldValue(Http.Request.Accept_Language));
             dst.addFeature(Feature.ENCODING, http.fieldValue(Http.Request.Accept_Encoding));
             dst.addFeature(Feature.PROXY, http.fieldValue(Http.Request.Proxy_Connection));
+            dst.addFeature(Feature.CONTENT_TYPE, http.fieldValue(Http.Request.Accept));
         } else {
             dst.addFeature(Feature.REQUEST, false);
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Response.Content_Length)));
-            dst.addFeature(Feature.URL, http.fieldValue(Http.Response.RequestUrl));
             dst.addFeature(Feature.STATUS, http.fieldValue(Http.Response.ResponseCode));
             dst.addFeature(Feature.CONTENT_TYPE, http.fieldValue(Http.Response.Content_Type));
         }
@@ -43,7 +43,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), URL(String.class),
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class),
 
         // for request it refers header Accept
         CONTENT_TYPE(String.class),
@@ -51,7 +51,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         // Request
         UA(String.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
-        PROXY(String.class),
+        PROXY(String.class), URL(String.class),
 
         // Response
         STATUS(String.class);

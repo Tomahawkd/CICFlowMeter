@@ -58,7 +58,6 @@ public class PacketReader {
         try {
             int status;
             if ((status = pcapReader.nextEx(hdr, buf)) == Pcap.NEXT_EX_OK) {
-                logger.debug("Packet read successfully.");
                 PacketInfo info = new PacketInfo(generator.nextId());
                 PcapPacket packet = new PcapPacket(hdr, buf);
                 packet.scan(Ethernet.ID);

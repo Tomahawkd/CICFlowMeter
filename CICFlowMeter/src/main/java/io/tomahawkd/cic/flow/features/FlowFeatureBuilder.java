@@ -16,7 +16,7 @@ public enum FlowFeatureBuilder {
 
     INSTANCE;
 
-    static Logger logger = LogManager.getLogger(FlowFeatureBuilder.class);
+    static Logger logger;
     static List<Class<? extends FlowFeature>> cachedFeatureClass;
 
     FlowFeatureBuilder() {
@@ -24,6 +24,7 @@ public enum FlowFeatureBuilder {
     }
 
     private void init() {
+        logger = LogManager.getLogger(FlowFeatureBuilder.class);
         if (cachedFeatureClass == null) {
             cachedFeatureClass =
                     new ArrayList<>(ClassManager.createManager(null)

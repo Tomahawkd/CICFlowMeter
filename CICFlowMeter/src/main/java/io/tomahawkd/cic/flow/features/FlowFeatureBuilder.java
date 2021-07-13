@@ -31,6 +31,7 @@ public enum FlowFeatureBuilder {
                             .stream()
                             .filter(f -> !Modifier.isAbstract(f.getModifiers()))
                             .filter(f -> !Modifier.isInterface(f.getModifiers()))
+                            .peek(f -> logger.debug("Loading class {}", f.getName()))
                             .sorted(Comparator.comparing(Class::getName))
                             .collect(Collectors.toList());
         }
@@ -43,6 +44,7 @@ public enum FlowFeatureBuilder {
             Feature feature = c.getAnnotation(Feature.class);
             if (!feature.manual()) {
                 try {
+                    logger.debug("Creating instance of class {}", c.getName());
                     FlowFeature newFeature = c.getConstructor(Flow.class).newInstance(flow);
                     flow.addFeature(newFeature);
                 } catch (NoSuchMethodException | InstantiationException |

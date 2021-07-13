@@ -41,6 +41,7 @@ public class PacketReader {
 
     public PacketReader(String filename) {
         file = filename;
+        logger.debug("Read file {} with reader.", filename);
         StringBuilder errBuf = new StringBuilder(); // For any error msgs
         pcapReader = Pcap.openOffline(filename, errBuf);
 
@@ -57,6 +58,7 @@ public class PacketReader {
         try {
             int status;
             if ((status = pcapReader.nextEx(hdr, buf)) == Pcap.NEXT_EX_OK) {
+                logger.debug("Packet read successfully.");
                 PacketInfo info = new PacketInfo(generator.nextId());
                 PcapPacket packet = new PcapPacket(hdr, buf);
                 packet.scan(Ethernet.ID);

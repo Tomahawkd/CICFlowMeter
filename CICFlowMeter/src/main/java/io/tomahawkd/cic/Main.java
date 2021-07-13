@@ -10,6 +10,7 @@ import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
 import io.tomahawkd.config.sources.SourceManager;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
@@ -39,10 +40,17 @@ public class Main {
             System.out.println(Objects.requireNonNull(configManager.getConfig(CommandlineConfig.class)).usage());
             return;
         }
+        logger.debug("Commandline parse complete.");
+
         long flowTimeout = delegate.getFlowTimeout();
         long activityTimeout = delegate.getActivityTimeout();
         List<Path> pcapPath = delegate.getPcapPath();
         Path outPath = delegate.getOutputPath();
+        logger.debug("Parsed settings: ");
+        logger.debug("Flow timeout: {}", flowTimeout);
+        logger.debug("Activity timeout: {}", activityTimeout);
+        logger.debug("Pcap path: [{}]", StringUtils.join(pcapPath, ","));
+        logger.debug("Output path: {}", outPath);
 
         pcapPath.forEach(p -> {
             logger.info("Start Processing {}", p.getFileName().toString());
@@ -58,6 +66,7 @@ public class Main {
         String fileName = inputFile.getFileName().toString();
         Path outputPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
         if (Files.exists(outputPath)) {
+            logger.info("File already exists. Removing...");
             try {
                 Files.delete(outputPath);
             } catch (IOException e) {
@@ -66,6 +75,7 @@ public class Main {
         }
 
         try {
+            logger.info("Creating file {}...", outputPath.getFileName().toString());
             Utils.initFile(outputPath, Flow.getHeaders());
         } catch (IOException e) {
             logger.fatal("Failed to create file");

@@ -41,6 +41,7 @@ public class FlowGenerator {
     public void addPacket(PacketInfo packet) {
         if (packet == null) return;
 
+        logger.debug("Received packet with id {}", packet.getFlowId());
         packetCounter++;
         if (packetCounter > 0x8000) {
             flushTimeoutFlows(packet.getTimestamp());
@@ -130,6 +131,7 @@ public class FlowGenerator {
     }
 
     private void flushTimeoutFlows(long timestamp) {
+        logger.debug("Flushing timeout flows.");
         List<Map.Entry<String, Flow>> list = currentFlows.entrySet().stream()
                 .filter(e -> timestamp - e.getValue().getFlowStartTime() > this.flowTimeOut)
                 .collect(Collectors.toList());

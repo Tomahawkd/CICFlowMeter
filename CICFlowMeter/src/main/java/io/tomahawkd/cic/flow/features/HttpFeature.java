@@ -3,6 +3,7 @@ package io.tomahawkd.cic.flow.features;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
+import nl.basjes.parse.useragent.UserAgent;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 import java.util.Optional;
@@ -79,10 +80,7 @@ public class HttpFeature extends AbstractFlowFeature {
             }
 
             // TODO check ua
-            String ua = info.getFeature(HttpPacketDelegate.Feature.UA, String.class);
-            if (ua != null) {
-
-            }
+            UserAgent ua = info.getFeature(HttpPacketDelegate.Feature.UA, UserAgent.class);
 
             // TODO: check accept headers
             String accept = info.getFeature(HttpPacketDelegate.Feature.CONTENT_TYPE, String.class);

@@ -1,10 +1,15 @@
 package io.tomahawkd.cic.packet;
 
+import nl.basjes.parse.useragent.UserAgent;
+import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Http;
 
 public class HttpPacketDelegate extends AbstractPacketDelegate {
+
+    private static final UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().hideMatcherLoadStats()
+            .withCache(10000).build();
 
     public HttpPacketDelegate() {
         super(Http.ID);
@@ -22,7 +27,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.REQUEST, true);
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, http.fieldValue(Http.Request.RequestMethod));
-            dst.addFeature(Feature.UA, http.fieldValue(Http.Request.User_Agent));
+            dst.addFeature(Feature.UA, uaa.parse(http.fieldValue(Http.Request.User_Agent)));
             dst.addFeature(Feature.CONNECTION, http.fieldValue(Http.Request.Connection));
             dst.addFeature(Feature.CACHE, http.fieldValue(Http.Request.Cache_Control));
             dst.addFeature(Feature.URL, http.fieldValue(Http.Request.RequestUrl));
@@ -49,7 +54,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         CONTENT_TYPE(String.class),
 
         // Request
-        UA(String.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
+        UA(UserAgent.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
         PROXY(String.class), URL(String.class),
 

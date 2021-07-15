@@ -161,6 +161,18 @@ public class PacketInfo {
         return (flags & id) != 0;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("PacketInfo[");
+        builder.append("flowID: ").append(flowId).append(", ");
+        for (Map.Entry<PacketFeature, Object> entry: data.entrySet()){
+            builder.append(entry.getKey().toString()).append(": ").append(entry.getValue().toString()).append(", ");
+        }
+
+        return builder.toString();
+    }
+
     // Copied from org.jnetpcap.protocol.tcpip.Tcp
     /**
      * The Constant FLAG_ACK.

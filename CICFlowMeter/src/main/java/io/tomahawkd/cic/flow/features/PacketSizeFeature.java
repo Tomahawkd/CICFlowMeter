@@ -176,4 +176,8 @@ public class PacketSizeFeature extends AbstractFlowFeature {
     public long getBackwardPacketCount() {
         return bwdPacketStats.getN();
     }
+
+    public long getPacketCount() {
+        return flowPacketStats.getN();
+    }
 }

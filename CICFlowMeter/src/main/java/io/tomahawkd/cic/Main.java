@@ -52,10 +52,15 @@ public class Main {
         logger.debug("Pcap path: [{}]", StringUtils.join(pcapPath, ","));
         logger.debug("Output path: {}", outPath);
 
-        pcapPath.forEach(p -> {
-            logger.info("Start Processing {}", p.getFileName().toString());
-            readPcapFile(p, outPath, flowTimeout, activityTimeout);
-        });
+        try {
+            pcapPath.forEach(p -> {
+                logger.info("Start Processing {}", p.getFileName().toString());
+                readPcapFile(p, outPath, flowTimeout, activityTimeout);
+            });
+        } catch (Exception e) {
+            logger.fatal("Unexpected Exception {}", e.getClass().toString());
+            e.printStackTrace();
+        }
     }
 
     private static void readPcapFile(Path inputFile, Path outPath, long flowTimeout, long activityTimeout) {

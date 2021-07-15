@@ -31,6 +31,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.CONNECTION, http.fieldValue(Http.Request.Connection));
             dst.addFeature(Feature.CACHE, http.fieldValue(Http.Request.Cache_Control));
             dst.addFeature(Feature.URL, http.fieldValue(Http.Request.RequestUrl));
+            dst.addFeature(Feature.HOST, http.fieldValue(Http.Request.Host));
             dst.addFeature(Feature.CHARSET, http.fieldValue(Http.Request.Accept_Charset));
             dst.addFeature(Feature.REFERER, http.fieldValue(Http.Request.Referer));
             dst.addFeature(Feature.LANGUAGE, http.fieldValue(Http.Request.Accept_Language));
@@ -56,7 +57,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         // Request
         UA(UserAgent.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
-        PROXY(String.class), URL(String.class),
+        PROXY(String.class), URL(String.class), HOST(String.class),
 
         // Response
         STATUS(String.class);

@@ -21,7 +21,7 @@ import java.util.Arrays;
 })
 public class TcpFlagFeature extends AbstractFlowFeature {
 
-    private static final int[] flagCounts = new int[10];
+    private static final int[] flagCounts = new int[11];
 
     public TcpFlagFeature(Flow flow) {
         super(null);

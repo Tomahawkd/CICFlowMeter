@@ -169,8 +169,7 @@ public class PacketInfo {
         for (Map.Entry<PacketFeature, Object> entry: data.entrySet()){
             builder.append(entry.getKey().toString()).append(": ").append(entry.getValue().toString()).append(", ");
         }
-
-        return builder.toString();
+        return builder.append("]").toString();
     }
 
     // Copied from org.jnetpcap.protocol.tcpip.Tcp

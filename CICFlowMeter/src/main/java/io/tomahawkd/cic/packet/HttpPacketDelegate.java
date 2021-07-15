@@ -23,6 +23,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         }
 
         dst.addFeature(MetaFeature.HTTP, true);
+        dst.addFeature(Feature.HEADER, http.header());
         if (!http.isResponse()) {
             dst.addFeature(Feature.REQUEST, true);
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
@@ -49,7 +50,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN(Integer.class), REQUEST(Boolean.class),
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(String.class),
 
         // for request it refers header Accept
         CONTENT_TYPE(String.class),

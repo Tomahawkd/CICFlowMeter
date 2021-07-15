@@ -29,14 +29,17 @@ public class HttpRefererFeature extends AbstractHttpFeature {
     @Override
     public void addRequestPacket(PacketInfo info) {
         String host = info.getFeature(HttpPacketDelegate.Feature.HOST, String.class);
-        if (host == null) return;
+        if (host == null) {
+            logger.warn("Packet {} has no host in HTTP protocol.", info.getFlowId());
+            logger.warn("Packet Content: {}", info.toString());
+        }
 
         String referer = info.getFeature(HttpPacketDelegate.Feature.REFERER, String.class);
         if (referer != null) {
             try {
                 URL url = new URL(referer);
                 refererCount++;
-                if (host.equalsIgnoreCase(url.getHost())) {
+                if (url.getHost().equalsIgnoreCase(host)) {
                     refererSameOriginCount++;
                 } else {
                     for (String se : searchEngineNameList) {

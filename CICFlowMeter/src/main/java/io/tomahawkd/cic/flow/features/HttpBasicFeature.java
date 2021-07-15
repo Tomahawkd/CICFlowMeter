@@ -70,19 +70,13 @@ public class HttpBasicFeature extends AbstractHttpFeature {
     @Override
     public void addRequestPacket(PacketInfo info) {
         String path = info.getFeature(HttpPacketDelegate.Feature.PATH, String.class);
-        String host = info.getFeature(HttpPacketDelegate.Feature.HOST, String.class);
-        if (host == null) {
-            logger.warn("Packet {} has no host in HTTP protocol.", info.getFlowId());
-            logger.warn("Packet Content: {}", info.toString());
-        } else {
-            // we dont care its protocol
-            try {
-                URL url = new URL("http://" + host + path);
-                String query = url.getQuery();
-                if (query != null) query_stat.addValue(query.length());
-            } catch (MalformedURLException e) {
-                logger.warn("Invalid request url.[host: {}, path: {}]", host, path);
-            }
+        // we dont care its protocol and host
+        try {
+            URL url = new URL("http://host" + path);
+            String query = url.getQuery();
+            if (query != null) query_stat.addValue(query.length());
+        } catch (MalformedURLException e) {
+            logger.warn("Invalid request path {}.", path);
         }
 
         String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);

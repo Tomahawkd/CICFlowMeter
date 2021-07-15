@@ -27,7 +27,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.REQUEST, true);
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, http.fieldValue(Http.Request.RequestMethod));
-            dst.addFeature(Feature.UA, uaa.parse(http.fieldValue(Http.Request.User_Agent)));
+            dst.addFeature(Feature.UA, parseUserAgent(http.fieldValue(Http.Request.User_Agent)));
             dst.addFeature(Feature.CONNECTION, http.fieldValue(Http.Request.Connection));
             dst.addFeature(Feature.CACHE, http.fieldValue(Http.Request.Cache_Control));
             dst.addFeature(Feature.URL, http.fieldValue(Http.Request.RequestUrl));
@@ -71,5 +71,9 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         public Class<?> getType() {
             return type;
         }
+    }
+
+    private UserAgent parseUserAgent(String ua) {
+        return ua != null? uaa.parse(ua): null;
     }
 }

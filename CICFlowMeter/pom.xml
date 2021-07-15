@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>CICFlowMeter</artifactId>
-    <version>${parent.version}</version>
-    <name>CICFlowMeter</name>
-
     <parent>
         <artifactId>CICFlowMeterParent</artifactId>
         <groupId>io.tomahawkd</groupId>
-        <version>0.3.0</version>
+        <version>${cicversion}</version>
     </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>CICFlowMeter</artifactId>
+    <version>${cicversion}</version>
+    <name>CICFlowMeter</name>
 
     <packaging>jar</packaging>
 
@@ -47,11 +47,6 @@
             <version>1.4.1</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.6</version>
@@ -64,7 +59,7 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>1.17</version>
+            <version>1.27</version>
         </dependency>
         <dependency>
             <groupId>io.tomahawkd</groupId>

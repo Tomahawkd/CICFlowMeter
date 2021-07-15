@@ -88,6 +88,11 @@ public enum FlowFeatureTag {
 
     // HTTP layer features
     request_packet_count("Request Packet Count"),
+    query_length_avg("Query Length Avg"),
+    query_length_std("Query Length Std"),
+    query_length_max("Query Length Max"),
+    query_length_min("Query Length Min"),
+    query_length_total("Query Length Total"),
     content_length_avg("Content Length Avg"),
     content_length_std("Content Length Std"),
     content_length_max("Content Length Max"),
@@ -103,10 +108,21 @@ public enum FlowFeatureTag {
     res_content_length_max("Response Content Length Max"),
     res_content_length_min("Response Content Length Min"),
     res_content_length_total("Response Content Length Total"),
-    keep_alive_packet_ratio("Keep Alive Packet/Packets"),
+    keep_alive_packet_ratio("Keep Alive Packet/Request Packets"),
     method_get_count("Total GET method count"),
     method_post_count("Total POST method count"),
+
     referer_count("Total referer count"),
+    referer_from_same_source("Referer Same Source Count"),
+    referer_from_search_engine("Referer Search Engine Count"),
+
+    accept_count("Accept Header Count"),
+    accept_use_wildcard_count("Accept Any Count"),
+    lang_count("Accept Language Header Count"),
+    lang_use_wildcard_count("Accept Any Language Count"),
+
+    user_agent_count("User Agent Count"),
+    invalid_user_agent_count("Invalid User Agent Count"),
 
     Label("Label");                    //85
 

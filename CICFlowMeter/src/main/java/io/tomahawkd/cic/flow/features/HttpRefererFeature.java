@@ -11,6 +11,8 @@ import java.net.URL;
 
 @Feature(name = "HttpRefererFeature", tags = {
         FlowFeatureTag.referer_count,
+        FlowFeatureTag.referer_from_same_source,
+        FlowFeatureTag.referer_from_search_engine,
 })
 public class HttpRefererFeature extends AbstractHttpFeature {
 
@@ -19,7 +21,6 @@ public class HttpRefererFeature extends AbstractHttpFeature {
     private long refererCount = 0;
     private long refererSameOriginCount = 0;
     private long refererFromSearchEngineCount = 0;
-    // private long refererFromUnknownSource = refererCount - refererSameOriginCount - refererFromSearchEngineCount;
 
     public HttpRefererFeature(Flow flow) {
         super(flow);
@@ -32,9 +33,9 @@ public class HttpRefererFeature extends AbstractHttpFeature {
 
         String referer = info.getFeature(HttpPacketDelegate.Feature.REFERER, String.class);
         if (referer != null) {
-
             try {
                 URL url = new URL(referer);
+                refererCount++;
                 if (host.equalsIgnoreCase(url.getHost())) {
                     refererSameOriginCount++;
                 } else {
@@ -45,15 +46,9 @@ public class HttpRefererFeature extends AbstractHttpFeature {
                         }
                     }
                 }
-
             } catch (MalformedURLException e) {
                 logger.warn("Invalid referer {} in packet {}", referer, info.toString());
-                return;
             }
-
-            // TODO: Need more check such as from a related link/search engine/totally irrelevant
-            refererCount++;
-
         }
     }
 
@@ -61,6 +56,8 @@ public class HttpRefererFeature extends AbstractHttpFeature {
     public String exportData() {
         StringBuilder builder = new StringBuilder();
         builder.append(refererCount).append(SEPARATOR); // FlowFeatureTag.referer_count,
+        builder.append(refererSameOriginCount).append(SEPARATOR); // FlowFeatureTag.referer_from_same_source,
+        builder.append(refererFromSearchEngineCount).append(SEPARATOR); // FlowFeatureTag.referer_from_search_engine,
         return builder.toString();
     }
 

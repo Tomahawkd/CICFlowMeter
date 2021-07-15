@@ -7,9 +7,17 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 
 @Feature(name = "HttpFeature", tags = {
+        FlowFeatureTag.request_packet_count,
+        FlowFeatureTag.query_length_avg,
+        FlowFeatureTag.query_length_std,
+        FlowFeatureTag.query_length_max,
+        FlowFeatureTag.query_length_min,
+        FlowFeatureTag.query_length_total,
         FlowFeatureTag.content_length_avg,
         FlowFeatureTag.content_length_std,
         FlowFeatureTag.content_length_max,
@@ -33,6 +41,7 @@ public class HttpBasicFeature extends AbstractHttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);
 
+    private final SummaryStatistics query_stat = new SummaryStatistics();
     private final SummaryStatistics content_length = new SummaryStatistics();
     private final SummaryStatistics content_length_req = new SummaryStatistics();
     private final SummaryStatistics content_length_res = new SummaryStatistics();
@@ -60,13 +69,20 @@ public class HttpBasicFeature extends AbstractHttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        // TODO: URL query and more
-        String path = info.getFeature(HttpPacketDelegate.Feature.URL, String.class);
+        String path = info.getFeature(HttpPacketDelegate.Feature.PATH, String.class);
         String host = info.getFeature(HttpPacketDelegate.Feature.HOST, String.class);
         if (host == null) {
             logger.warn("Packet {} has no host in HTTP protocol.", info.getFlowId());
             logger.warn("Packet Content: {}", info.toString());
-
+        } else {
+            // we dont care its protocol
+            try {
+                URL url = new URL("http://" + host + path);
+                String query = url.getQuery();
+                if (query != null) query_stat.addValue(query.length());
+            } catch (MalformedURLException e) {
+                logger.warn("Invalid request url.[host: {}, path: {}]", host, path);
+            }
         }
 
         String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);
@@ -84,25 +100,35 @@ public class HttpBasicFeature extends AbstractHttpFeature {
     @Override
     public String exportData() {
         StringBuilder builder = new StringBuilder();
-        buildContentLength(builder, content_length);
-        buildContentLength(builder, content_length_req);
-        buildContentLength(builder, content_length_res);
+        long requestPacketCount = getRequestPacketCount();
+        builder.append(requestPacketCount).append(SEPARATOR); // FlowFeatureTag.request_packet_count
+        buildLength(builder, query_stat);
+        buildLength(builder, content_length);
+        buildLength(builder, content_length_req);
+        buildLength(builder, content_length_res);
 
-        builder.append(keepAliveCount).append(SEPARATOR); // FlowFeatureTag.keep_alive_packet_ratio,
+        if (requestPacketCount > 0) builder.append((double)keepAliveCount/requestPacketCount);
+        else builder.append(0);
+        builder.append(SEPARATOR); // FlowFeatureTag.keep_alive_packet_ratio,
+
         builder.append(getCount).append(SEPARATOR); // FlowFeatureTag.method_get_count,
         builder.append(postCount).append(SEPARATOR); // FlowFeatureTag.method_post_count,
         return builder.toString();
     }
 
-    private void buildContentLength(StringBuilder builder, SummaryStatistics content_length) {
-        if (content_length.getN() > 0) {
-            builder.append(content_length.getMean()).append(SEPARATOR); // content_length_avg,
-            builder.append(content_length.getStandardDeviation()).append(SEPARATOR); // content_length_std,
-            builder.append(content_length.getMax()).append(SEPARATOR); // content_length_max,
-            builder.append(content_length.getMin()).append(SEPARATOR); // content_length_min,
-            builder.append(content_length.getSum()).append(SEPARATOR); // content_length_total,
+    private void buildLength(StringBuilder builder, SummaryStatistics lengthStat) {
+        if (lengthStat.getN() > 0) {
+            builder.append(lengthStat.getMean()).append(SEPARATOR); // avg,
+            builder.append(lengthStat.getStandardDeviation()).append(SEPARATOR); // std,
+            builder.append(lengthStat.getMax()).append(SEPARATOR); // max,
+            builder.append(lengthStat.getMin()).append(SEPARATOR); // min,
+            builder.append(lengthStat.getSum()).append(SEPARATOR); // total,
         } else {
             addZeroesToBuilder(builder, 5);
         }
+    }
+
+    public long getRequestPacketCount() {
+        return content_length.getN();
     }
 }

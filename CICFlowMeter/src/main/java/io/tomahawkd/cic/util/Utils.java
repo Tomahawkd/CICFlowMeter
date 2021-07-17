@@ -3,10 +3,11 @@ package io.tomahawkd.cic.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
@@ -41,7 +42,11 @@ public class Utils {
         Class<?> type = data.getClass();
         StringBuilder builder = new StringBuilder();
         if (type.isArray()) {
-            return Arrays.toString((Object[]) data);
+            builder.append("[");
+            for (int i = 0; i < Array.getLength(data); i++) {
+                builder.append(Array.get(data, i)).append(", ");
+            }
+            builder.append("]");
         } else if (data instanceof Map) {
             builder.append("{");
             ((Map<?, ?>) data).forEach((k, v) -> builder.append(k).append(": ").append(v).append(", "));

@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.packet;
 
 import com.google.common.primitives.Primitives;
+import io.tomahawkd.cic.util.Utils;
 import org.jetbrains.annotations.Nullable;
 import org.jnetpcap.packet.format.FormatUtils;
 
@@ -167,7 +168,8 @@ public class PacketInfo {
         builder.append("PacketInfo[");
         builder.append("flowID: ").append(flowId).append(", ");
         for (Map.Entry<PacketFeature, Object> entry: data.entrySet()){
-            builder.append(entry.getKey().toString()).append(": ").append(entry.getValue().toString()).append(", ");
+            builder.append(entry.getKey().toString()).append(": ")
+                    .append(Utils.convertToString(entry.getValue())).append(", ");
         }
         return builder.append("]").toString();
     }

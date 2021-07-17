@@ -6,6 +6,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 
 public class Utils {
     protected static final Logger logger = LogManager.getLogger(Utils.class);
@@ -46,5 +49,25 @@ public class Utils {
         } catch (IOException e) {
             logger.warn(e);
         }
+    }
+
+    public static String convertToString(Object data) {
+        Class<?> type = data.getClass();
+        StringBuilder builder = new StringBuilder();
+        if (type.isArray()) {
+            return Arrays.toString((Object[]) data);
+        } else if (data instanceof Map) {
+            builder.append("{");
+            ((Map<?, ?>) data).forEach((k, v) -> builder.append(k).append(": ").append(v).append(", "));
+            builder.append("}");
+        } else if (data instanceof Collection) {
+            builder.append("[");
+            ((Collection<?>) data).forEach(v -> builder.append(v).append(", "));
+            builder.append("]");
+        } else {
+            return data.toString();
+        }
+
+        return builder.toString();
     }
 }

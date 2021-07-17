@@ -18,7 +18,7 @@ import java.util.Arrays;
         FlowFeatureTag.bw_psh_flag,
         FlowFeatureTag.fw_urg_flag,
         FlowFeatureTag.bw_urg_flag
-})
+}, ordinal = 4)
 public class TcpFlagFeature extends AbstractFlowFeature {
 
     private static final int[] flagCounts = new int[11];

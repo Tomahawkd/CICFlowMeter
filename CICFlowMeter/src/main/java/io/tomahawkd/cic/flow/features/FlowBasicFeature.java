@@ -15,7 +15,7 @@ import java.util.Arrays;
         FlowFeatureTag.dst_port,
         FlowFeatureTag.tstp,
         FlowFeatureTag.fl_dur
-}, manual = true)
+}, manual = true, ordinal = 1)
 public class FlowBasicFeature extends AbstractFlowFeature {
 
     private final String flowId;

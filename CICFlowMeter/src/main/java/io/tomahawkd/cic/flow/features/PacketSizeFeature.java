@@ -37,7 +37,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
         FlowFeatureTag.pkt_size_avg,
         FlowFeatureTag.fw_seg_avg,
         FlowFeatureTag.bw_seg_avg,
-})
+}, ordinal = 2)
 public class PacketSizeFeature extends AbstractFlowFeature {
 
     private final SummaryStatistics flowPacketStats = new SummaryStatistics();

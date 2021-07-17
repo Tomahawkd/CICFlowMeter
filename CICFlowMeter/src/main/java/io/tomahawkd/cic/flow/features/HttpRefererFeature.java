@@ -13,7 +13,7 @@ import java.net.URL;
         FlowFeatureTag.referer_count,
         FlowFeatureTag.referer_from_same_source,
         FlowFeatureTag.referer_from_search_engine,
-})
+}, ordinal = 9)
 public class HttpRefererFeature extends AbstractHttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpRefererFeature.class);

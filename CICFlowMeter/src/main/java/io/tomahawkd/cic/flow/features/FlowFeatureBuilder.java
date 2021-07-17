@@ -32,8 +32,9 @@ public enum FlowFeatureBuilder {
                             .stream()
                             .filter(f -> !Modifier.isAbstract(f.getModifiers()))
                             .filter(f -> !Modifier.isInterface(f.getModifiers()))
+                            .filter(f -> f.getAnnotation(Feature.class) != null)
                             .peek(f -> logger.debug("Loading class {}", f.getName()))
-                            .sorted(Comparator.comparing(Class::getName))
+                            .sorted(Comparator.comparingInt(f -> f.getAnnotation(Feature.class).ordinal()))
                             .collect(Collectors.toList());
         }
     }

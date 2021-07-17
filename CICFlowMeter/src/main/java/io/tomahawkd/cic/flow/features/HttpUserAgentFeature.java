@@ -10,7 +10,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Feature(name = "HttpUserAgentFeature", tags = {
         FlowFeatureTag.user_agent_count,
         FlowFeatureTag.invalid_user_agent_count
-})
+}, ordinal = 11)
 public class HttpUserAgentFeature extends AbstractHttpFeature {
 
     private long userAgentCount = 0;

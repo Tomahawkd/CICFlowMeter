@@ -36,7 +36,7 @@ import java.util.Optional;
         FlowFeatureTag.keep_alive_packet_ratio,
         FlowFeatureTag.method_get_count,
         FlowFeatureTag.method_post_count,
-})
+}, ordinal = 8)
 public class HttpBasicFeature extends AbstractHttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);

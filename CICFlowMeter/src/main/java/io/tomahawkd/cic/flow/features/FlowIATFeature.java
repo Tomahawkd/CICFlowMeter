@@ -20,7 +20,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
         FlowFeatureTag.bw_iat_std,
         FlowFeatureTag.bw_iat_max,
         FlowFeatureTag.bw_iat_min,
-})
+}, ordinal = 3)
 public class FlowIATFeature extends AbstractFlowFeature {
 
     private long forwardLastSeen = 0L;

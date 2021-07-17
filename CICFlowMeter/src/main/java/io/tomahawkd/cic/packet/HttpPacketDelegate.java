@@ -8,6 +8,9 @@ import org.apache.logging.log4j.Logger;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Http;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     private static final Logger logger = LogManager.getLogger(HttpPacketDelegate.class);
@@ -41,6 +44,18 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         String[] firstLineElements = headers[0].split(" ", 3);
         if (firstLineElements.length < 2) return false;
 
+        // remaining headers
+        Map<String, String> headerMap = new HashMap<>();
+        for (int i = 1; i < headers.length; i++) {
+            String[] keyVal = headers[i].split(":", 2);
+            if (keyVal.length < 2) {
+                logger.warn("Invalid header segment {}", headers[i]);
+            } else {
+                headerMap.put(keyVal[0], keyVal[1]);
+            }
+        }
+        dst.addFeature(Feature.HEADER, headerMap);
+
         if (request) {
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, firstLineElements[0]);
@@ -65,7 +80,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(String.class),
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(Map.class),
 
         // for request it refers header Accept
         CONTENT_TYPE(String.class),

@@ -1,6 +1,6 @@
 # CICFlowMeter Mk.6
 The repo is forked from [here](https://github.com/CanadianInstituteForCybersecurity/CICFlowMeter) 
-but is completely different.
+but is completely different in code structure.
 
 ## New Features
 1. A refactor to original code including

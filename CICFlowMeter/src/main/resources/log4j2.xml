@@ -45,7 +45,7 @@
 		<Logger name="io.tomahawkd.cic" additivity="false" level="ALL">
 <!--			<AppenderRef ref="Console" level="info"/>-->
 			<AppenderRef ref="RollingFile" level="info"/>
-			<AppenderRef ref="DebugRollingFile" level="debug"/>
+			<AppenderRef ref="DebugRollingFile" level="ALL"/>
 		</Logger>
 		<Logger name="org.reflections" additivity="false" level="OFF">
 			<AppenderRef ref="Console" level="info"/>

@@ -11,4 +11,5 @@ public @interface Feature {
     String name();
     FlowFeatureTag[] tags();
     boolean manual() default false;
+    int ordinal();
 }

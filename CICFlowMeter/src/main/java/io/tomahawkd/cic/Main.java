@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jnetpcap.PcapClosedException;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -128,7 +129,7 @@ public class Main {
                     nValid++;
                 }
                 System.out.printf("%s -> %d packets, %d flows \r", fileName, nTotal, flowCount.get());
-            } catch (PcapClosedException e) {
+            } catch (EOFException e) {
                 break;
             }
         }

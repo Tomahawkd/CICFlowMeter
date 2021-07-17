@@ -47,11 +47,11 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         // remaining headers
         Map<String, String> headerMap = new HashMap<>();
         for (int i = 1; i < headers.length; i++) {
-            String[] keyVal = headers[i].split(":", 2);
+            String[] keyVal = headers[i].split(": ", 2);
             if (keyVal.length < 2) {
                 logger.warn("Invalid header segment {}", headers[i]);
             } else {
-                headerMap.put(keyVal[0], keyVal[1]);
+                headerMap.put(keyVal[0].trim(), keyVal[1].trim());
             }
         }
         dst.addFeature(Feature.HEADER, headerMap);

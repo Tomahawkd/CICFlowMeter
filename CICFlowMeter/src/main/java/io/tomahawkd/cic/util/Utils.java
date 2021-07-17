@@ -16,20 +16,6 @@ public class Utils {
     public final static String PCAP = "application/vnd.tcpdump.pcap";
     public static final String FLOW_SUFFIX = "_Flow.csv";
 
-    public static long countLines(Path fileName) {
-        File file = fileName.toFile();
-        int linenumber = 0;
-        try (LineNumberReader lnr = new LineNumberReader(new FileReader(file))) {
-            while (lnr.readLine() != null) {
-                linenumber++;
-            }
-
-        } catch (IOException e) {
-            logger.warn(e.getMessage());
-        }
-        return linenumber;
-    }
-
     public static void initFile(Path path, String header) throws IOException {
         if (Files.exists(path)) return;
         Files.createFile(path);

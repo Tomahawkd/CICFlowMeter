@@ -133,9 +133,8 @@ public class Main {
         }
 
         flowGen.dumpLabeledCurrentFlow();
-        long lines = Utils.countLines(outputPath);
 
-        System.out.printf("%s is done. total %d flows %n", fileName, lines);
+        System.out.printf("%s is done. total %d flows %n", fileName, flowCount.get());
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
         System.out.println(DividingLine);
     }

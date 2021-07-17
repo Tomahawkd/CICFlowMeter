@@ -59,6 +59,7 @@ public class Main {
             });
         } catch (Exception e) {
             logger.fatal("Unexpected Exception {}", e.getClass().toString());
+            logger.fatal("Reason: {}", String.valueOf(e.getMessage()));
             e.printStackTrace();
         }
     }

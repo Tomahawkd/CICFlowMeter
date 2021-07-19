@@ -2,10 +2,8 @@ package io.tomahawkd.cic.kaitai;
 
 // This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 
-import io.kaitai.struct.KaitaiStruct;
 import io.kaitai.struct.KaitaiStream;
-
-import java.util.BitSet;
+import io.kaitai.struct.KaitaiStruct;
 
 
 /**
@@ -20,11 +18,12 @@ public class TcpSegment extends KaitaiStruct {
     private int dstPort;
     private long seqNum;
     private long ackNum;
-    private int b12;
-    private int b13;
+    private int offset;
+    private int flags;
     private int windowSize;
     private int checksum;
     private int urgentPointer;
+    private byte[] optionsAndPaddings;
     private byte[] body;
     private final TcpSegment _root;
     private final KaitaiStruct _parent;
@@ -45,12 +44,25 @@ public class TcpSegment extends KaitaiStruct {
         this.dstPort = this._io.readU2be();
         this.seqNum = this._io.readU4be();
         this.ackNum = this._io.readU4be();
-        // TODO: parse TCP header length and flags
-        this.b12 = this._io.readU1();
-        this.b13 = this._io.readU1();
+
+        // copied from https://datatracker.ietf.org/doc/html/rfc3168#section-23.2
+        //      0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15
+        //   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+        //   |               |               | C | E | U | A | P | R | S | F |
+        //   | Header Length |    Reserved   | W | C | R | C | S | S | Y | I |
+        //   |               |               | R | E | G | K | H | T | N | N |
+        //   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+        //
+        int b12 = this._io.readU1();
+        this.offset = (b12 & 0b11110000) >> 4;
+        this.flags = this._io.readU1();
         this.windowSize = this._io.readU2be();
         this.checksum = this._io.readU2be();
         this.urgentPointer = this._io.readU2be();
+        // the first 5 lines (32 bits/4 bytes per line) are mandatory
+        if (offset > 5) {
+            this.optionsAndPaddings = this._io.readBytes((offset - 5) * 4L);
+        }
         this.body = this._io.readBytesFull();
     }
 
@@ -70,12 +82,48 @@ public class TcpSegment extends KaitaiStruct {
         return ackNum;
     }
 
-    public int b12() {
-        return b12;
+    public int offset() {
+        return offset;
     }
 
-    public int b13() {
-        return b13;
+    public int flags() {
+        return flags;
+    }
+
+    public boolean getFlag(int mask) {
+        return (flags & mask) != 0;
+    }
+
+    public boolean flag_cwr() {
+        return getFlag(FLAG_CWR);
+    }
+
+    public boolean flag_ece() {
+        return getFlag(FLAG_ECE);
+    }
+
+    public boolean flag_urg() {
+        return getFlag(FLAG_URG);
+    }
+
+    public boolean flag_ack() {
+        return getFlag(FLAG_ACK);
+    }
+
+    public boolean flag_psh() {
+        return getFlag(FLAG_PSH);
+    }
+
+    public boolean flag_rst() {
+        return getFlag(FLAG_RST);
+    }
+
+    public boolean flag_syn() {
+        return getFlag(FLAG_SYN);
+    }
+
+    public boolean flag_fin() {
+        return getFlag(FLAG_FIN);
     }
 
     public int windowSize() {
@@ -90,6 +138,10 @@ public class TcpSegment extends KaitaiStruct {
         return urgentPointer;
     }
 
+    public byte[] optionsAndPaddings() {
+        return optionsAndPaddings;
+    }
+
     public byte[] body() {
         return body;
     }
@@ -101,4 +153,14 @@ public class TcpSegment extends KaitaiStruct {
     public KaitaiStruct _parent() {
         return _parent;
     }
+
+    // flag mask
+    public static final int FLAG_CWR = 0b10000000;
+    public static final int FLAG_ECE = 0b01000000;
+    public static final int FLAG_URG = 0b00100000;
+    public static final int FLAG_ACK = 0b00010000;
+    public static final int FLAG_PSH = 0b00001000;
+    public static final int FLAG_RST = 0b00000100;
+    public static final int FLAG_SYN = 0b00000010;
+    public static final int FLAG_FIN = 0b00000001;
 }

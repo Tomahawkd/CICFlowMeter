@@ -47,46 +47,23 @@ public class ProtocolBody extends KaitaiStruct {
     }
 
     private void _read() {
-        {
-            ProtocolEnum on = protocol();
-            if (on != null) {
-                switch (protocol()) {
-                    case IPV6_NONXT: {
-                        this.body = new NoNextHeader(this._io, this, _root);
-                        break;
-                    }
-                    case IPV4: {
-                        this.body = new Ipv4Packet(this._io);
-                        break;
-                    }
-                    case UDP: {
-                        this.body = new UdpDatagram(this._io);
-                        break;
-                    }
-                    case ICMP: {
-                        this.body = new IcmpPacket(this._io);
-                        break;
-                    }
-                    case HOPOPT: {
-                        this.body = new OptionHopByHop(this._io, this, _root);
-                        break;
-                    }
-                    case IPV6: {
-                        this.body = new Ipv6Packet(this._io);
-                        break;
-                    }
-                    case TCP: {
-                        this.body = new TcpSegment(this._io);
-                        break;
-                    }
+        ProtocolEnum on = protocol();
+        if (on != null) {
+            switch (protocol()) {
+                case IPV4: {
+                    this.body = new Ipv4Packet(this._io);
+                    break;
+                }
+                case TCP: {
+                    this.body = new TcpSegment(this._io);
+                    break;
                 }
             }
         }
     }
 
     public ProtocolEnum protocol() {
-        if (this.protocol != null)
-            return this.protocol;
+        if (this.protocol != null) return this.protocol;
         this.protocol = ProtocolEnum.byId(protocolNum());
         return this.protocol;
     }
@@ -108,89 +85,6 @@ public class ProtocolBody extends KaitaiStruct {
 
     public KaitaiStruct _parent() {
         return _parent;
-    }
-
-    /**
-     * Dummy type for IPv6 "no next header" type, which signifies end of headers chain.
-     */
-    public static class NoNextHeader extends KaitaiStruct {
-
-        private final ProtocolBody _root;
-        private final ProtocolBody _parent;
-
-        public NoNextHeader(KaitaiStream _io, ProtocolBody _parent, ProtocolBody _root) {
-            super(_io);
-            this._parent = _parent;
-            this._root = _root;
-            _read();
-        }
-
-        private void _read() {
-        }
-
-        public ProtocolBody _root() {
-            return _root;
-        }
-
-        public ProtocolBody _parent() {
-            return _parent;
-        }
-    }
-
-    public static class OptionHopByHop extends KaitaiStruct {
-
-        private int nextHeaderType;
-        private int hdrExtLen;
-        private byte[] body;
-        private ProtocolBody nextHeader;
-        private final ProtocolBody _root;
-        private final ProtocolBody _parent;
-
-        public OptionHopByHop(KaitaiStream _io) {
-            this(_io, null, null);
-        }
-
-        public OptionHopByHop(KaitaiStream _io, ProtocolBody _parent) {
-            this(_io, _parent, null);
-        }
-
-        public OptionHopByHop(KaitaiStream _io, ProtocolBody _parent, ProtocolBody _root) {
-            super(_io);
-            this._parent = _parent;
-            this._root = _root;
-            _read();
-        }
-
-        private void _read() {
-            this.nextHeaderType = this._io.readU1();
-            this.hdrExtLen = this._io.readU1();
-            this.body = this._io.readBytes((hdrExtLen() - 1));
-            this.nextHeader = new ProtocolBody(this._io, nextHeaderType());
-        }
-
-        public int nextHeaderType() {
-            return nextHeaderType;
-        }
-
-        public int hdrExtLen() {
-            return hdrExtLen;
-        }
-
-        public byte[] body() {
-            return body;
-        }
-
-        public ProtocolBody nextHeader() {
-            return nextHeader;
-        }
-
-        public ProtocolBody _root() {
-            return _root;
-        }
-
-        public ProtocolBody _parent() {
-            return _parent;
-        }
     }
 
     public enum ProtocolEnum {
@@ -349,7 +243,7 @@ public class ProtocolBody extends KaitaiStruct {
             return id;
         }
 
-        private static final Map<Long, ProtocolEnum> byId = new HashMap<Long, ProtocolEnum>(144);
+        private static final Map<Long, ProtocolEnum> byId = new HashMap<>(144);
 
         static {
             for (ProtocolEnum e : ProtocolEnum.values())

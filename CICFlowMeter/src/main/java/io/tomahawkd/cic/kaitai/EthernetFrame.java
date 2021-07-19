@@ -48,35 +48,22 @@ public class EthernetFrame extends KaitaiStruct {
         this.etherType1 = EtherTypeEnum.byId(this._io.readU2be());
         if (etherType1() == EtherTypeEnum.IEEE_802_1Q_TPID) {
             this.tci = new TagControlInfo(this._io, this, _root);
-        }
-        if (etherType1() == EtherTypeEnum.IEEE_802_1Q_TPID) {
             this.etherType2 = EtherTypeEnum.byId(this._io.readU2be());
         }
-        {
-            EtherTypeEnum on = etherType();
-            if (on != null) {
-                switch (etherType()) {
-                    case IPV4: {
-                        this._raw_body = this._io.readBytesFull();
-                        KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
-                        this.body = new Ipv4Packet(_io__raw_body);
-                        break;
-                    }
-                    case IPV6: {
-                        this._raw_body = this._io.readBytesFull();
-                        KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
-                        this.body = new Ipv6Packet(_io__raw_body);
-                        break;
-                    }
-                    default: {
-                        this.body = this._io.readBytesFull();
-                        break;
-                    }
-                }
+
+        EtherTypeEnum on = etherType();
+        if (on != null) {
+            if (etherType() == EtherTypeEnum.IPV4) {
+                this._raw_body = this._io.readBytesFull();
+                KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
+                this.body = new Ipv4Packet(_io__raw_body);
             } else {
                 this.body = this._io.readBytesFull();
             }
+        } else {
+            this.body = this._io.readBytesFull();
         }
+
     }
 
     /**
@@ -86,8 +73,7 @@ public class EthernetFrame extends KaitaiStruct {
      * and real ether type is upcoming next.
      */
     public EtherTypeEnum etherType() {
-        if (this.etherType != null)
-            return this.etherType;
+        if (this.etherType != null) return this.etherType;
         this.etherType = (etherType1() == EtherTypeEnum.IEEE_802_1Q_TPID ? etherType2() : etherType1());
         return this.etherType;
     }
@@ -148,14 +134,6 @@ public class EthernetFrame extends KaitaiStruct {
         private long vlanId;
         private final EthernetFrame _root;
         private final EthernetFrame _parent;
-
-        public TagControlInfo(KaitaiStream _io) {
-            this(_io, null, null);
-        }
-
-        public TagControlInfo(KaitaiStream _io, EthernetFrame _parent) {
-            this(_io, _parent, null);
-        }
 
         public TagControlInfo(KaitaiStream _io, EthernetFrame _parent, EthernetFrame _root) {
             super(_io);
@@ -225,7 +203,7 @@ public class EthernetFrame extends KaitaiStruct {
             return id;
         }
 
-        private static final Map<Long, EtherTypeEnum> byId = new HashMap<Long, EtherTypeEnum>(9);
+        private static final Map<Long, EtherTypeEnum> byId = new HashMap<>(9);
 
         static {
             for (EtherTypeEnum e : EtherTypeEnum.values())

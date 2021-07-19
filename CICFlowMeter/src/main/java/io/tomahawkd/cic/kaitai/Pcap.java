@@ -235,6 +235,15 @@ public class Pcap extends KaitaiStruct {
             }
         }
 
+        public boolean isEthernetPacket() {
+            return _root.hdr().network() == Linktype.ETHERNET;
+        }
+
+        public EthernetFrame getEthernetPacket() {
+            if (isEthernetPacket()) return (EthernetFrame) this.body;
+            else return null;
+        }
+
         /**
          * @see Packet#tsSec
          */

@@ -1,9 +1,9 @@
 package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
-import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.packet.PacketReader;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
@@ -18,7 +18,7 @@ import org.jnetpcap.PcapClosedException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -44,18 +44,17 @@ public class Main {
 
         long flowTimeout = delegate.getFlowTimeout();
         long activityTimeout = delegate.getActivityTimeout();
-        List<Path> pcapPath = delegate.getPcapPath();
-        Path outPath = delegate.getOutputPath();
+        Map<Path, Path> inputOutputPaths = delegate.getInputOutputPaths();
         logger.debug("Parsed settings: ");
         logger.debug("Flow timeout: {}", flowTimeout);
         logger.debug("Activity timeout: {}", activityTimeout);
-        logger.debug("Pcap path: [{}]", StringUtils.join(pcapPath, ","));
-        logger.debug("Output path: {}", outPath);
+        logger.debug("Pcap paths: [{}]", StringUtils.join(inputOutputPaths.keySet(), ","));
+        logger.debug("Output paths: [{}]", StringUtils.join(inputOutputPaths.values(), ","));
 
         try {
-            pcapPath.forEach(p -> {
-                logger.info("Start Processing {}", p.getFileName().toString());
-                readPcapFile(p, outPath, flowTimeout, activityTimeout);
+            inputOutputPaths.forEach((k, v) -> {
+                logger.info("Start Processing {}", k.getFileName().toString());
+                readPcapFile(k, v, flowTimeout, activityTimeout);
             });
         } catch (Exception e) {
             logger.fatal("Unexpected Exception {}", e.getClass().toString());
@@ -64,19 +63,19 @@ public class Main {
         }
     }
 
-    private static void readPcapFile(Path inputFile, Path outPath, long flowTimeout, long activityTimeout) {
-        if (inputFile == null || outPath == null) {
+    private static void readPcapFile(Path inputFile, Path outputPath, long flowTimeout, long activityTimeout) {
+        if (inputFile == null || outputPath == null) {
             return;
         }
 
         String fileName = inputFile.getFileName().toString();
-        Path outputPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
         if (Files.exists(outputPath)) {
             logger.info("File already exists. Removing...");
             try {
                 Files.delete(outputPath);
             } catch (IOException e) {
-                logger.warn("Save file {} can not be deleted.", outputPath.toString(), e);
+                logger.fatal("Save file {} can not be deleted.", outputPath.toString(), e);
+                throw new RuntimeException("Save file {} can not be deleted.", e);
             }
         }
 

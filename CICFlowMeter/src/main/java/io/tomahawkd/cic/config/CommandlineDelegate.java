@@ -1,8 +1,8 @@
 package io.tomahawkd.cic.config;
 
+import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.tomahawkd.cic.util.Utils;
-import com.beust.jcommander.Parameter;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
 import io.tomahawkd.config.annotation.HiddenField;
@@ -19,8 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @SuppressWarnings("all")
@@ -54,6 +55,11 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
             converter = DirPathConverter.class)
     private Path outputPath;
 
+    private Map<Path, Path> inputOutputPaths = new HashMap<>();
+
+    @Parameter(names = {"--one_file"}, description = "Output only one file.")
+    private boolean oneFile;
+
     public boolean isHelp() {
         return help;
     }
@@ -72,6 +78,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public Path getOutputPath() {
         return outputPath;
+    }
+
+    public Map<Path, Path> getInputOutputPaths() {
+        return inputOutputPaths;
     }
 
     @Override
@@ -94,19 +104,36 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         }
 
         // input list
+        StringBuilder builder = new StringBuilder().append(Utils.DEFAULT_OUTPUT_FILENAME_PREFIX);
         for (String pathString : pcapPathStringList) {
             Path p = Paths.get(pathString);
             if (!Files.exists(p)) continue;
             if (Files.isDirectory(p)) {
                 try (Stream<Path> entries = Files.list(p)) {
-                    pcapPath.addAll(entries.filter(fl -> Files.isRegularFile(fl))
+                    entries.filter(Files::isRegularFile)
                             .filter(fl -> {
                                 try {
                                     return Utils.PCAP.equalsIgnoreCase(new Tika().detect(fl));
                                 } catch (IOException e) {
                                     return false;
                                 }
-                            }).collect(Collectors.toList()));
+                            })
+                            .forEach(fl -> {
+                                if (oneFile) {
+                                    builder.append(fl.getFileName().toString().substring(0, 3)).append("_");
+                                    inputOutputPaths.put(fl, null);
+                                } else {
+                                    inputOutputPaths.put(fl, outputPath.resolve(fl.getFileName().toString() + Utils.FLOW_SUFFIX));
+                                }
+                            });
+
+                    if (oneFile) {
+                        builder.deleteCharAt(builder.length() - 1).append(Utils.FLOW_SUFFIX);
+                        Path onefilePath = outputPath.resolve(builder.toString());
+                        for (Path input : inputOutputPaths.keySet()) {
+                            inputOutputPaths.put(input, onefilePath);
+                        }
+                    }
                 } catch (IOException e) {
                     System.err.println("Error occured while opening the directory: " + p.toAbsolutePath().toString());
                     throw new ParameterException(e);
@@ -118,6 +145,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                 } catch (IOException ignored) {
                 }
                 if (isPcap) {
+                    inputOutputPaths.put(p, outputPath.resolve(p.getFileName().toString() + Utils.FLOW_SUFFIX));
                     pcapPath.add(p);
                 } else {
                     System.err.println("Not a Pcap file: " + p.toAbsolutePath().toString());

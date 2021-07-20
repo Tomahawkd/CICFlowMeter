@@ -32,7 +32,7 @@
 			</Policies>
 		</RollingFile>
 		<RollingFile name="DebugRollingFile" fileName="${path}/debug.log"
-		             filePattern="${path}/%d{yyyy-MM-dd-HH}-%i.log.gz">
+		             filePattern="${path}/%d{yyyy-MM-dd-HH}-%i-debug.log.gz">
 			<PatternLayout>
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %logger{36}.%M() @%L - %msg%n</Pattern>
 			</PatternLayout>

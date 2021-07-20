@@ -60,6 +60,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"--one_file"}, description = "Output only one file.")
     private boolean oneFile;
 
+    @Parameter(names = {"-n", "--no"}, description = "Ignores specific feature.")
+    private List<String> ignoreList = new ArrayList<>();
+
     public boolean isHelp() {
         return help;
     }
@@ -82,6 +85,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public Map<Path, Path> getInputOutputPaths() {
         return inputOutputPaths;
+    }
+
+    public List<String> getIgnoreList() {
+        return ignoreList;
     }
 
     @Override

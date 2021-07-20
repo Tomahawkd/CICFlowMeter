@@ -1,15 +1,15 @@
 package io.tomahawkd.cic.flow.features;
 
+import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.util.ClassManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public enum FlowFeatureBuilder {
@@ -25,6 +25,21 @@ public enum FlowFeatureBuilder {
 
     private void init() {
         logger = LogManager.getLogger(FlowFeatureBuilder.class);
+
+        CommandlineDelegate delegate = ConfigManager.get().getDelegateByType(CommandlineDelegate.class);
+        assert delegate != null;
+        List<FeatureType> ignoreList = delegate.getIgnoreList().stream()
+                .map(s -> {
+                    try {
+                        return FeatureType.valueOf(s.toUpperCase(Locale.ROOT));
+                    } catch (IllegalArgumentException e) {
+                        return null;
+                    }
+                }).filter(Objects::nonNull)
+                // basic is mandatory
+                .filter(f -> f != FeatureType.BASIC)
+                .collect(Collectors.toList());
+
         if (cachedFeatureClass == null) {
             cachedFeatureClass =
                     new ArrayList<>(ClassManager.createManager(null)
@@ -33,6 +48,7 @@ public enum FlowFeatureBuilder {
                             .filter(f -> !Modifier.isAbstract(f.getModifiers()))
                             .filter(f -> !Modifier.isInterface(f.getModifiers()))
                             .filter(f -> f.getAnnotation(Feature.class) != null)
+                            .filter(f -> !ignoreList.contains(f.getAnnotation(Feature.class).type()))
                             .peek(f -> logger.debug("Loading class {}", f.getName()))
                             .sorted(Comparator.comparingInt(f -> f.getAnnotation(Feature.class).ordinal()))
                             .collect(Collectors.toList());

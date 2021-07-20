@@ -142,7 +142,6 @@ public class FlowGenerator {
         });
 
         logger.debug("Timeout current has {} flow", currentFlows.size());
-        packetCounter = 0;
     }
 
     private void finishFlow(Flow flow, PacketInfo packet, String id, String type) {

@@ -10,7 +10,7 @@ import io.tomahawkd.cic.flow.Flow;
         FlowFeatureTag.bw_byt_blk_avg,
         FlowFeatureTag.bw_pkt_blk_avg,
         FlowFeatureTag.bw_blk_rate_avg,
-}, ordinal = 5)
+}, ordinal = 5, type = FeatureType.TCP)
 public class BulkFeature extends AbstractFlowFeature {
 
     // almost copy from BasicFlow

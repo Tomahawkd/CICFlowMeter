@@ -14,7 +14,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
         FlowFeatureTag.idl_std,
         FlowFeatureTag.idl_max,
         FlowFeatureTag.idl_min,
-}, ordinal = 7)
+}, ordinal = 7, type = FeatureType.TCP)
 public class FlowActiveFeature extends AbstractFlowFeature {
 
     private long startActiveTime;

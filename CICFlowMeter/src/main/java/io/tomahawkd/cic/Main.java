@@ -46,29 +46,34 @@ public class Main {
         long activityTimeout = delegate.getActivityTimeout();
         Map<Path, Path> inputOutputPaths = delegate.getInputOutputPaths();
         boolean oneFile = delegate.isOneFile();
+        Path oneOutputPath = delegate.getOutputPath();
+
         logger.debug("Parsed settings: ");
         logger.debug("Flow timeout: {}", flowTimeout);
         logger.debug("Activity timeout: {}", activityTimeout);
         logger.debug("Output one file: {}", oneFile);
-        logger.debug("Pcap paths: [{}]", StringUtils.join(inputOutputPaths.keySet(), ","));
+        logger.debug("Data output: ");
         if (oneFile) {
-            logger.debug("Output path: {}", delegate.getOutputPath());
+            inputOutputPaths.forEach((k, v) -> logger.debug("\t{} -> {}", k, oneOutputPath));
+            logger.debug("Output path: {}", oneOutputPath);
         } else {
-            logger.debug("Output paths: [{}]", StringUtils.join(inputOutputPaths.values(), ","));
+            inputOutputPaths.forEach((k, v) -> logger.debug("\t{} -> {}", k, v));
         }
 
         try {
             if (oneFile) {
-                initFile(delegate.getOutputPath());
-            }
-            inputOutputPaths.forEach((inputFile, outputPath) -> {
-                if (!oneFile) {
+                initFile(oneOutputPath);
+                inputOutputPaths.forEach((inputFile, ignored) -> {
+                    logger.info("Start Processing {}", inputFile.getFileName().toString());
+                    readPcapFile(inputFile, oneOutputPath, flowTimeout, activityTimeout);
+                });
+            } else {
+                inputOutputPaths.forEach((inputFile, outputPath) -> {
                     initFile(outputPath);
-                }
-
-                logger.info("Start Processing {}", inputFile.getFileName().toString());
-                readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout);
-            });
+                    logger.info("Start Processing {}", inputFile.getFileName().toString());
+                    readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout);
+                });
+            }
         } catch (Exception e) {
             logger.fatal("Unexpected Exception {}", e.getClass().toString());
             logger.fatal("Reason: {}", String.valueOf(e.getMessage()));

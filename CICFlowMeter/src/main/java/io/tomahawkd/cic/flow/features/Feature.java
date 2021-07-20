@@ -8,8 +8,14 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Feature {
+
     String name();
+
     FlowFeatureTag[] tags();
+
     boolean manual() default false;
+
     int ordinal();
+
+    FeatureType type() default FeatureType.UNKNOWN;
 }

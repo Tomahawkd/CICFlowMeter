@@ -28,6 +28,7 @@
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="6" modulate="true"/>
 				<SizeBasedTriggeringPolicy size="250 MB"/>
+				<OnStartupTriggeringPolicy/>
 			</Policies>
 		</RollingFile>
 		<RollingFile name="DebugRollingFile" fileName="${path}/debug.log"
@@ -38,6 +39,7 @@
 			<Policies>
 				<TimeBasedTriggeringPolicy interval="6" modulate="true"/>
 				<SizeBasedTriggeringPolicy size="250 MB"/>
+				<OnStartupTriggeringPolicy/>
 			</Policies>
 		</RollingFile>
 	</Appenders>

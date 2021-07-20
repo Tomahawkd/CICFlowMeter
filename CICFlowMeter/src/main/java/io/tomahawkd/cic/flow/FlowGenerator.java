@@ -154,6 +154,8 @@ public class FlowGenerator {
     private void callback(Flow flow) {
         if (flow.getBasicInfo().hasHttp()) {
             listeners.forEach(l -> l.onFlowGenerated(flow));
+        } else {
+            logger.debug("Discarding flow {} which has no HTTP packets", flow);
         }
     }
 }

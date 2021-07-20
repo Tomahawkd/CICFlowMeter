@@ -45,16 +45,29 @@ public class Main {
         long flowTimeout = delegate.getFlowTimeout();
         long activityTimeout = delegate.getActivityTimeout();
         Map<Path, Path> inputOutputPaths = delegate.getInputOutputPaths();
+        boolean oneFile = delegate.isOneFile();
         logger.debug("Parsed settings: ");
         logger.debug("Flow timeout: {}", flowTimeout);
         logger.debug("Activity timeout: {}", activityTimeout);
+        logger.debug("Output one file: {}", oneFile);
         logger.debug("Pcap paths: [{}]", StringUtils.join(inputOutputPaths.keySet(), ","));
-        logger.debug("Output paths: [{}]", StringUtils.join(inputOutputPaths.values(), ","));
+        if (oneFile) {
+            logger.debug("Output path: {}", delegate.getOutputPath());
+        } else {
+            logger.debug("Output paths: [{}]", StringUtils.join(inputOutputPaths.values(), ","));
+        }
 
         try {
-            inputOutputPaths.forEach((k, v) -> {
-                logger.info("Start Processing {}", k.getFileName().toString());
-                readPcapFile(k, v, flowTimeout, activityTimeout);
+            if (oneFile) {
+                initFile(delegate.getOutputPath());
+            }
+            inputOutputPaths.forEach((inputFile, outputPath) -> {
+                if (!oneFile) {
+                    initFile(outputPath);
+                }
+
+                logger.info("Start Processing {}", inputFile.getFileName().toString());
+                readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout);
             });
         } catch (Exception e) {
             logger.fatal("Unexpected Exception {}", e.getClass().toString());
@@ -65,27 +78,17 @@ public class Main {
 
     private static void readPcapFile(Path inputFile, Path outputPath, long flowTimeout, long activityTimeout) {
         if (inputFile == null || outputPath == null) {
-            return;
+            logger.fatal("Got a null path.");
+            throw new RuntimeException("Got a null path.");
+        }
+
+        if (!Files.exists(inputFile) || !Files.exists(outputPath)) {
+            logger.fatal("File not found. Status: input({}), output({})",
+                    Files.exists(inputFile), Files.exists(outputPath));
+            throw new RuntimeException("File not found.");
         }
 
         String fileName = inputFile.getFileName().toString();
-        if (Files.exists(outputPath)) {
-            logger.info("File already exists. Removing...");
-            try {
-                Files.delete(outputPath);
-            } catch (IOException e) {
-                logger.fatal("Save file {} can not be deleted.", outputPath.toString(), e);
-                throw new RuntimeException("Save file {} can not be deleted.", e);
-            }
-        }
-
-        try {
-            logger.info("Creating file {}...", outputPath.getFileName().toString());
-            Utils.initFile(outputPath, Flow.getHeaders());
-        } catch (IOException e) {
-            logger.fatal("Failed to create file");
-            throw new RuntimeException(e);
-        }
         System.out.printf("Working on... %s%n", fileName);
 
         // setting up
@@ -137,5 +140,25 @@ public class Main {
         System.out.printf("%s is done. total %d flows %n", fileName, flowCount.get());
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
         System.out.println(DividingLine);
+    }
+
+    private static void initFile(Path file) {
+        if (Files.exists(file)) {
+            logger.info("File already exists. Removing...");
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
+                logger.fatal("Save file {} can not be deleted.", file.toString(), e);
+                throw new RuntimeException("Save file {} can not be deleted.", e);
+            }
+        }
+
+        try {
+            logger.info("Creating file {}...", file.getFileName().toString());
+            Utils.initFile(file, Flow.getHeaders());
+        } catch (IOException e) {
+            logger.fatal("Failed to create file");
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -87,6 +87,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         return inputOutputPaths;
     }
 
+    public boolean isOneFile() {
+        return oneFile;
+    }
+
     public List<String> getIgnoreList() {
         return ignoreList;
     }
@@ -140,6 +144,8 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                         for (Path input : inputOutputPaths.keySet()) {
                             inputOutputPaths.put(input, onefilePath);
                         }
+                        // At last change output path to the onefile path
+                        outputPath = onefilePath;
                     }
                 } catch (IOException e) {
                     System.err.println("Error occured while opening the directory: " + p.toAbsolutePath().toString());

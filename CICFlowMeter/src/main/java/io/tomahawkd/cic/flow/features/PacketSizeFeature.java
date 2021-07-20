@@ -101,7 +101,7 @@ public class PacketSizeFeature extends AbstractFlowFeature {
 
     public double bAvgSegmentSize() {
         if (this.bwdPacketStats.getN() != 0)
-            return (this.bwdPacketStats.getSum() / (double) fwdPacketStats.getN());
+            return (this.bwdPacketStats.getSum() / (double) bwdPacketStats.getN());
         return 0;
     }
 

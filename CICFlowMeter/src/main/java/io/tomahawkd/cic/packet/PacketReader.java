@@ -36,7 +36,8 @@ public class PacketReader {
     // e.g., HTTP
     private final PacketDelegate[] appLayerDelegates =
             new PacketDelegate[] {
-                    new HttpPacketDelegate()
+                    new HttpPacketDelegate(),
+                    new UnknownAppLayerPacketDelegate()
             };
 
     public PacketReader(String filename) {

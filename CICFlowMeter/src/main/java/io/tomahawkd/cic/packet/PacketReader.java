@@ -1,5 +1,6 @@
 package io.tomahawkd.cic.packet;
 
+import io.tomahawkd.cic.kaitai.Packet;
 import io.tomahawkd.cic.kaitai.Pcap;
 import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;
@@ -61,7 +62,7 @@ public class PacketReader {
 
     }
 
-    private PacketInfo parse(Pcap.Packet packet, PacketInfo info) {
+    private PacketInfo parse(Packet packet, PacketInfo info) {
         for (PacketDelegate delegate : internetLayerDelegates) {
             if (delegate.parse(info, packet)) {
                 info.setTimestamp(packet.tsUsec());

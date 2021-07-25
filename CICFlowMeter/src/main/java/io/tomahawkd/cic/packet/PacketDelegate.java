@@ -1,8 +1,8 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.kaitai.Pcap;
+import io.tomahawkd.cic.kaitai.Packet;
 
 public interface PacketDelegate {
 
-    boolean parse(PacketInfo dst, Pcap.Packet packet);
+    boolean parse(PacketInfo dst, Packet packet);
 }

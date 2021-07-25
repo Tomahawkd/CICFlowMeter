@@ -2,9 +2,12 @@ package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
+import io.tomahawkd.cic.packet.MetaFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Optional;
 
 public abstract class AbstractHttpFeature extends AbstractFlowFeature {
 
@@ -16,6 +19,9 @@ public abstract class AbstractHttpFeature extends AbstractFlowFeature {
 
     @Override
     public final void addPacket(PacketInfo info, boolean fwd) {
+
+        Boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
+        if (!http) return;
 
         Boolean request = info.getFeature(HttpPacketDelegate.Feature.REQUEST, Boolean.class);
         if (request == null) {

@@ -66,7 +66,7 @@ public class FlowGenerator {
         // 2.- we eliminate the flow from the current flow list
         // 3.- we create a new flow with the packet-in-process
         if ((currentTimestamp - flow.getFlowStartTime()) > flowTimeOut) {
-            listeners.forEach(l -> l.onFlowGenerated(flow));
+            callback(flow);
             currentFlows.remove(id);
             currentFlows.put(id, new Flow(packet, flow));
 
@@ -127,7 +127,7 @@ public class FlowGenerator {
 
     public void dumpLabeledCurrentFlow() {
         // treat the left flows as completed
-        currentFlows.values().forEach(f -> listeners.forEach(l -> l.onFlowGenerated(f)));
+        currentFlows.values().forEach(this::callback);
     }
 
     private void flushTimeoutFlows(long timestamp) {
@@ -137,18 +137,25 @@ public class FlowGenerator {
                 .collect(Collectors.toList());
 
         list.forEach(e -> {
-            listeners.forEach(l -> l.onFlowGenerated(e.getValue()));
+            callback(e.getValue());
             currentFlows.remove(e.getKey());
         });
 
         logger.debug("Timeout current has {} flow", currentFlows.size());
-        packetCounter = 0;
     }
 
     private void finishFlow(Flow flow, PacketInfo packet, String id, String type) {
         logger.debug("{} current has {} flow", type, currentFlows.size());
         flow.addPacket(packet);
-        listeners.forEach(l -> l.onFlowGenerated(flow));
+        callback(flow);
         currentFlows.remove(id);
+    }
+
+    private void callback(Flow flow) {
+        if (flow.getBasicInfo().hasHttp()) {
+            listeners.forEach(l -> l.onFlowGenerated(flow));
+        } else {
+            logger.debug("Discarding flow {} which has no HTTP packets", flow);
+        }
     }
 }

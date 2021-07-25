@@ -37,7 +37,7 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
         FlowFeatureTag.pkt_size_avg,
         FlowFeatureTag.fw_seg_avg,
         FlowFeatureTag.bw_seg_avg,
-}, ordinal = 2)
+}, ordinal = 2, type = FeatureType.TCP)
 public class PacketSizeFeature extends AbstractFlowFeature {
 
     private final SummaryStatistics flowPacketStats = new SummaryStatistics();
@@ -101,7 +101,7 @@ public class PacketSizeFeature extends AbstractFlowFeature {
 
     public double bAvgSegmentSize() {
         if (this.bwdPacketStats.getN() != 0)
-            return (this.bwdPacketStats.getSum() / (double) fwdPacketStats.getN());
+            return (this.bwdPacketStats.getSum() / (double) bwdPacketStats.getN());
         return 0;
     }
 
@@ -114,13 +114,21 @@ public class PacketSizeFeature extends AbstractFlowFeature {
             builder.append(flowPacketStats.getMean()).append(SEPARATOR); //                FlowFeatureTag.pkt_len_avg,
             builder.append(flowPacketStats.getStandardDeviation()).append(SEPARATOR); //   FlowFeatureTag.pkt_len_std,
             builder.append(flowPacketStats.getVariance()).append(SEPARATOR); //            FlowFeatureTag.pkt_len_var,
+        } else {
+            addZeroesToBuilder(builder, 5);
         }
 
         subPacketUpdate(builder, fwdPacketStats);
-        builder.append(fwdHeaderStats.getSum()).append(SEPARATOR); //                FlowFeatureTag.fw_hdr_len,
-        builder.append(fwdHeaderStats.getMin()).append(SEPARATOR); // fw_hdr_min
+        if (fwdPacketStats.getN() > 0) {
+            builder.append(fwdHeaderStats.getSum()).append(SEPARATOR); //                FlowFeatureTag.fw_hdr_len,
+            builder.append(fwdHeaderStats.getMin()).append(SEPARATOR); // fw_hdr_min
+        } else addZeroesToBuilder(builder, 2);
+
         subPacketUpdate(builder, bwdPacketStats);
-        builder.append(bwdHeaderStats.getSum()).append(SEPARATOR); //                FlowFeatureTag.bw_hdr_len,
+
+        if (bwdHeaderStats.getN() > 0) {
+            builder.append(bwdHeaderStats.getSum()).append(SEPARATOR); //                FlowFeatureTag.bw_hdr_len,
+        } else builder.append(0).append(SEPARATOR);
 
         if (fwdPacketStats.getN() > 0) {
             builder.append(bwdPacketStats.getN() / fwdPacketStats.getN()).append(SEPARATOR); // down_up_ratio,

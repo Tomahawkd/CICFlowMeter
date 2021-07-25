@@ -8,7 +8,7 @@ import io.tomahawkd.cic.flow.Flow;
         FlowFeatureTag.subfl_fw_byt,
         FlowFeatureTag.subfl_bw_pkt,
         FlowFeatureTag.subfl_bw_byt,
-}, ordinal = 6)
+}, ordinal = 6, type = FeatureType.TCP)
 public class SubFlowFeature extends AbstractFlowFeature {
 
     private long sfLastPacketTS=-1;

@@ -2,6 +2,7 @@ package io.tomahawkd.cic.packet;
 
 import nl.basjes.parse.useragent.UserAgent;
 import nl.basjes.parse.useragent.UserAgentAnalyzer;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,7 @@ import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Http;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class HttpPacketDelegate extends AbstractPacketDelegate {
@@ -35,14 +37,22 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             return false;
         }
 
-        dst.addFeature(MetaFeature.HTTP, true);
-        boolean request = !header.startsWith("HTTP");
-        dst.addFeature(Feature.REQUEST, request);
         String[] headers = header.trim().split("\r\n");
-
-        // first line
         String[] firstLineElements = headers[0].split(" ", 3);
-        if (firstLineElements.length < 2) return false;
+        if (firstLineElements.length != 3) {
+            logger.warn("Not a legal header [{}]", header);
+            return false;
+        }
+
+        boolean request = !header.startsWith("HTTP");
+        if (request) {
+            String method = header.substring(0, HTTP_METHODS_STRING_MAX_LEN).split(" ", 2)[0]
+                    .toUpperCase(Locale.ROOT);
+            if (!ArrayUtils.contains(HTTP_METHODS, method)) {
+                logger.warn("Not a legal request header [{}]", header);
+                return false;
+            }
+        }
 
         // remaining headers
         Map<String, String> headerMap = new HashMap<>();
@@ -54,6 +64,9 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
                 headerMap.put(keyVal[0].trim(), keyVal[1].trim());
             }
         }
+
+        dst.addFeature(MetaFeature.HTTP, true);
+        dst.addFeature(Feature.REQUEST, request);
         dst.addFeature(Feature.HEADER, headerMap);
 
         if (request) {
@@ -108,4 +121,10 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
     private UserAgent parseUserAgent(String ua) {
         return ua != null? uaa.parse(ua): null;
     }
+
+    // hard-coded
+    private static final int HTTP_METHODS_STRING_MAX_LEN = 7;
+    private static final String[] HTTP_METHODS = {
+            "GET", "POST", "HEAD", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"
+    };
 }

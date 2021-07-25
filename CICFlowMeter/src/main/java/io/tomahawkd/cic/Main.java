@@ -1,25 +1,23 @@
 package io.tomahawkd.cic;
 
 import io.tomahawkd.cic.config.CommandlineDelegate;
-import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
+import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.packet.PacketReader;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
 import io.tomahawkd.config.sources.SourceManager;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jnetpcap.PcapClosedException;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -45,19 +43,36 @@ public class Main {
 
         long flowTimeout = delegate.getFlowTimeout();
         long activityTimeout = delegate.getActivityTimeout();
-        List<Path> pcapPath = delegate.getPcapPath();
-        Path outPath = delegate.getOutputPath();
+        Map<Path, Path> inputOutputPaths = delegate.getInputOutputPaths();
+        boolean oneFile = delegate.isOneFile();
+        Path oneOutputPath = delegate.getOutputPath();
+
         logger.debug("Parsed settings: ");
         logger.debug("Flow timeout: {}", flowTimeout);
         logger.debug("Activity timeout: {}", activityTimeout);
-        logger.debug("Pcap path: [{}]", StringUtils.join(pcapPath, ","));
-        logger.debug("Output path: {}", outPath);
+        logger.debug("Output one file: {}", oneFile);
+        logger.debug("Data output: ");
+        if (oneFile) {
+            inputOutputPaths.forEach((k, v) -> logger.debug("\t{} -> {}", k, oneOutputPath));
+            logger.debug("Output path: {}", oneOutputPath);
+        } else {
+            inputOutputPaths.forEach((k, v) -> logger.debug("\t{} -> {}", k, v));
+        }
 
         try {
-            pcapPath.forEach(p -> {
-                logger.info("Start Processing {}", p.getFileName().toString());
-                readPcapFile(p, outPath, flowTimeout, activityTimeout);
-            });
+            if (oneFile) {
+                initFile(oneOutputPath);
+                inputOutputPaths.forEach((inputFile, ignored) -> {
+                    logger.info("Start Processing {}", inputFile.getFileName().toString());
+                    readPcapFile(inputFile, oneOutputPath, flowTimeout, activityTimeout);
+                });
+            } else {
+                inputOutputPaths.forEach((inputFile, outputPath) -> {
+                    initFile(outputPath);
+                    logger.info("Start Processing {}", inputFile.getFileName().toString());
+                    readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout);
+                });
+            }
         } catch (Exception e) {
             logger.fatal("Unexpected Exception {}", e.getClass().toString());
             logger.fatal("Reason: {}", String.valueOf(e.getMessage()));
@@ -65,29 +80,19 @@ public class Main {
         }
     }
 
-    private static void readPcapFile(Path inputFile, Path outPath, long flowTimeout, long activityTimeout) {
-        if (inputFile == null || outPath == null) {
-            return;
+    private static void readPcapFile(Path inputFile, Path outputPath, long flowTimeout, long activityTimeout) {
+        if (inputFile == null || outputPath == null) {
+            logger.fatal("Got a null path.");
+            throw new RuntimeException("Got a null path.");
+        }
+
+        if (!Files.exists(inputFile) || !Files.exists(outputPath)) {
+            logger.fatal("File not found. Status: input({}), output({})",
+                    Files.exists(inputFile), Files.exists(outputPath));
+            throw new RuntimeException("File not found.");
         }
 
         String fileName = inputFile.getFileName().toString();
-        Path outputPath = outPath.resolve(fileName + Utils.FLOW_SUFFIX);
-        if (Files.exists(outputPath)) {
-            logger.info("File already exists. Removing...");
-            try {
-                Files.delete(outputPath);
-            } catch (IOException e) {
-                logger.warn("Save file {} can not be deleted.", outputPath.toString(), e);
-            }
-        }
-
-        try {
-            logger.info("Creating file {}...", outputPath.getFileName().toString());
-            Utils.initFile(outputPath, Flow.getHeaders());
-        } catch (IOException e) {
-            logger.fatal("Failed to create file");
-            throw new RuntimeException(e);
-        }
         System.out.printf("Working on... %s%n", fileName);
 
         // setting up
@@ -139,5 +144,25 @@ public class Main {
         System.out.printf("%s is done. total %d flows %n", fileName, flowCount.get());
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
         System.out.println(DividingLine);
+    }
+
+    private static void initFile(Path file) {
+        if (Files.exists(file)) {
+            logger.info("File already exists. Removing...");
+            try {
+                Files.delete(file);
+            } catch (IOException e) {
+                logger.fatal("Save file {} can not be deleted.", file.toString(), e);
+                throw new RuntimeException("Save file {} can not be deleted.", e);
+            }
+        }
+
+        try {
+            logger.info("Creating file {}...", file.getFileName().toString());
+            Utils.initFile(file, Flow.getHeaders());
+        } catch (IOException e) {
+            logger.fatal("Failed to create file");
+            throw new RuntimeException(e);
+        }
     }
 }

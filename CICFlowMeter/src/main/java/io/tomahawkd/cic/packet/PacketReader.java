@@ -4,8 +4,6 @@ import io.tomahawkd.cic.kaitai.Pcap;
 import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jnetpcap.protocol.lan.Ethernet;
-import org.jnetpcap.protocol.vpn.L2TP;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -32,7 +30,8 @@ public class PacketReader {
     // e.g., HTTP
     private final PacketDelegate[] appLayerDelegates =
             new PacketDelegate[] {
-                    new HttpPacketDelegate()
+                    new HttpPacketDelegate(),
+                    new UnknownAppLayerPacketDelegate()
             };
 
     public PacketReader(String filename) {

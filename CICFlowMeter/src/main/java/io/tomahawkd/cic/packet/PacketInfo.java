@@ -29,6 +29,8 @@ public class PacketInfo {
     // tcp data
     private int tcpWindow;
     private int flags;
+    private long seq;
+    private long ack;
 
     public PacketInfo(long id) {
         data = new HashMap<>();
@@ -74,6 +76,8 @@ public class PacketInfo {
         this.dstPort = unsafeGet(MetaFeature.DST_PORT, int.class);
         this.tcpWindow = unsafeGet(TcpPacketDelegate.Feature.TCP_WINDOW, int.class);
         this.flags = unsafeGet(TcpPacketDelegate.Feature.FLAG, int.class);
+        this.seq = unsafeGet(TcpPacketDelegate.Feature.SEQ, long.class);
+        this.ack = unsafeGet(TcpPacketDelegate.Feature.ACK, long.class);
         generateFlowId();
     }
 
@@ -160,6 +164,14 @@ public class PacketInfo {
 
     public boolean getFlag(int id) {
         return (flags & id) != 0;
+    }
+
+    public long seq() {
+        return seq;
+    }
+
+    public long ack() {
+        return ack;
     }
 
     @Override

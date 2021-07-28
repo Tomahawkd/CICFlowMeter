@@ -57,7 +57,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     private Map<Path, Path> inputOutputPaths = new HashMap<>();
 
-    @Parameter(names = {"--one_file"}, description = "Output only one file.")
+    @Parameter(names = {"-1", "--one_file"}, description = "Output only one file.")
     private boolean oneFile;
 
     @Parameter(names = {"-n", "--no"}, description = "Ignores specific feature.")

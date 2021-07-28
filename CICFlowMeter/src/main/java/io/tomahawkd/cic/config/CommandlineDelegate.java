@@ -2,6 +2,7 @@ package io.tomahawkd.cic.config;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
+import io.tomahawkd.cic.ExecutionMode;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
@@ -62,6 +63,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     @Parameter(names = {"-n", "--no"}, description = "Ignores specific feature.")
     private List<String> ignoreList = new ArrayList<>();
+
+    @Parameter(names = {"-m", "--mode"}, description = "Mode selection.", converter = ExecutionModeConverter.class)
+    private ExecutionMode mode = ExecutionMode.DEFAULT;
 
     public boolean isHelp() {
         return help;

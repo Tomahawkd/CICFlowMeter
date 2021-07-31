@@ -59,6 +59,23 @@ public class TcpPayloadReassembler {
         return false;
     }
 
+    public void flushIncompletePackets(long currentSeq, Consumer<PacketInfo> function, boolean fwd) {
+        Map<Long, String> map = fwd ? segmentMap_fwd : segmentMap_bwd;
+
+        for (Map.Entry<Long, String> entry : map.entrySet()) {
+            long expectSeq = entry.getKey();
+
+            // the current seq greater than expect, that is, the packet is missing
+            if (expectSeq < currentSeq) {
+                String incompHeader = entry.getValue();
+                PacketInfo info = new PacketInfo(-1);
+                if (HttpPacketDelegate.parseFeatures(info, incompHeader, true)) {
+                    function.accept(info);
+                }
+            }
+        }
+    }
+
     public boolean isEmpty(boolean fwd) {
         return fwd ? segmentMap_fwd.isEmpty() : segmentMap_bwd.isEmpty();
     }

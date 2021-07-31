@@ -69,7 +69,7 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
 
     @Override
     public final void addPacket(PacketInfo info, boolean fwd) {
-        reassembler.flushIncompletePackets(info.seq(), this::acceptPacket, fwd);
+        if (!reassembler.isEmpty()) reassembler.flushIncompletePackets(info.seq(), this::acceptPacket, fwd);
 
         Boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
         if (!http) {

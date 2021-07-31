@@ -3,6 +3,7 @@ package io.tomahawkd.cic.packet;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
+@AtLayer(LayerType.TRANSPORT)
 public class TcpPacketDelegate extends AbstractPacketDelegate {
 
     public TcpPacketDelegate() {

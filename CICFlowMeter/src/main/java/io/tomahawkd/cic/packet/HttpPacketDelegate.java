@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+@AtLayer(LayerType.APPLICATION)
 public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     private static final Logger logger = LogManager.getLogger(HttpPacketDelegate.class);

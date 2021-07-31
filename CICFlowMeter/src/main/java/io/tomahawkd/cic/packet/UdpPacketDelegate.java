@@ -3,6 +3,7 @@ package io.tomahawkd.cic.packet;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.tcpip.Udp;
 
+@AtLayer(LayerType.TRANSPORT)
 public class UdpPacketDelegate extends AbstractPacketDelegate {
 
     public UdpPacketDelegate() {

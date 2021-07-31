@@ -7,7 +7,9 @@ public enum MetaFeature implements PacketFeature {
 
     // Src and Dst information
     SRC(byte[].class), DST(byte[].class), SRC_PORT(Integer.class), DST_PORT(Integer.class),
-    PAYLOAD_LEN(Integer.class), HEADER_LEN(Integer.class);
+    PAYLOAD_LEN(Integer.class), HEADER_LEN(Integer.class),
+
+    APP_DATA(byte[].class);
 
     private final Class<?> type;
 

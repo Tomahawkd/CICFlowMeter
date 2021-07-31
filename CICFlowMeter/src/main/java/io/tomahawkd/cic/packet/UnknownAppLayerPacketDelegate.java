@@ -14,7 +14,7 @@ public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
     public boolean parse(PacketInfo dst, PcapPacket packet) {
         dst.addFeature(MetaFeature.HTTP, false);
 
-        byte[] payload = dst.getFeature(TcpPacketDelegate.Feature.PAYLOAD, byte[].class);
+        byte[] payload = dst.getFeature(MetaFeature.APP_DATA, byte[].class);
         if (payload != null && payload.length > 0) {
             int i = 0;
             int terminationCount = 0;
@@ -46,7 +46,7 @@ public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
             String readableString = new String(ArrayUtils.subarray(payload, 0, i));
             dst.addFeature(Feature.PAYLOAD, readableString);
         }
-        dst.removeFeature(TcpPacketDelegate.Feature.PAYLOAD);
+        dst.removeFeature(MetaFeature.APP_DATA);
 
         return true;
     }

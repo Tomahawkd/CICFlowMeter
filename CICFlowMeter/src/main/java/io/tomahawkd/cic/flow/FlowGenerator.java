@@ -1,5 +1,6 @@
 package io.tomahawkd.cic.flow;
 
+import io.tomahawkd.cic.execute.ExecutionMode;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.FlowGenListener;
 import io.tomahawkd.cic.util.FlowLabelSupplier;
@@ -7,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class FlowGenerator {
@@ -21,13 +23,20 @@ public class FlowGenerator {
 
     private int packetCounter;
 
-    public FlowGenerator(long flowTimeout, long activityTimeout) {
+    private final BiFunction<Flow, Long, Boolean> timeoutStrategy;
+
+    public FlowGenerator(long flowTimeout, long activityTimeout, ExecutionMode mode) {
         super();
         this.flowTimeOut = flowTimeout;
         this.flowActivityTimeOut = activityTimeout;
         currentFlows = new HashMap<>();
         packetCounter = 0;
         listeners = new ArrayList<>();
+        if (mode == ExecutionMode.FULL) {
+            this.timeoutStrategy = this::fullTimeout;
+        } else {
+            this.timeoutStrategy = this::samplingTimeout;
+        }
     }
 
     public void addFlowListener(FlowGenListener listener) {
@@ -59,22 +68,21 @@ public class FlowGenerator {
         }
 
         Flow flow = currentFlows.get(id);
-        long currentTimestamp = packet.getTimestamp();
 
         // Flow finished due flowtimeout:
         // 1.- we move the flow to finished flow list
         // 2.- we eliminate the flow from the current flow list
         // 3.- we create a new flow with the packet-in-process
-        if ((currentTimestamp - flow.getFlowStartTime()) > flowTimeOut) {
-            callback(flow);
-            currentFlows.remove(id);
-            currentFlows.put(id, new Flow(packet, flow));
+        // The function is moved to flush timeout, but NO NEW flow is created
+        // However, if we flush the current flow, the flow-id is removed,
+        // when we meet the packet with same flow-id, the flow is recreated, so it is equivalent
 
-            // Flow finished due FIN flag (tcp only):
-            // 1.- we add the packet-in-process to the flow (it is the last packet)
-            // 2.- we move the flow to finished flow list
-            // 3.- we eliminate the flow from the current flow list
-        } else if (packet.getFlag(PacketInfo.FLAG_FIN)) {
+
+        // Flow finished due FIN flag (tcp only):
+        // 1.- we add the packet-in-process to the flow (it is the last packet)
+        // 2.- we move the flow to finished flow list
+        // 3.- we eliminate the flow from the current flow list
+        if (packet.getFlag(PacketInfo.FLAG_FIN)) {
 
             //
             // Forward Flow
@@ -133,7 +141,7 @@ public class FlowGenerator {
     private void flushTimeoutFlows(long timestamp) {
         logger.debug("Flushing timeout flows.");
         List<Map.Entry<String, Flow>> list = currentFlows.entrySet().stream()
-                .filter(e -> timestamp - e.getValue().getFlowStartTime() > this.flowTimeOut)
+                .filter(e -> timeoutStrategy.apply(e.getValue(), timestamp))
                 .collect(Collectors.toList());
 
         list.forEach(e -> {
@@ -142,6 +150,14 @@ public class FlowGenerator {
         });
 
         logger.debug("Timeout current has {} flow", currentFlows.size());
+    }
+
+    private boolean samplingTimeout(Flow flow, long timestamp) {
+        return timestamp - flow.getFlowStartTime() > this.flowTimeOut;
+    }
+
+    private boolean fullTimeout(Flow flow, long timestamp) {
+        return timestamp - flow.getFlowLastSeen() > this.flowTimeOut;
     }
 
     private void finishFlow(Flow flow, PacketInfo packet, String id, String type) {

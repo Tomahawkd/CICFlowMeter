@@ -87,6 +87,10 @@ public class Flow implements FlowFeature {
         return getBasicInfo().getFlowStartTime();
     }
 
+    public long getFlowLastSeen() {
+        return getBasicInfo().getFlowLastSeen();
+    }
+
     public String getFlowId() {
         return getBasicInfo().getFlowId();
     }

@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.packet;
 
+import io.tomahawkd.cic.util.UserAgentAnalyzerHelper;
 import nl.basjes.parse.useragent.UserAgent;
-import nl.basjes.parse.useragent.UserAgentAnalyzer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -17,9 +17,6 @@ import java.util.Map;
 public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     private static final Logger logger = LogManager.getLogger(HttpPacketDelegate.class);
-
-    private final UserAgentAnalyzer uaa = UserAgentAnalyzer.newBuilder().hideMatcherLoadStats()
-            .withCache(10000).build();
 
     public HttpPacketDelegate() {
         super(Http.ID);
@@ -38,11 +35,17 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             return false;
         }
 
+        return parseFeatures(dst, header, false);
+    }
+
+    // return is valid
+    public static boolean parseFeatures(PacketInfo dst, String header, boolean force) {
+        boolean incomplete = false;
         String[] headers = header.trim().split("\r\n");
         String[] firstLineElements = headers[0].split(" ", 3);
         if (firstLineElements.length != 3) {
             logger.warn("Not a legal header [{}]", header);
-            return false;
+            incomplete = true;
         }
 
         boolean request = !header.startsWith("HTTP");
@@ -61,40 +64,59 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             String[] keyVal = headers[i].split(": ", 2);
             if (keyVal.length < 2) {
                 logger.warn("Invalid header segment {}", headers[i]);
+                incomplete = true;
             } else {
-                headerMap.put(keyVal[0].trim(), keyVal[1].trim());
+                headerMap.put(keyVal[0].trim().toUpperCase(Locale.ROOT).replace('-', '_'), keyVal[1].trim());
             }
         }
 
         dst.addFeature(MetaFeature.HTTP, true);
         dst.addFeature(Feature.REQUEST, request);
         dst.addFeature(Feature.HEADER, headerMap);
+        if (incomplete) {
+            dst.addFeature(Feature.INCOMPLETE, true);
+            dst.addFeature(Feature.INCOM_SEGMENT, header);
+            if (!force) return true;
+        } else {
+            dst.addFeature(Feature.INCOMPLETE, false);
+        }
 
         if (request) {
-            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Request.Content_Length)));
+            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(getField(headerMap, Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, firstLineElements[0]);
-            dst.addFeature(Feature.UA, parseUserAgent(http.fieldValue(Http.Request.User_Agent)));
-            dst.addFeature(Feature.CONNECTION, http.fieldValue(Http.Request.Connection));
-            dst.addFeature(Feature.CACHE, http.fieldValue(Http.Request.Cache_Control));
+            dst.addFeature(Feature.UA, UserAgentAnalyzerHelper.INSTANCE.parseUserAgent(getField(headerMap, Http.Request.User_Agent)));
+            dst.addFeature(Feature.CONNECTION, getField(headerMap, Http.Request.Connection));
+            dst.addFeature(Feature.CACHE, getField(headerMap, Http.Request.Cache_Control));
             dst.addFeature(Feature.PATH, firstLineElements[1]);
-            dst.addFeature(Feature.HOST, http.fieldValue(Http.Request.Host));
-            dst.addFeature(Feature.CHARSET, http.fieldValue(Http.Request.Accept_Charset));
-            dst.addFeature(Feature.REFERER, http.fieldValue(Http.Request.Referer));
-            dst.addFeature(Feature.LANGUAGE, http.fieldValue(Http.Request.Accept_Language));
-            dst.addFeature(Feature.ENCODING, http.fieldValue(Http.Request.Accept_Encoding));
-            dst.addFeature(Feature.PROXY, http.fieldValue(Http.Request.Proxy_Connection));
-            dst.addFeature(Feature.CONTENT_TYPE, http.fieldValue(Http.Request.Accept));
+            dst.addFeature(Feature.HOST, getField(headerMap, Http.Request.Host));
+            dst.addFeature(Feature.CHARSET, getField(headerMap, Http.Request.Accept_Charset));
+            dst.addFeature(Feature.REFERER, getField(headerMap, Http.Request.Referer));
+            dst.addFeature(Feature.LANGUAGE, getField(headerMap, Http.Request.Accept_Language));
+            dst.addFeature(Feature.ENCODING, getField(headerMap, Http.Request.Accept_Encoding));
+            // dst.addFeature(Feature.PROXY, getField(headerMap, Http.Request.Proxy_Connection));
+            dst.addFeature(Feature.CONTENT_TYPE, getField(headerMap, Http.Request.Accept));
         } else {
-            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(http.fieldValue(Http.Response.Content_Length)));
+            dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(getField(headerMap, Http.Response.Content_Length)));
             dst.addFeature(Feature.STATUS, firstLineElements[1]);
-            dst.addFeature(Feature.CONTENT_TYPE, http.fieldValue(Http.Response.Content_Type));
+            dst.addFeature(Feature.CONTENT_TYPE, getField(headerMap, Http.Response.Content_Type));
         }
         return true;
+    }
+
+    private static String getField(Map<String, String> headers, Http.Request type) {
+        return headers.get(type.name().toUpperCase(Locale.ROOT));
+    }
+
+    private static String getField(Map<String, String> headers, Http.Response type) {
+        return headers.get(type.name().toUpperCase(Locale.ROOT));
     }
 
     public enum Feature implements PacketFeature {
         // Common
         CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(Map.class),
+
+        // resolve TCP reassemble
+        INCOMPLETE(Boolean.class), INCOM_SEGMENT(String.class),
 
         // for request it refers header Accept
         CONTENT_TYPE(String.class),
@@ -117,10 +139,6 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         public Class<?> getType() {
             return type;
         }
-    }
-
-    private UserAgent parseUserAgent(String ua) {
-        return ua != null? uaa.parse(ua): null;
     }
 
     // hard-coded

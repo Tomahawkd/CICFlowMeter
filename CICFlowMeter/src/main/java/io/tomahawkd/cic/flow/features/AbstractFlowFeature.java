@@ -9,13 +9,17 @@ import java.util.Objects;
 
 public abstract class AbstractFlowFeature implements FlowFeature {
 
-    private final FlowFeatureTag[] headers;
+    private FlowFeatureTag[] headers;
     protected final Flow flow;
 
     public AbstractFlowFeature(Flow flow) {
         Feature feature = Objects.requireNonNull(this.getClass().getAnnotation(Feature.class));
         this.headers = feature.tags();
         this.flow = flow;
+    }
+
+    protected void setHeaders(FlowFeatureTag... tags) {
+        this.headers = tags;
     }
 
     @Override

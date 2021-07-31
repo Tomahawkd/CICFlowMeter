@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.config;
 
 import com.beust.jcommander.IStringConverter;
-import io.tomahawkd.cic.ExecutionMode;
+import io.tomahawkd.cic.execute.ExecutionMode;
 
 import java.util.Locale;
 

@@ -1,4 +1,4 @@
-package io.tomahawkd.cic;
+package io.tomahawkd.cic.execute;
 
 public enum ExecutionMode {
 

@@ -2,7 +2,7 @@ package io.tomahawkd.cic.config;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import io.tomahawkd.cic.ExecutionMode;
+import io.tomahawkd.cic.execute.ExecutionMode;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
@@ -61,7 +61,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-1", "--one_file"}, description = "Output only one file.")
     private boolean oneFile;
 
-    @Parameter(names = {"-n", "--no"}, description = "Ignores specific feature.")
+    @Parameter(names = {"-n", "--no"}, description = "Ignores specific feature (use as -no <feature1>,<feature2>)")
     private List<String> ignoreList = new ArrayList<>();
 
     @Parameter(names = {"-m", "--mode"}, description = "Mode selection.", converter = ExecutionModeConverter.class)
@@ -97,6 +97,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public List<String> getIgnoreList() {
         return ignoreList;
+    }
+
+    public ExecutionMode getMode() {
+        return mode;
     }
 
     @Override
@@ -174,5 +178,28 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                         p.toAbsolutePath().toString());
             }
         }
+
+        // execution mode
+        if (mode == ExecutionMode.DEFAULT) {
+            mode = ExecutionMode.SAMPLING;
+        }
+    }
+
+    public String debugString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("Parsed settings: ").append("\n");
+        builder.append("Execution mode: ").append(mode.toString()).append("\n");
+        builder.append("Flow timeout: ").append(flowTimeout).append("\n");
+        builder.append("Activity timeout: ").append(activityTimeout).append("\n");
+        builder.append("Output one file: ").append(oneFile).append("\n");
+        builder.append("Data output: ").append("\n");
+        inputOutputPaths.forEach((k, v) -> builder.append("\t").append(k).append(" -> ").append(v).append("\n"));
+        if (oneFile) {
+            builder.append("Output path (one file): ").append(outputPath).append("\n");
+        }
+        builder.append("Ignore List: [").append(ignoreList.stream().reduce("", (r, e) -> r + "," + e)).append("]").append("\n");
+
+        return builder.toString();
     }
 }

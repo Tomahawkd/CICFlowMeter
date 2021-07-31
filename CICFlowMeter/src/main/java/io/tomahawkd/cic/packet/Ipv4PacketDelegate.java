@@ -3,7 +3,7 @@ package io.tomahawkd.cic.packet;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.protocol.network.Ip4;
 
-@AtLayer(LayerType.INTERNET)
+@Layer(LayerType.INTERNET)
 public class Ipv4PacketDelegate extends AbstractPacketDelegate {
 
 

@@ -3,7 +3,7 @@ package io.tomahawkd.cic.packet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jnetpcap.packet.PcapPacket;
 
-@AtLayer(LayerType.APPLICATION)
+@Layer(LayerType.APPLICATION)
 public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
 
     public UnknownAppLayerPacketDelegate() {

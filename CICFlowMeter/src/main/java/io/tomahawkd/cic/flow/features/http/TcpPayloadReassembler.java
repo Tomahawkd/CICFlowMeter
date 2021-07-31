@@ -68,6 +68,7 @@ public class TcpPayloadReassembler {
 
     public void flushIncompletePackets(long currentSeq, Consumer<PacketInfo> function, boolean fwd) {
         Map<Long, String> map = fwd ? segmentMap_fwd : segmentMap_bwd;
+        if (map.isEmpty()) return;
 
         for (Map.Entry<Long, String> entry : map.entrySet()) {
             long expectSeq = entry.getKey();

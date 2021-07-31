@@ -35,7 +35,9 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             return false;
         }
 
-        return parseFeatures(dst, header, false);
+        boolean parsed = parseFeatures(dst, header, false);
+        if (parsed) dst.removeFeature(MetaFeature.APP_DATA);
+        return parsed;
     }
 
     // return is valid

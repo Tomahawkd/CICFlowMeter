@@ -16,7 +16,6 @@ public class PacketInfo {
     private String flowId = "";
     private final Map<PacketFeature, Object> data;
     private long timestamp;
-    private int payloadPacket = 0;
 
     // Cached Meta-data of the package
     // typically we use the map above to store data, however, to make it
@@ -67,6 +66,10 @@ public class PacketInfo {
     @SuppressWarnings("all")
     private <T> T unsafeGet(PacketFeature feature, Class<T> type) {
         return (T) Objects.requireNonNull(data.get(feature));
+    }
+
+    public void removeFeature(PacketFeature feature) {
+        data.remove(feature);
     }
 
     public void finishParse() {
@@ -152,10 +155,6 @@ public class PacketInfo {
 
     public long getHeaderBytes() {
         return this.unsafeGet(MetaFeature.HEADER_LEN, int.class);
-    }
-
-    public int getPayloadPacket() {
-        return payloadPacket += 1;
     }
 
     public int getTcpWindow() {

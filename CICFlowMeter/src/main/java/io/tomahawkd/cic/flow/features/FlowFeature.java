@@ -15,4 +15,6 @@ public interface FlowFeature {
     void addPacket(PacketInfo info, boolean fwd);
 
     void postAddPacket(PacketInfo info);
+
+    void finalizeFlow();
 }

@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.flow;
 
 import io.tomahawkd.cic.execute.ExecutionMode;
+import io.tomahawkd.cic.flow.features.FlowFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.FlowGenListener;
 import io.tomahawkd.cic.util.FlowLabelSupplier;
@@ -32,6 +33,8 @@ public class FlowGenerator {
         currentFlows = new HashMap<>();
         packetCounter = 0;
         listeners = new ArrayList<>();
+
+        addFlowListener(FlowFeature::finalizeFlow);
         if (mode == ExecutionMode.FULL) {
             this.timeoutStrategy = this::fullTimeout;
         } else {

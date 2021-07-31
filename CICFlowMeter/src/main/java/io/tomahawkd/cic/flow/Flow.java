@@ -83,6 +83,13 @@ public class Flow implements FlowFeature {
         }
     }
 
+    @Override
+    public void finalizeFlow() {
+        for (FlowFeature data : features) {
+            data.finalizeFlow();
+        }
+    }
+
     public long getFlowStartTime() {
         return getBasicInfo().getFlowStartTime();
     }

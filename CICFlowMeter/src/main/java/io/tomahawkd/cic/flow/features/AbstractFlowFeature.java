@@ -44,6 +44,11 @@ public abstract class AbstractFlowFeature implements FlowFeature {
 
     }
 
+    @Override
+    public void finalizeFlow() {
+
+    }
+
     protected final <T extends FlowFeature> T getDep(Class<T> depClass) {
         return flow.getDep(depClass);
     }

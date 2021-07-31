@@ -25,12 +25,13 @@ public class TcpPacketDelegate extends AbstractPacketDelegate {
         dst.addFeature(MetaFeature.HEADER_LEN, tcp.getHeaderLength());
         dst.addFeature(Feature.SEQ, tcp.seq());
         dst.addFeature(Feature.ACK, tcp.ack());
+        dst.addFeature(Feature.PAYLOAD, tcp.getPayload());
         dst.addFeature(MetaFeature.TCP, true);
         return true;
     }
 
     public enum Feature implements PacketFeature {
-        TCP_WINDOW(Integer.class), FLAG(Integer.class), SEQ(Long.class), ACK(Long.class);
+        TCP_WINDOW(Integer.class), FLAG(Integer.class), SEQ(Long.class), ACK(Long.class), PAYLOAD(byte[].class);
 
         private final Class<?> type;
 

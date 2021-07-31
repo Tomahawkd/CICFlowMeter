@@ -1,6 +1,8 @@
-package io.tomahawkd.cic.flow.features;
+package io.tomahawkd.cic.flow.features.http;
 
-import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.cic.flow.features.Feature;
+import io.tomahawkd.cic.flow.features.FeatureType;
+import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +16,7 @@ import java.net.URL;
         FlowFeatureTag.referer_from_same_source,
         FlowFeatureTag.referer_from_search_engine,
 }, ordinal = 9, type = FeatureType.HTTP)
-public class HttpRefererFeature extends AbstractHttpFeature {
+public class HttpRefererFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpRefererFeature.class);
 
@@ -22,8 +24,8 @@ public class HttpRefererFeature extends AbstractHttpFeature {
     private long refererSameOriginCount = 0;
     private long refererFromSearchEngineCount = 0;
 
-    public HttpRefererFeature(Flow flow) {
-        super(flow);
+    public HttpRefererFeature(HttpFeatureAdapter httpFeature) {
+        super(httpFeature);
     }
 
     @Override

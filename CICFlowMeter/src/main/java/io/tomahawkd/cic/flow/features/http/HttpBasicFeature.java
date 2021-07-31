@@ -1,6 +1,8 @@
-package io.tomahawkd.cic.flow.features;
+package io.tomahawkd.cic.flow.features.http;
 
-import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.cic.flow.features.Feature;
+import io.tomahawkd.cic.flow.features.FeatureType;
+import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -37,7 +39,7 @@ import java.util.Optional;
         FlowFeatureTag.method_get_count,
         FlowFeatureTag.method_post_count,
 }, ordinal = 8, type = FeatureType.HTTP)
-public class HttpBasicFeature extends AbstractHttpFeature {
+public class HttpBasicFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);
 
@@ -49,8 +51,8 @@ public class HttpBasicFeature extends AbstractHttpFeature {
     private long getCount = 0;
     private long postCount = 0;
 
-    public HttpBasicFeature(Flow flow) {
-        super(flow);
+    public HttpBasicFeature(HttpFeatureAdapter httpFeature) {
+        super(httpFeature);
     }
 
     @Override

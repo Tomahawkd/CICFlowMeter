@@ -1,6 +1,8 @@
-package io.tomahawkd.cic.flow.features;
+package io.tomahawkd.cic.flow.features.http;
 
-import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.cic.flow.features.Feature;
+import io.tomahawkd.cic.flow.features.FeatureType;
+import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 
@@ -10,15 +12,15 @@ import io.tomahawkd.cic.packet.PacketInfo;
         FlowFeatureTag.lang_count,
         FlowFeatureTag.lang_use_wildcard_count,
 }, ordinal = 10, type = FeatureType.HTTP)
-public class HttpAcceptFeature extends AbstractHttpFeature {
+public class HttpAcceptFeature extends HttpFeature {
 
     private long acceptCount = 0;
     private long acceptOnlyUseWildcardCount = 0;
     private long languageCount = 0;
     private long languageOnlyUseWildcardCount = 0;
 
-    public HttpAcceptFeature(Flow flow) {
-        super(flow);
+    public HttpAcceptFeature(HttpFeatureAdapter httpFeature) {
+        super(httpFeature);
     }
 
     @Override

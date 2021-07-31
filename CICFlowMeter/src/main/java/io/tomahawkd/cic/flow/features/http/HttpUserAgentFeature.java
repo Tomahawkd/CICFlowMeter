@@ -1,6 +1,8 @@
-package io.tomahawkd.cic.flow.features;
+package io.tomahawkd.cic.flow.features.http;
 
-import io.tomahawkd.cic.flow.Flow;
+import io.tomahawkd.cic.flow.features.Feature;
+import io.tomahawkd.cic.flow.features.FeatureType;
+import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import nl.basjes.parse.useragent.AgentField;
@@ -11,13 +13,13 @@ import org.apache.commons.lang3.ArrayUtils;
         FlowFeatureTag.user_agent_count,
         FlowFeatureTag.invalid_user_agent_count
 }, ordinal = 11, type = FeatureType.HTTP)
-public class HttpUserAgentFeature extends AbstractHttpFeature {
+public class HttpUserAgentFeature extends HttpFeature {
 
     private long userAgentCount = 0;
     private long invalidUserAgentCount = 0;
 
-    public HttpUserAgentFeature(Flow flow) {
-        super(flow);
+    public HttpUserAgentFeature(HttpFeatureAdapter httpFeature) {
+        super(httpFeature);
     }
 
     @Override

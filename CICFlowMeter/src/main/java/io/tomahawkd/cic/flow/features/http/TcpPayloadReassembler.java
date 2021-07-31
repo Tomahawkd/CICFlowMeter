@@ -52,7 +52,12 @@ public class TcpPayloadReassembler {
         if (Optional.ofNullable(
                         info.getFeature(UnknownAppLayerPacketDelegate.Feature.CRLF, Boolean.class)).orElse(false)) {
             logger.debug("Complete one header [{}]", incompleteString);
-            return HttpPacketDelegate.parseFeatures(info, incompleteString, true);
+            boolean parsed = HttpPacketDelegate.parseFeatures(info, incompleteString, true);
+            map.remove(info.seq());
+            if (!parsed) {
+                logger.warn("The header [{}] parsed failed which is not expected.", incompleteString);
+            }
+            return true;
         }
 
         long expectNextSeq = info.seq() + info.getPayloadBytes();

@@ -43,6 +43,10 @@ public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
                 }
             }
 
+            if (i >= payload.length) {
+                dst.addFeature(Feature.CRLF, false);
+            }
+
             String readableString = new String(ArrayUtils.subarray(payload, 0, i));
             dst.addFeature(Feature.PAYLOAD, readableString);
         }

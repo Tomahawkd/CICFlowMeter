@@ -28,6 +28,7 @@ public class TcpPayloadReassembler {
             logger.warn("The first HTTP header segment is empty.");
         }
 
+        logger.info("New incomplete packet with header [{}] expecting seq {}", incompleteString, expectNextSeq);
         map.put(expectNextSeq, incompleteString);
     }
 
@@ -50,6 +51,7 @@ public class TcpPayloadReassembler {
         // terminate by CRLF * 2, that is, the header ends
         if (Optional.ofNullable(
                         info.getFeature(UnknownAppLayerPacketDelegate.Feature.CRLF, Boolean.class)).orElse(false)) {
+            logger.debug("Complete one header [{}]", incompleteString);
             return HttpPacketDelegate.parseFeatures(info, incompleteString, true);
         }
 
@@ -66,6 +68,7 @@ public class TcpPayloadReassembler {
             long expectSeq = entry.getKey();
 
             // the current seq greater than expect, that is, the packet is missing
+            logger.info("Packet expecting seq {}, but currently {}", expectSeq, currentSeq);
             if (expectSeq < currentSeq) {
                 String incompHeader = entry.getValue();
                 PacketInfo info = new PacketInfo(-1);

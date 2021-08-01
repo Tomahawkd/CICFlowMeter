@@ -43,14 +43,24 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
     // return is valid
     public static boolean parseFeatures(PacketInfo dst, String header, boolean force) {
         boolean incomplete = false;
+        boolean request = !header.startsWith("HTTP");
+
         String[] headers = header.trim().split("\r\n");
         String[] firstLineElements = headers[0].split(" ", 3);
         if (firstLineElements.length != 3) {
-            logger.warn("Not a legal header [{}]", header);
-            incomplete = true;
+            // check if response with no Reason Phrase
+            // condition:
+            // is Response (!request)
+            // the first line has only 2 elements (e.g., HTTP/1.1 200\r\n)
+            // end with \r\n (to indicate the first line is complete)
+            //
+            // if above condition is true, that is, the http response is still valid and complete
+            if (request || firstLineElements.length != 2 || !header.startsWith(headers[0] + "\r\n")) {
+                logger.warn("Not a legal header [{}]", header);
+                incomplete = true;
+            }
         }
 
-        boolean request = !header.startsWith("HTTP");
         if (request) {
             String method = header.substring(0, HTTP_METHODS_STRING_MAX_LEN).split(" ", 2)[0]
                     .toUpperCase(Locale.ROOT);

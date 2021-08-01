@@ -35,7 +35,7 @@ public class FlowGenerator {
         listeners = new ArrayList<>();
 
         addFlowListener(FlowFeature::finalizeFlow);
-        if (mode == ExecutionMode.FULL) {
+        if (mode == ExecutionMode.FULL || mode == ExecutionMode.ONLINE) {
             this.timeoutStrategy = this::fullTimeout;
         } else {
             this.timeoutStrategy = this::samplingTimeout;

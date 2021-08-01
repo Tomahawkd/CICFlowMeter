@@ -4,6 +4,7 @@ import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.execute.ExecutionMode;
 import io.tomahawkd.cic.execute.Executor;
 import io.tomahawkd.cic.execute.WithMode;
+import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.commandline.CommandlineConfig;
 import io.tomahawkd.config.commandline.CommandlineConfigSource;
@@ -37,6 +38,9 @@ public class Main {
         }
         logger.debug("Commandline parse complete.");
         logger.debug(delegate.debugString());
+        System.out.println(delegate.debugString());
+        System.out.println(Utils.DividingLine);
+
 
         Class<? extends Executor> executorClass = ClassManager.createManager(null)
                 .loadClassesWithAnnotation(Executor.class, null, WithMode.class)

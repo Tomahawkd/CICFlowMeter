@@ -113,7 +113,7 @@ public class OfflineExecutor extends AbstractExecutor {
 
         System.out.printf("%s is done. total %d flows %n", fileName, flowCount.get());
         System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
-        System.out.println(DividingLine);
+        System.out.println(Utils.DividingLine);
     }
 
     private static void initFile(Path file) {
@@ -135,6 +135,4 @@ public class OfflineExecutor extends AbstractExecutor {
             throw new RuntimeException(e);
         }
     }
-
-    private static final String DividingLine = "-------------------------------------------------------------------------------";
 }

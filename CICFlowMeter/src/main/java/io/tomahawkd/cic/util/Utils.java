@@ -12,11 +12,13 @@ import java.util.Collection;
 import java.util.Map;
 
 public class Utils {
-    protected static final Logger logger = LogManager.getLogger(Utils.class);
+    private static final Logger logger = LogManager.getLogger(Utils.class);
     public static final String LINE_SEP = System.lineSeparator();
     public final static String PCAP = "application/vnd.tcpdump.pcap";
     public static final String FLOW_SUFFIX = "_Flow.csv";
     public static final String DEFAULT_OUTPUT_FILENAME_PREFIX = "Result_";
+    public static final String DividingLine = "-------------------------------------------------------------------------------";
+
 
     public static void initFile(Path path, String header) throws IOException {
         if (Files.exists(path)) return;

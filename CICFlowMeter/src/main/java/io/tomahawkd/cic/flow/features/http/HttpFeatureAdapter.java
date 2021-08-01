@@ -113,6 +113,15 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
         }
     }
 
+    @Override
+    public String exportData() {
+        StringBuilder builder = new StringBuilder();
+        for (HttpFeature item: features) {
+            builder.append(item.exportData());
+        }
+        return builder.toString();
+    }
+
     public final <T extends HttpFeature> T getByType(Class<T> type) {
         for (HttpFeature item: features) {
             if (item.getClass().equals(type)) return type.cast(item);

@@ -7,9 +7,7 @@ import io.tomahawkd.cic.packet.UnknownAppLayerPacketDelegate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class TcpPayloadReassembler {
@@ -70,6 +68,7 @@ public class TcpPayloadReassembler {
         Map<Long, String> map = fwd ? segmentMap_fwd : segmentMap_bwd;
         if (map.isEmpty()) return;
 
+        List<Long> pendingRemoval = new ArrayList<>();
         for (Map.Entry<Long, String> entry : map.entrySet()) {
             long expectSeq = entry.getKey();
 
@@ -81,8 +80,11 @@ public class TcpPayloadReassembler {
                 if (HttpPacketDelegate.parseFeatures(info, incompHeader, true)) {
                     function.accept(info);
                 }
+                pendingRemoval.add(expectSeq);
             }
         }
+
+        pendingRemoval.forEach(map::remove);
     }
 
     public boolean isEmpty(boolean fwd) {

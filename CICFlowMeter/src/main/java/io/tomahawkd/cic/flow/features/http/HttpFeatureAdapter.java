@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Feature(name = "HttpFeatures", tags = {}, ordinal = 8, type = FeatureType.HTTP)
 public class HttpFeatureAdapter extends AbstractFlowFeature {
@@ -28,22 +27,20 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
     public HttpFeatureAdapter(Flow flow) {
         super(flow);
         features = new ArrayList<>();
-        List<FlowFeatureTag> tags = new ArrayList<>();
-        createFeatures(flow, tags);
+        List<FlowFeatureTag> tags = createFeatures();
         super.setHeaders(tags.toArray(new FlowFeatureTag[0]));
     }
 
-    private void createFeatures(Flow flow, List<FlowFeatureTag> tags) {
-        new ArrayList<>(
-                ClassManager.createManager(null)
-                        .loadClasses(HttpFeature.class, "io.tomahawkd.cic.flow.features.http")
-        ).stream()
+    private List<FlowFeatureTag> createFeatures() {
+        List<FlowFeatureTag> tags = new ArrayList<>();
+        new ArrayList<>(ClassManager.createManager(null)
+                        .loadClasses(HttpFeature.class, "io.tomahawkd.cic.flow.features.http"))
+                .stream()
                 .filter(f -> !Modifier.isAbstract(f.getModifiers()))
                 .filter(f -> f.getAnnotation(Feature.class) != null)
                 .peek(f -> logger.debug("Loading class {}", f.getName()))
                 .sorted(Comparator.comparingInt(f -> f.getAnnotation(Feature.class).ordinal()))
-                .collect(Collectors.toList())
-                .forEach(c -> {
+                .forEachOrdered(c -> {
                     Feature feature = c.getAnnotation(Feature.class);
                     if (!feature.manual()) {
                         try {
@@ -63,8 +60,10 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
                             throw e;
                         }
                     }
-                    tags.addAll(Arrays.stream(feature.tags()).collect(Collectors.toList()));
+                    tags.addAll(Arrays.asList(feature.tags()));
                 });
+
+        return tags;
     }
 
     @Override

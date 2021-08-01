@@ -41,17 +41,17 @@ public enum FlowFeatureBuilder {
                 .collect(Collectors.toList());
 
         if (cachedFeatureClass == null) {
-            cachedFeatureClass =
-                    new ArrayList<>(ClassManager.createManager(null)
-                            .loadClasses(FlowFeature.class, "io.tomahawkd.cic.flow.features"))
-                            .stream()
-                            .filter(f -> !Modifier.isAbstract(f.getModifiers()))
-                            .filter(f -> !Modifier.isInterface(f.getModifiers()))
-                            .filter(f -> f.getAnnotation(Feature.class) != null)
-                            .filter(f -> !ignoreList.contains(f.getAnnotation(Feature.class).type()))
-                            .peek(f -> logger.debug("Loading class {}", f.getName()))
-                            .sorted(Comparator.comparingInt(f -> f.getAnnotation(Feature.class).ordinal()))
-                            .collect(Collectors.toList());
+            cachedFeatureClass = new ArrayList<>();
+            ClassManager.createManager(null)
+                    .loadClasses(FlowFeature.class, "io.tomahawkd.cic.flow.features")
+                    .stream()
+                    .filter(f -> !Modifier.isAbstract(f.getModifiers()))
+                    .filter(f -> !Modifier.isInterface(f.getModifiers()))
+                    .filter(f -> f.getAnnotation(Feature.class) != null)
+                    .filter(f -> !ignoreList.contains(f.getAnnotation(Feature.class).type()))
+                    .peek(f -> logger.debug("Loading class {}", f.getName()))
+                    .sorted(Comparator.comparingInt(f -> f.getAnnotation(Feature.class).ordinal()))
+                    .forEachOrdered(e -> cachedFeatureClass.add(e));
         }
     }
 

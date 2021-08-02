@@ -6,7 +6,6 @@ import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
-import io.tomahawkd.cic.packet.MetaFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.config.util.ClassManager;
 import org.apache.logging.log4j.LogManager;
@@ -14,14 +13,18 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 @Feature(name = "HttpFeatures", tags = {}, ordinal = 8, type = FeatureType.HTTP)
 public class HttpFeatureAdapter extends AbstractFlowFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpFeatureAdapter.class);
 
-    private final TcpPayloadReassembler reassembler = new TcpPayloadReassembler();
+    private final TcpReorderer fwdReorderer = new TcpReorderer(this::acceptPacket);
+    private final TcpReorderer bwdReorderer = new TcpReorderer(this::acceptPacket);
     private final List<HttpFeature> features;
 
     public HttpFeatureAdapter(Flow flow) {
@@ -68,26 +71,8 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
 
     @Override
     public final void addPacket(PacketInfo info, boolean fwd) {
-        reassembler.flushIncompletePackets(info.seq(), this::acceptPacket, fwd);
-
-        Boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
-        if (!http) {
-            // no incomplete packet yet
-            if (reassembler.isEmpty(fwd)) return;
-
-            // complete the packets if it could
-            if (!reassembler.canCompleteIncompletePacket(info, fwd)) return;
-            // else accept the packet
-        }
-
-        // if current is incomplete
-        if (Optional.ofNullable(info.getFeature(HttpPacketDelegate.Feature.INCOMPLETE, Boolean.class)).orElse(false)) {
-            reassembler.addIncompletePacket(info, fwd);
-            // ignore the package temporarily
-            return;
-        }
-
-        acceptPacket(info);
+        TcpReorderer reorderer = fwd ? fwdReorderer : bwdReorderer;
+        reorderer.addPacket(info);
     }
 
     private void acceptPacket(PacketInfo info) {
@@ -108,9 +93,8 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
     @Override
     public final void finalizeFlow() {
         // deal with incomplete packets
-        if (!reassembler.isEmpty()) {
-            reassembler.cleanIncompletePackets(this::acceptPacket);
-        }
+        fwdReorderer.finalizeFlow();
+        bwdReorderer.finalizeFlow();
     }
 
     @Override

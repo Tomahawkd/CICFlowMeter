@@ -5,10 +5,7 @@ import io.tomahawkd.cic.util.Utils;
 import org.jetbrains.annotations.Nullable;
 import org.jnetpcap.packet.format.FormatUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class PacketInfo {
 
@@ -61,6 +58,14 @@ public class PacketInfo {
         } else throw new IllegalArgumentException(
                 "Expecting type " + feature.getType().getName() +
                         " but requesting " + type.getName());
+    }
+
+    public boolean getBoolFeature(PacketFeature feature) {
+        if (Boolean.class.isAssignableFrom(Primitives.wrap(feature.getType()))) {
+            return Optional.ofNullable(
+                    this.getFeature(feature, Boolean.class)
+            ).orElse(false);
+        } else return false;
     }
 
     @SuppressWarnings("all")

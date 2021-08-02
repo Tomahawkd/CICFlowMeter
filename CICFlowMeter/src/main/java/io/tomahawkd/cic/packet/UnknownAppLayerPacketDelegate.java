@@ -47,7 +47,7 @@ public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
                 dst.addFeature(Feature.CRLF, false);
             }
 
-            String readableString = new String(ArrayUtils.subarray(payload, 0, i));
+            String readableString = new String(ArrayUtils.subarray(payload, 0, i + 1));
             dst.addFeature(Feature.PAYLOAD, readableString);
         }
         dst.removeFeature(MetaFeature.APP_DATA);

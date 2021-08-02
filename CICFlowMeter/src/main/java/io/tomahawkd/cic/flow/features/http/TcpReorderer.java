@@ -31,6 +31,7 @@ public class TcpReorderer {
             inited = true;
             currentSeq = info.seq();
             nextExpectedSeq = currentSeq + 1;
+            logger.debug("Initialized Connection with Packet [{}]", info);
             return;
         }
 
@@ -43,7 +44,7 @@ public class TcpReorderer {
             inited = true;
             currentSeq = info.seq();
             nextExpectedSeq = currentSeq + info.getPayloadBytes();
-            logger.warn("Initialized flow without SYN flag.");
+            logger.warn("Initialized flow without SYN flag using packet [{}].", info);
             reassembler.addPacket(info);
             return;
         }
@@ -59,9 +60,9 @@ public class TcpReorderer {
         } else {
             if (info.seq() == currentSeq) {
                 // TODO: retransmission count
-                logger.warn("Got retransmission packet [{}], expecting {}", info.toString(), nextExpectedSeq);
+                logger.warn("Got retransmission packet [{}], expecting {}", info, nextExpectedSeq);
             } else {
-                logger.warn("Received a packet with seq {} less than expect {}", info.seq(), nextExpectedSeq);
+                logger.warn("Received a packet [{}] with seq {} less than expect {}", info, info.seq(), nextExpectedSeq);
             }
         }
     }

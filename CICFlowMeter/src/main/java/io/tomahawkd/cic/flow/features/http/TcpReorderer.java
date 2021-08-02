@@ -70,7 +70,7 @@ public class TcpReorderer {
             if (info.seq() == currentSeq) {
                 // TODO: retransmission count
                 logger.warn("Got retransmission packet [{}], expecting {}", info, nextExpectedSeq);
-            } else if (info.seq() == currentSeq - 1) {
+            } else if (info.seq() == nextExpectedSeq - 1) {
                 // Keep-Alive packet
                 // https://datatracker.ietf.org/doc/html/rfc1122#page-102
                 logger.debug("Received Keep-Alive packet [{}]", info);

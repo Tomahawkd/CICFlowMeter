@@ -111,6 +111,11 @@ public enum FlowFeatureTag {
     keep_alive_packet_ratio("Keep Alive Packet/Request Packets"),
     method_get_count("Total GET method count"),
     method_post_count("Total POST method count"),
+    header_element_avg("Header Element Count Avg"),
+    header_element_std("Header Element Count Std"),
+    header_element_min("Header Element Count Min"),
+    header_element_max("Header Element Count Max"),
+    header_element_total("Header Element Count Total"),
 
     referer_count("Total referer count"),
     referer_from_same_source("Referer Same Source Count"),

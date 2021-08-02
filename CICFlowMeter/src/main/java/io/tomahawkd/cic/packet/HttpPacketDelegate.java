@@ -89,6 +89,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         dst.addFeature(MetaFeature.HTTP, true);
         dst.addFeature(Feature.REQUEST, request);
         dst.addFeature(Feature.HEADER, headerMap);
+        dst.addFeature(Feature.HEADER_LINE_COUNT, headerMap.size() + 1);
         if (incomplete) {
             dst.addFeature(Feature.INCOMPLETE, true);
             dst.addFeature(Feature.INCOM_SEGMENT, header);
@@ -129,7 +130,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
 
     public enum Feature implements PacketFeature {
         // Common
-        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(Map.class),
+        CONTENT_LEN(Integer.class), REQUEST(Boolean.class), HEADER(Map.class), HEADER_LINE_COUNT(Integer.class),
 
         // resolve TCP reassemble
         INCOMPLETE(Boolean.class), INCOM_SEGMENT(String.class),

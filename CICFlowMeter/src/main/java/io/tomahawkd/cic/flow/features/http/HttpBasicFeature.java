@@ -38,6 +38,11 @@ import java.util.Optional;
         FlowFeatureTag.keep_alive_packet_ratio,
         FlowFeatureTag.method_get_count,
         FlowFeatureTag.method_post_count,
+        FlowFeatureTag.header_element_avg,
+        FlowFeatureTag.header_element_std,
+        FlowFeatureTag.header_element_min,
+        FlowFeatureTag.header_element_max,
+        FlowFeatureTag.header_element_total,
 }, ordinal = 8, type = FeatureType.HTTP)
 public class HttpBasicFeature extends HttpFeature {
 
@@ -50,6 +55,7 @@ public class HttpBasicFeature extends HttpFeature {
     private long keepAliveCount = 0L;
     private long getCount = 0;
     private long postCount = 0;
+    private final SummaryStatistics headerElement_state = new SummaryStatistics();
 
     public HttpBasicFeature(HttpFeatureAdapter httpFeature) {
         super(httpFeature);
@@ -61,6 +67,10 @@ public class HttpBasicFeature extends HttpFeature {
                 info.getFeature(HttpPacketDelegate.Feature.CONTENT_LEN, Integer.class))
                 .orElse(0);
         content_length.addValue(contentLength);
+
+        headerElement_state.addValue(Optional.ofNullable(
+                        info.getFeature(HttpPacketDelegate.Feature.HEADER_LINE_COUNT, Integer.class))
+                .orElse(0));
 
         if (isRequest) {
             content_length_req.addValue(contentLength);
@@ -109,6 +119,7 @@ public class HttpBasicFeature extends HttpFeature {
 
         builder.append(getCount).append(SEPARATOR); // FlowFeatureTag.method_get_count,
         builder.append(postCount).append(SEPARATOR); // FlowFeatureTag.method_post_count,
+        buildLength(builder, headerElement_state);
         return builder.toString();
     }
 

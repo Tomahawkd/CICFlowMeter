@@ -1,22 +1,22 @@
 package io.tomahawkd.cic.flow.features.http;
 
+import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.features.AbstractFlowFeature;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
+import io.tomahawkd.cic.packet.MetaFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
+import io.tomahawkd.config.ConfigManager;
 import io.tomahawkd.config.util.ClassManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Feature(name = "HttpFeatures", tags = {}, ordinal = 8, type = FeatureType.HTTP)
 public class HttpFeatureAdapter extends AbstractFlowFeature {
@@ -26,12 +26,14 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
     private final TcpReorderer fwdReorderer = new TcpReorderer(this::acceptPacket);
     private final TcpReorderer bwdReorderer = new TcpReorderer(this::acceptPacket);
     private final List<HttpFeature> features;
+    private final boolean disableReassembling;
 
     public HttpFeatureAdapter(Flow flow) {
         super(flow);
         features = new ArrayList<>();
         List<FlowFeatureTag> tags = createFeatures();
         super.setHeaders(tags.toArray(new FlowFeatureTag[0]));
+        disableReassembling = ConfigManager.get().getDelegateByType(CommandlineDelegate.class).isDisableReassemble();
     }
 
     private List<FlowFeatureTag> createFeatures() {
@@ -71,8 +73,14 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
 
     @Override
     public final void addPacket(PacketInfo info, boolean fwd) {
-        TcpReorderer reorderer = fwd ? fwdReorderer : bwdReorderer;
-        reorderer.addPacket(info);
+        if (disableReassembling) {
+            Boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
+            if (!http) return;
+            acceptPacket(info);
+        } else {
+            TcpReorderer reorderer = fwd ? fwdReorderer : bwdReorderer;
+            reorderer.addPacket(info);
+        }
     }
 
     private void acceptPacket(PacketInfo info) {

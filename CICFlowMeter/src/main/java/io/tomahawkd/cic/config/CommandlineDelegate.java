@@ -67,6 +67,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-m", "--mode"}, description = "Mode selection.", converter = ExecutionModeConverter.class)
     private ExecutionMode mode = ExecutionMode.DEFAULT;
 
+    @Parameter(names = {"--noassemble"}, description = "Disable TCP Reassembing")
+    private boolean disableReassemble;
+
     public boolean isHelp() {
         return help;
     }
@@ -101,6 +104,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public ExecutionMode getMode() {
         return mode;
+    }
+
+    public boolean isDisableReassemble() {
+        return disableReassemble;
     }
 
     @Override

@@ -82,7 +82,7 @@ public class TcpReorderer {
             Optional<Long> seqOpt = futurePackets.keySet().stream().min(Comparator.comparingLong(a -> a));
             if (!seqOpt.isPresent()) break;
             currentSeq = seqOpt.get();
-            PacketInfo temp = futurePackets.get(currentSeq);
+            PacketInfo temp = futurePackets.remove(currentSeq);
             nextExpectedSeq = currentSeq + temp.getPayloadBytes();
             parseAndAdvanceSeq(temp);
         }

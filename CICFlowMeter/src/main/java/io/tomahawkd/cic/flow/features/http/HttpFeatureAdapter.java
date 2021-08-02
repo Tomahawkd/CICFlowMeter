@@ -74,8 +74,7 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
     @Override
     public final void addPacket(PacketInfo info, boolean fwd) {
         if (disableReassembling) {
-            Boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
-            if (!http) return;
+            if (!info.getBoolFeature(MetaFeature.HTTP)) return;
             acceptPacket(info);
         } else {
             TcpReorderer reorderer = fwd ? fwdReorderer : bwdReorderer;

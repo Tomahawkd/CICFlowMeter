@@ -4,7 +4,6 @@ import io.tomahawkd.cic.packet.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
 import java.util.function.Consumer;
 
 public class TcpReassembler {
@@ -26,20 +25,15 @@ public class TcpReassembler {
      * @see TcpReorderer
      */
     public void addPacket(PacketInfo info) {
-        boolean http = Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false);
-
         // contains http header
-        if (http) {
+        if (info.getBoolFeature(MetaFeature.HTTP)) {
             // clear all for that this packet is the first one
             if (incompleteStringBuilder.length() > 0) {
                 forceParse();
             }
 
-            boolean incomplete = Optional.ofNullable(
-                    info.getFeature(HttpPacketDelegate.Feature.INCOMPLETE, Boolean.class)).orElse(false);
-
             // if complete, the packet is already parsed at packet layer feature extraction
-            if (!incomplete) {
+            if (!info.getBoolFeature(HttpPacketDelegate.Feature.INCOMPLETE)) {
                 flowFeature.accept(info);
                 return;
             }
@@ -60,10 +54,6 @@ public class TcpReassembler {
                 return;
             }
 
-            // terminate by CRLF * 2, that is, the header ends
-            boolean end = Optional.ofNullable(
-                    info.getFeature(UnknownAppLayerPacketDelegate.Feature.CRLF, Boolean.class)).orElse(false);
-
             String readableString = info.getFeature(UnknownAppLayerPacketDelegate.Feature.PAYLOAD, String.class);
             if (readableString == null || readableString.isEmpty()) {
                 logger.warn("The HTTP header segment (not first) is empty.");
@@ -72,7 +62,8 @@ public class TcpReassembler {
             // exact the next segment
             incompleteStringBuilder.append(readableString);
 
-            if (end) {
+            // terminate by CRLF * 2, that is, the header ends
+            if (info.getBoolFeature(UnknownAppLayerPacketDelegate.Feature.CRLF)) {
                 String header = incompleteStringBuilder.toString();
                 logger.debug("Complete one header [{}]", header);
                 int parsed = HttpPacketDelegate.parseFeatures(info, header, false);

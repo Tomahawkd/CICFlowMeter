@@ -81,6 +81,11 @@ public class HttpBasicFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
+        if (info.getBoolFeature(TcpReassembler.Feature.INVALID) ||
+                info.getBoolFeature(HttpPacketDelegate.Feature.INCOMPLETE)) {
+            invalid_request_header++;
+        }
+
         String path = info.getFeature(HttpPacketDelegate.Feature.PATH, String.class);
         // we dont care its protocol and host
         try {

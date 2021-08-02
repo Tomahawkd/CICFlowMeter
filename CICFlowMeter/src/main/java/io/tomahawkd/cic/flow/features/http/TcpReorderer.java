@@ -27,25 +27,24 @@ public class TcpReorderer {
     }
 
     public void addPacket(PacketInfo info) {
-        if (info.getFlag(PacketInfo.FLAG_SYN)) {
+        if (!inited) {
             inited = true;
             currentSeq = info.seq();
-            nextExpectedSeq = currentSeq + 1;
-            logger.debug("Initialized Connection with Packet [{}]", info);
+
+            if (info.getFlag(PacketInfo.FLAG_SYN)) {
+                nextExpectedSeq = currentSeq + 1;
+                logger.debug("Initialized Connection with Packet [{}]", info);
+            } else {
+                nextExpectedSeq = currentSeq + info.getPayloadBytes();
+                logger.warn("Initialized flow without SYN flag using packet [{}].", info);
+                reassembler.addPacket(info);
+            }
             return;
         }
 
         // this is the last packet
         if (info.getFlag(PacketInfo.FLAG_RST)) {
-            return;
-        }
-
-        if (!inited) {
-            inited = true;
-            currentSeq = info.seq();
-            nextExpectedSeq = currentSeq + info.getPayloadBytes();
-            logger.warn("Initialized flow without SYN flag using packet [{}].", info);
-            reassembler.addPacket(info);
+            finalizeFlow();
             return;
         }
 

@@ -46,6 +46,12 @@ public class TcpReorderer {
         if (info.getFlag(PacketInfo.FLAG_RST)) {
             finalizeFlow();
             return;
+        } else if (info.getFlag(PacketInfo.FLAG_FIN)) {
+            if (info.getPayloadBytes() == 0) {
+                currentSeq = nextExpectedSeq;
+                nextExpectedSeq = nextExpectedSeq + 1;
+                return;
+            }
         }
 
         if (info.getPayloadBytes() == 0) {
@@ -64,6 +70,10 @@ public class TcpReorderer {
             if (info.seq() == currentSeq) {
                 // TODO: retransmission count
                 logger.warn("Got retransmission packet [{}], expecting {}", info, nextExpectedSeq);
+            } else if (info.seq() == currentSeq - 1) {
+                // Keep-Alive packet
+                // https://datatracker.ietf.org/doc/html/rfc1122#page-102
+                logger.debug("Received Keep-Alive packet [{}]", info);
             } else {
                 logger.warn("Received a packet [{}] with seq {} less than expect {}", info, info.seq(), nextExpectedSeq);
             }

@@ -30,12 +30,18 @@ public class TcpReassembler {
 
         // contains http header
         if (http) {
+            // clear all for that this packet is the first one
+            if (incompleteStringBuilder.length() > 0) {
+                forceParse();
+            }
+
             boolean incomplete = Optional.ofNullable(
                     info.getFeature(HttpPacketDelegate.Feature.INCOMPLETE, Boolean.class)).orElse(false);
 
             // if complete, the packet is already parsed at packet layer feature extraction
             if (!incomplete) {
                 flowFeature.accept(info);
+                return;
             }
 
             String incompleteString = info.getFeature(HttpPacketDelegate.Feature.INCOM_SEGMENT, String.class);
@@ -44,13 +50,15 @@ public class TcpReassembler {
                 logger.warn("The first HTTP header segment is empty.");
             }
 
-            // clear all for that this packet is the first one
-            if (incompleteStringBuilder.length() > 0) {
-                forceParse();
-            }
             incompleteStringBuilder.append(incompleteString);
         } else {
             // not http section
+
+            // the first packet must be http
+            // so the packet should be discarded
+            if (incompleteStringBuilder.length() == 0) {
+                return;
+            }
 
             // terminate by CRLF * 2, that is, the header ends
             boolean end = Optional.ofNullable(
@@ -94,6 +102,7 @@ public class TcpReassembler {
     }
 
     public void reset() {
+        if (incompleteStringBuilder.length() == 0) return;
         incompleteStringBuilder = new StringBuilder();
     }
 

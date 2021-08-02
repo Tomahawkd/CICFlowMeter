@@ -181,7 +181,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
         // execution mode
         if (mode == ExecutionMode.DEFAULT) {
-            mode = ExecutionMode.SAMPLING;
+            mode = ExecutionMode.FULL;
         }
     }
 

@@ -44,6 +44,8 @@ public class TcpReorderer {
             currentSeq = info.seq();
             nextExpectedSeq = currentSeq + info.getPayloadBytes();
             logger.warn("Initialized flow without SYN flag.");
+            reassembler.addPacket(info);
+            return;
         }
 
         if (info.seq() == nextExpectedSeq) {

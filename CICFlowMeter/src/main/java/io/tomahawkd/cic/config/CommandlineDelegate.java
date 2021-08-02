@@ -199,6 +199,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         builder.append("Execution mode: ").append(mode.toString()).append("\n");
         builder.append("Flow timeout: ").append(flowTimeout).append("\n");
         builder.append("Activity timeout: ").append(activityTimeout).append("\n");
+        builder.append("Disable TCP Reassembling: ").append(disableReassemble).append("\n");
         builder.append("Output one file: ").append(oneFile).append("\n");
         builder.append("Data output: ").append("\n");
         inputOutputPaths.forEach((k, v) -> builder.append("\t").append(k).append(" -> ").append(v).append("\n"));

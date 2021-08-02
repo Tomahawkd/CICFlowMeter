@@ -70,7 +70,7 @@ public class TcpReassembler {
                 int parsed = HttpPacketDelegate.parseFeatures(info, header, false);
                 if (parsed != HttpPacketDelegate.OK) {
                     logger.warn("The header [{}] parsed failed which is not expected.", header);
-                    info.addFeature(Feature.VALID, false);
+                    info.addFeature(Feature.INVALID, true);
                 }
 
                 // since it is complete, delete all
@@ -85,7 +85,7 @@ public class TcpReassembler {
         String header = incompleteStringBuilder.toString();
         int parsed = HttpPacketDelegate.parseFeatures(info, header, false);
         if (parsed != HttpPacketDelegate.OK) {
-            info.addFeature(Feature.VALID, false);
+            info.addFeature(Feature.INVALID, true);
         }
 
         // since it is complete, delete all
@@ -97,16 +97,9 @@ public class TcpReassembler {
         incompleteStringBuilder = new StringBuilder();
     }
 
-    public void finalizeFlow() {
-        if (incompleteStringBuilder.length() > 0) {
-            forceParse();
-        }
-    }
-
-
     public enum Feature implements PacketFeature {
 
-        VALID(Boolean.class);
+        INVALID(Boolean.class);
 
         private final Class<?> type;
 

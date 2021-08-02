@@ -89,6 +89,7 @@ public class TcpReassembler {
     }
 
     public void forceParse() {
+        if (incompleteStringBuilder.length() == 0) return;
         PacketInfo info = new PacketInfo(-1);
         String header = incompleteStringBuilder.toString();
         int parsed = HttpPacketDelegate.parseFeatures(info, header, false);

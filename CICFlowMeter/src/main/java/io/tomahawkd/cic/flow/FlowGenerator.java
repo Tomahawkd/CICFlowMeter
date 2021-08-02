@@ -166,6 +166,7 @@ public class FlowGenerator {
     private void finishFlow(Flow flow, PacketInfo packet, String id, String type) {
         logger.debug("{} current has {} flow", type, currentFlows.size());
         flow.addPacket(packet);
+        flow.finalizeFlow();
         callback(flow);
         currentFlows.remove(id);
     }

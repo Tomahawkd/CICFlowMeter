@@ -12,7 +12,7 @@ public class TcpReassembler {
     private static final Logger logger = LogManager.getLogger(TcpReassembler.class);
 
     // used for building incomplete string
-    private StringBuilder incompleteStringBuilder;
+    private StringBuilder incompleteStringBuilder = new StringBuilder();
 
     private final Consumer<PacketInfo> flowFeature;
 

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Feature(name = "HttpFeature", tags = {
         FlowFeatureTag.request_packet_count,
+        FlowFeatureTag.invalid_request_header_count,
         FlowFeatureTag.query_length_avg,
         FlowFeatureTag.query_length_std,
         FlowFeatureTag.query_length_max,
@@ -48,6 +49,7 @@ public class HttpBasicFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);
 
+    private long invalid_request_header = 0L;
     private final SummaryStatistics query_stat = new SummaryStatistics();
     private final SummaryStatistics content_length = new SummaryStatistics();
     private final SummaryStatistics content_length_req = new SummaryStatistics();
@@ -113,6 +115,7 @@ public class HttpBasicFeature extends HttpFeature {
         StringBuilder builder = new StringBuilder();
         long requestPacketCount = getRequestPacketCount();
         builder.append(requestPacketCount).append(SEPARATOR); // FlowFeatureTag.request_packet_count
+        builder.append(invalid_request_header).append(SEPARATOR); // FlowFeatureTag.invalid_request_header_count
         buildLength(builder, query_stat);
         buildLength(builder, content_length);
         buildLength(builder, content_length_req);

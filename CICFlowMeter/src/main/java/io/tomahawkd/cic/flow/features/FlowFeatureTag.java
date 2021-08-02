@@ -88,6 +88,7 @@ public enum FlowFeatureTag {
 
     // HTTP layer features
     request_packet_count("Request Packet Count"),
+    invalid_request_header_count("Invalid Request Header Count"),
     query_length_avg("Query Length Avg"),
     query_length_std("Query Length Std"),
     query_length_max("Query Length Max"),

@@ -35,13 +35,17 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             return false;
         }
 
-        boolean parsed = parseFeatures(dst, header, false);
-        if (parsed) dst.removeFeature(MetaFeature.APP_DATA);
-        return parsed;
+        int parsed = parseFeatures(dst, header, false);
+        if (parsed != INVALID) dst.removeFeature(MetaFeature.APP_DATA);
+        return parsed != INVALID;
     }
 
+    public static final int INVALID = 0;
+    public static final int OK = 1;
+    public static final int INCOMPLETE = 2;
+
     // return is valid
-    public static boolean parseFeatures(PacketInfo dst, String header, boolean force) {
+    public static int parseFeatures(PacketInfo dst, String header, boolean force) {
         boolean incomplete = false;
         boolean request = !header.startsWith("HTTP");
 
@@ -66,7 +70,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
                     .toUpperCase(Locale.ROOT);
             if (!ArrayUtils.contains(HTTP_METHODS, method)) {
                 logger.warn("Not a legal request header [{}]", header);
-                return false;
+                return INVALID;
             }
         }
 
@@ -88,7 +92,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         if (incomplete) {
             dst.addFeature(Feature.INCOMPLETE, true);
             dst.addFeature(Feature.INCOM_SEGMENT, header);
-            if (!force) return true;
+            if (!force) return INCOMPLETE;
         } else {
             dst.addFeature(Feature.INCOMPLETE, false);
         }
@@ -112,7 +116,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.STATUS, firstLineElements[1]);
             dst.addFeature(Feature.CONTENT_TYPE, getField(headerMap, Http.Response.Content_Type));
         }
-        return true;
+        return OK;
     }
 
     private static String getField(Map<String, String> headers, Http.Request type) {

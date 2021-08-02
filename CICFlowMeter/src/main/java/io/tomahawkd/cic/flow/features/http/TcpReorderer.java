@@ -49,6 +49,10 @@ public class TcpReorderer {
             return;
         }
 
+        if (info.getPayloadBytes() == 0) {
+            return;
+        }
+
         if (info.seq() == nextExpectedSeq) {
             // push all expected seq packet to the assembler
             parseAndAdvanceSeq(info);

@@ -59,7 +59,7 @@ public class TcpReorderer {
         } else {
             if (info.seq() == currentSeq) {
                 // TODO: retransmission count
-                logger.warn("Got retransmission packet [{}]", info.toString());
+                logger.warn("Got retransmission packet [{}], expecting {}", info.toString(), nextExpectedSeq);
             } else {
                 logger.warn("Received a packet with seq {} less than expect {}", info.seq(), nextExpectedSeq);
             }

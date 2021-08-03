@@ -7,10 +7,10 @@ but is completely different in code structure.
     1. Applying OOP (Object-Oriented Programming)
     2. Extendable features (packet level and flow level)
     
-2. A complete Maven Repo
-3. Extendable commandline config thanks to [JLightConfig](https://github.com/Tomahawkd/JLightConfig)
-4. Remove live capture and GUI (currently focus on feature extraction)
-5. Introduce TCP Reassembler for analysing application layer protocol (e.g., HTTP)
+2. Extendable commandline config thanks to [JLightConfig](https://github.com/Tomahawkd/JLightConfig)
+3. Remove live capture and GUI (currently focus on feature extraction)
+4. Introduce TCP Reassembler for analysing application layer protocol (e.g., HTTP)
+5. Support for multi-file as one input
 
 ## Prerequisite
 1. Java 8
@@ -18,7 +18,7 @@ but is completely different in code structure.
 3. jnetpcap native library
 
 ## Build
-1. Clone the code
+1. Clone the code and its submodule
 2. `mvn package`
 3. Find Jar in `./bin`
 4. don't forget `-Djava.library.path=<path to jnetpcap native library>`
@@ -27,7 +27,7 @@ Note:
 1. The repo is only tested on Windows platform.
 2. The native library is acquired from the forked repo.
 3. For more information about jnetpcap, please follow the [link](https://sourceforge.net/projects/jnetpcap/).
-
+4. The tool will generate tons of logs while running
 
 ## Commandline Help
 ```

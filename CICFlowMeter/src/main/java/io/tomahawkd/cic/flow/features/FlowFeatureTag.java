@@ -139,6 +139,9 @@ public enum FlowFeatureTag {
     set_cookie_count("Set-Cookie Header Count"),
     cookie_count("Cookie Header Count"),
     no_cookie_count("No Cookie Header Count"),
+    cookie_match_count("Cookie matches to Set-Cookie Count"),
+    cookie_partial_match_count("Cookie partial matches to Set-Cookie Count"),
+    cookie_no_match_count("Cookie not matches to Set-Cookie Count"),
 
     Label("Label");                    //85
 

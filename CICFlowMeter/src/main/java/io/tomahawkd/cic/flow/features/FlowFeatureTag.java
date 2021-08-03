@@ -89,6 +89,7 @@ public enum FlowFeatureTag {
     // HTTP layer features
     request_packet_count("Request Packet Count"),
     invalid_request_header_count("Invalid Request Header Count"),
+    query_request_count("Request Has Query Count"),
     query_length_avg("Query Length Avg"),
     query_length_std("Query Length Std"),
     query_length_max("Query Length Max"),
@@ -124,11 +125,14 @@ public enum FlowFeatureTag {
 
     accept_count("Accept Header Count"),
     accept_use_wildcard_count("Accept Any Count"),
+    no_accept_count("No Accept Header Count"),
     lang_count("Accept Language Header Count"),
     lang_use_wildcard_count("Accept Any Language Count"),
+    no_lang_count("No Accept Language Header Count"),
 
-    user_agent_count("User Agent Count"),
+    valid_user_agent_count("Valid User Agent Count"),
     invalid_user_agent_count("Invalid User Agent Count"),
+    no_user_agent_count("No User Agent Count"),
 
     Label("Label");                    //85
 

@@ -10,13 +10,15 @@ import nl.basjes.parse.useragent.UserAgent;
 import org.apache.commons.lang3.ArrayUtils;
 
 @Feature(name = "HttpUserAgentFeature", tags = {
-        FlowFeatureTag.user_agent_count,
-        FlowFeatureTag.invalid_user_agent_count
+        FlowFeatureTag.valid_user_agent_count,
+        FlowFeatureTag.invalid_user_agent_count,
+        FlowFeatureTag.no_user_agent_count
 }, ordinal = 11, type = FeatureType.HTTP)
 public class HttpUserAgentFeature extends HttpFeature {
 
-    private long userAgentCount = 0;
+    private long validUserAgentCount = 0;
     private long invalidUserAgentCount = 0;
+    private long noUserAgentCount = 0;
 
     public HttpUserAgentFeature(HttpFeatureAdapter httpFeature) {
         super(httpFeature);
@@ -25,19 +27,21 @@ public class HttpUserAgentFeature extends HttpFeature {
     @Override
     public void addRequestPacket(PacketInfo info) {
         UserAgent ua = info.getFeature(HttpPacketDelegate.Feature.UA, UserAgent.class);
-        if (ua != null) {
-            userAgentCount++;
+        if (ua == null) noUserAgentCount++;
+        else {
             AgentField device = ua.get(UserAgent.DEVICE_CLASS);
             if (device.isDefaultValue() ||
                     !ArrayUtils.contains(normalType, device.getValue())) invalidUserAgentCount++;
+            else validUserAgentCount++;
         }
     }
 
     @Override
     public String exportData() {
         StringBuilder builder = new StringBuilder();
-        builder.append(userAgentCount).append(SEPARATOR); // FlowFeatureTag.user_agent_count,
+        builder.append(validUserAgentCount).append(SEPARATOR); // FlowFeatureTag.valid_user_agent_count,
         builder.append(invalidUserAgentCount).append(SEPARATOR); // FlowFeatureTag.invalid_user_agent_count
+        builder.append(noUserAgentCount).append(SEPARATOR); // FlowFeatureTag.no_user_agent_count
         return builder.toString();
     }
 

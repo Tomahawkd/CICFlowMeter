@@ -13,7 +13,7 @@ import org.apache.commons.lang3.ArrayUtils;
         FlowFeatureTag.valid_user_agent_count,
         FlowFeatureTag.invalid_user_agent_count,
         FlowFeatureTag.no_user_agent_count
-}, ordinal = 11, type = FeatureType.HTTP)
+}, ordinal = 4, type = FeatureType.HTTP)
 public class HttpUserAgentFeature extends HttpFeature {
 
     private long validUserAgentCount = 0;

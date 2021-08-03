@@ -46,7 +46,7 @@ import java.util.Optional;
         FlowFeatureTag.header_element_min,
         FlowFeatureTag.header_element_max,
         FlowFeatureTag.header_element_total,
-}, ordinal = 8, type = FeatureType.HTTP)
+}, ordinal = 1, type = FeatureType.HTTP)
 public class HttpBasicFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);

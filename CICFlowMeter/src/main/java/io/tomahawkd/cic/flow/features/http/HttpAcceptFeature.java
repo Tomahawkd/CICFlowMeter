@@ -13,7 +13,7 @@ import io.tomahawkd.cic.packet.PacketInfo;
         FlowFeatureTag.lang_count,
         FlowFeatureTag.lang_use_wildcard_count,
         FlowFeatureTag.no_lang_count
-}, ordinal = 10, type = FeatureType.HTTP)
+}, ordinal = 3, type = FeatureType.HTTP)
 public class HttpAcceptFeature extends HttpFeature {
 
     private long acceptCount = 0;

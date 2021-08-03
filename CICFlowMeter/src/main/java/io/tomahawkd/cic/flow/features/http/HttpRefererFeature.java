@@ -16,7 +16,7 @@ import java.net.URL;
         FlowFeatureTag.referer_count,
         FlowFeatureTag.referer_from_same_source,
         FlowFeatureTag.referer_from_search_engine,
-}, ordinal = 9, type = FeatureType.HTTP)
+}, ordinal = 2, type = FeatureType.HTTP)
 public class HttpRefererFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpRefererFeature.class);

@@ -86,6 +86,17 @@ public class OfflineExecutor extends AbstractExecutor {
             flowGen.setFlowLabelSupplier(f -> "NONE");
         }
 
+        if (inputFile.getFileName().toString().startsWith("IoT_Dataset_HTTP_")) {
+            flowGen.setFlowLabelSupplier(f -> {
+                if (f.connectBetween("192.168.100.150", Flow.PORT_ANY, "192.168.100.6", 80) ||
+                        f.connectBetween("192.168.100.149", Flow.PORT_ANY, "192.168.100.5", 80) ||
+                        f.connectBetween("192.168.100.148", Flow.PORT_ANY, "192.168.100.3", 80) ||
+                        f.connectBetween("192.168.100.147", Flow.PORT_ANY, "192.168.100.3", 80)) {
+                    return "DOS";
+                } else return "NORMAL";
+            });
+        }
+
         // counter
         AtomicLong flowCount = new AtomicLong(0);
         flowGen.addFlowListener(flow -> flowCount.incrementAndGet());

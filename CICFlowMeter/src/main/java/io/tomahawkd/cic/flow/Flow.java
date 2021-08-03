@@ -126,6 +126,23 @@ public class Flow implements FlowFeature {
         return getDep(TcpFlagFeature.class).getBackwardFIN();
     }
 
+    public static final int PORT_ANY = -1;
+
+    /**
+     * set port to -1 to indicate ANY
+     */
+    public boolean connectBetween(String peer1, int port1, String peer2, int port2) {
+        if (getSrc().equals(peer1) && (port1 == PORT_ANY || getSrcPort() == port1)) {
+            return getDst().equals(peer2) && (port2 == PORT_ANY || getDstPort() == port2);
+        }
+
+        if (getDst().equals(peer1) && (port1 == PORT_ANY || getDstPort() == port1)) {
+            return getSrc().equals(peer2) && (port2 == PORT_ANY || getSrcPort() == port2);
+        }
+
+        return false;
+    }
+
     public final <T extends FlowFeature> T getDep(Class<T> depClass) {
         for (FlowFeature item: features) {
             if (item.getClass().equals(depClass)) return depClass.cast(item);

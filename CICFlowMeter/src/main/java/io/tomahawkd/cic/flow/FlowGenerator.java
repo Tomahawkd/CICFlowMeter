@@ -3,8 +3,7 @@ package io.tomahawkd.cic.flow;
 import io.tomahawkd.cic.execute.ExecutionMode;
 import io.tomahawkd.cic.flow.features.FlowFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
-import io.tomahawkd.cic.util.FlowGenListener;
-import io.tomahawkd.cic.util.FlowLabelSupplier;
+import io.tomahawkd.cic.label.LabelStrategy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +15,7 @@ public class FlowGenerator {
     public static final Logger logger = LogManager.getLogger(FlowGenerator.class);
 
     private final List<FlowGenListener> listeners;
-    private FlowLabelSupplier flowLabelSupplier = f -> "No Label";
+    private LabelStrategy labelStrategy = f -> "No Label";
     private final HashMap<String, Flow> currentFlows;
 
     private final long flowTimeOut;
@@ -46,8 +45,8 @@ public class FlowGenerator {
         listeners.add(listener);
     }
 
-    public void setFlowLabelSupplier(FlowLabelSupplier supplier) {
-        flowLabelSupplier = supplier;
+    public void setFlowLabelSupplier(LabelStrategy supplier) {
+        labelStrategy = supplier;
     }
 
     public void addPacket(PacketInfo packet) {
@@ -66,7 +65,7 @@ public class FlowGenerator {
         } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
             id = packet.setBwd().getFlowId();
         } else {
-            currentFlows.put(packet.setFwd().getFlowId(), new Flow(packet, flowActivityTimeOut, flowLabelSupplier));
+            currentFlows.put(packet.setFwd().getFlowId(), new Flow(packet, flowActivityTimeOut, labelStrategy));
             return;
         }
 

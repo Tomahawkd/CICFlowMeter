@@ -3,7 +3,7 @@ package io.tomahawkd.cic.flow.features;
 import io.tomahawkd.cic.packet.MetaFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.DateFormatter;
-import io.tomahawkd.cic.util.FlowLabelSupplier;
+import io.tomahawkd.cic.label.LabelStrategy;
 import org.jnetpcap.packet.format.FormatUtils;
 
 import java.util.Arrays;
@@ -26,7 +26,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
     private final int srcPort;
     private final int dstPort;
 
-    private final FlowLabelSupplier supplier;
+    private final LabelStrategy strategy;
 
     private long flowStartTime = -1L;
     private long flowLastSeen = 0L;
@@ -38,7 +38,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
     public FlowBasicFeature(String flowId,
                             byte[] src, byte[] dst,
                             int srcPort, int dstPort,
-                            FlowLabelSupplier supplier,
+                            LabelStrategy strategy,
                             long flowActivityTimeOut) {
         super(null);
 
@@ -47,7 +47,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
         this.dst = Arrays.copyOf(dst, dst.length);
         this.srcPort = srcPort;
         this.dstPort = dstPort;
-        this.supplier = supplier;
+        this.strategy = strategy;
         this.flowActivityTimeOut = flowActivityTimeOut;
     }
 
@@ -128,8 +128,8 @@ public class FlowBasicFeature extends AbstractFlowFeature {
         return flowLastSeen - flowStartTime;
     }
 
-    public FlowLabelSupplier getSupplier() {
-        return supplier;
+    public LabelStrategy getLabelStrategy() {
+        return strategy;
     }
 
     public void reset() {

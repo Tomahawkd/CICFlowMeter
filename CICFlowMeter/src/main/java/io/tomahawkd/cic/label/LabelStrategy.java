@@ -1,9 +1,9 @@
-package io.tomahawkd.cic.util;
+package io.tomahawkd.cic.label;
 
 import io.tomahawkd.cic.flow.Flow;
 
 @FunctionalInterface
-public interface FlowLabelSupplier {
+public interface LabelStrategy {
 
     String get(Flow flow);
 }

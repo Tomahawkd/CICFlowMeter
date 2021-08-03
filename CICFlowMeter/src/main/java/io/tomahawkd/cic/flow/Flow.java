@@ -2,7 +2,7 @@ package io.tomahawkd.cic.flow;
 
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.features.*;
-import io.tomahawkd.cic.util.FlowLabelSupplier;
+import io.tomahawkd.cic.label.LabelStrategy;
 import org.jnetpcap.packet.format.FormatUtils;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class Flow implements FlowFeature {
         addPacket(info);
     }
 
-    public Flow(PacketInfo info, long flowActivityTimeOut, FlowLabelSupplier supplier) {
+    public Flow(PacketInfo info, long flowActivityTimeOut, LabelStrategy supplier) {
         this(new FlowBasicFeature(info.getFlowId(),
                 info.getSrc(), info.getDst(),
                 info.getSrcPort(), info.getDstPort(),
@@ -53,7 +53,7 @@ public class Flow implements FlowFeature {
     @Override
     public String exportData() {
         return features.stream().map(FlowFeature::exportData).reduce("", (r, s) -> r + s) +
-                getBasicInfo().getSupplier().get(this);
+                getBasicInfo().getLabelStrategy().get(this);
     }
 
     @Override

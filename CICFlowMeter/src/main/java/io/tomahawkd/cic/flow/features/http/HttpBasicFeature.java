@@ -16,6 +16,7 @@ import java.util.Optional;
 @Feature(name = "HttpFeature", tags = {
         FlowFeatureTag.request_packet_count,
         FlowFeatureTag.invalid_request_header_count,
+        FlowFeatureTag.main_page_count,
         FlowFeatureTag.query_request_count,
         FlowFeatureTag.query_length_avg,
         FlowFeatureTag.query_length_std,
@@ -50,6 +51,7 @@ public class HttpBasicFeature extends HttpFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);
 
+    private long access_main_page_count = 0;
     private long invalid_request_header = 0L;
     private final SummaryStatistics query_stat = new SummaryStatistics();
     private final SummaryStatistics content_length = new SummaryStatistics();
@@ -90,13 +92,17 @@ public class HttpBasicFeature extends HttpFeature {
         }
 
         String path = info.getFeature(HttpPacketDelegate.Feature.PATH, String.class);
-        // we dont care its protocol and host
-        try {
-            URL url = new URL("http://host" + path);
-            String query = url.getQuery();
-            if (query != null) query_stat.addValue(query.length());
-        } catch (MalformedURLException e) {
-            logger.warn("Invalid request path {}.", path);
+        if (path != null) {
+            if (path.equals("/") || path.contains("index.html")) access_main_page_count++;
+
+            // we dont care its protocol and host
+            try {
+                URL url = new URL("http://host" + path);
+                String query = url.getQuery();
+                if (query != null) query_stat.addValue(query.length());
+            } catch (MalformedURLException e) {
+                logger.warn("Invalid request path {}.", path);
+            }
         }
 
         String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);
@@ -117,6 +123,7 @@ public class HttpBasicFeature extends HttpFeature {
         long requestPacketCount = getRequestPacketCount();
         builder.append(requestPacketCount).append(SEPARATOR); // FlowFeatureTag.request_packet_count
         builder.append(invalid_request_header).append(SEPARATOR); // FlowFeatureTag.invalid_request_header_count
+        builder.append(access_main_page_count).append(SEPARATOR); // FlowFeatureTag.main_page_count,
         builder.append(query_stat.getN()).append(SEPARATOR); // FlowFeatureTag.query_request_count,
         buildLength(builder, query_stat);
         buildLength(builder, content_length);

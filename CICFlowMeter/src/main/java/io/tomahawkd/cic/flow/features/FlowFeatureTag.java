@@ -89,6 +89,7 @@ public enum FlowFeatureTag {
     // HTTP layer features
     request_packet_count("Request Packet Count"),
     invalid_request_header_count("Invalid Request Header Count"),
+    main_page_count("Request Main Page Count"),
     query_request_count("Request Has Query Count"),
     query_length_avg("Query Length Avg"),
     query_length_std("Query Length Std"),
@@ -119,6 +120,7 @@ public enum FlowFeatureTag {
     header_element_max("Header Element Count Max"),
     header_element_total("Header Element Count Total"),
 
+    no_host_count("No Host Header Count"),
     referer_count("Total referer count"),
     referer_from_same_source("Referer Same Source Count"),
     referer_from_search_engine("Referer Search Engine Count"),

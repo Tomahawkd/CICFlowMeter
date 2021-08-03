@@ -82,11 +82,7 @@ public class OfflineExecutor extends AbstractExecutor {
                     return "DOS";
                 } else return "NORMAL";
             });
-        } else {
-            flowGen.setFlowLabelSupplier(f -> "NONE");
-        }
-
-        if (inputFile.getFileName().toString().startsWith("IoT_Dataset_HTTP_")) {
+        } else if (inputFile.getFileName().toString().startsWith("IoT_Dataset_HTTP_")) {
             flowGen.setFlowLabelSupplier(f -> {
                 if (f.connectBetween("192.168.100.150", Flow.PORT_ANY, "192.168.100.6", 80) ||
                         f.connectBetween("192.168.100.149", Flow.PORT_ANY, "192.168.100.5", 80) ||
@@ -95,6 +91,8 @@ public class OfflineExecutor extends AbstractExecutor {
                     return "DOS";
                 } else return "NORMAL";
             });
+        }  else {
+            flowGen.setFlowLabelSupplier(f -> "NONE");
         }
 
         // counter

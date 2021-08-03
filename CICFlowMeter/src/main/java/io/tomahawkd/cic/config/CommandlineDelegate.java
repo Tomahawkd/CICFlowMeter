@@ -3,6 +3,9 @@ package io.tomahawkd.cic.config;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.tomahawkd.cic.execute.ExecutionMode;
+import io.tomahawkd.cic.source.LocalFile;
+import io.tomahawkd.cic.source.LocalMultiFile;
+import io.tomahawkd.cic.source.LocalSingleFile;
 import io.tomahawkd.cic.util.Utils;
 import io.tomahawkd.config.AbstractConfigDelegate;
 import io.tomahawkd.config.annotation.BelongsTo;
@@ -23,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @SuppressWarnings("all")
@@ -48,7 +52,6 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(required = true, description = "Pcap file or directory.")
     @HiddenField
     private List<String> pcapPathStringList = new ArrayList<>();
-    private List<Path> pcapPath = new ArrayList<>();
 
     @Parameter(required = true,
             names = {"-o", "-output"},
@@ -56,7 +59,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
             converter = DirPathConverter.class)
     private Path outputPath;
 
-    private Map<Path, Path> inputOutputPaths = new HashMap<>();
+    private Map<LocalFile, Path> inputOutputPaths = new HashMap<>();
 
     @Parameter(names = {"-1", "--one_file"}, description = "Output only one file.")
     private boolean oneFile;
@@ -70,6 +73,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"--noassemble"}, description = "Disable TCP Reassembing")
     private boolean disableReassemble;
 
+    @Parameter(names = {"-c", "--continue"}, description = "Indicate the files in input dir are continuous.")
+    private boolean continuous;
+
     public boolean isHelp() {
         return help;
     }
@@ -82,20 +88,16 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         return activityTimeout;
     }
 
-    public List<Path> getPcapPath() {
-        return pcapPath;
-    }
-
-    public Path getOutputPath() {
-        return outputPath;
-    }
-
-    public Map<Path, Path> getInputOutputPaths() {
+    public Map<LocalFile, Path> getInputOutputPaths() {
         return inputOutputPaths;
     }
 
     public boolean isOneFile() {
         return oneFile;
+    }
+
+    public Path getOneFilePath() {
+        return outputPath.resolve(Utils.DEFAULT_OUTPUT_FILENAME);
     }
 
     public List<String> getIgnoreList() {
@@ -108,6 +110,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public boolean isDisableReassemble() {
         return disableReassemble;
+    }
+
+    public boolean isContinuous() {
+        return continuous;
     }
 
     @Override
@@ -130,29 +136,30 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         }
 
         // input list
-        if (oneFile) {
-            outputPath = outputPath.resolve(Utils.DEFAULT_OUTPUT_FILENAME_PREFIX + Utils.FLOW_SUFFIX);
-        }
         for (String pathString : pcapPathStringList) {
             Path p = Paths.get(pathString);
             if (!Files.exists(p)) continue;
             if (Files.isDirectory(p)) {
                 try (Stream<Path> entries = Files.list(p)) {
-                    entries.filter(Files::isRegularFile)
+                    List<Path> inputFiles = entries.filter(Files::isRegularFile)
                             .filter(fl -> {
                                 try {
                                     return Utils.PCAP.equalsIgnoreCase(new Tika().detect(fl));
                                 } catch (IOException e) {
                                     return false;
                                 }
-                            })
-                            .forEach(fl -> {
-                                if (oneFile) {
-                                    inputOutputPaths.put(fl, outputPath);
-                                } else {
-                                    inputOutputPaths.put(fl, outputPath.resolve(fl.getFileName().toString() + Utils.FLOW_SUFFIX));
-                                }
-                            });
+                            }).collect(Collectors.toList());
+
+                    if (continuous) {
+                        LocalMultiFile file = new LocalMultiFile(p);
+                        file.addSegments(inputFiles);
+                        inputOutputPaths.put(file, outputPath.resolve(generateOutputFileName(file, oneFile)));
+                    } else {
+                        inputFiles.forEach(f -> {
+                            LocalFile file = new LocalSingleFile(f);
+                            inputOutputPaths.put(file, outputPath.resolve(generateOutputFileName(file, oneFile)));
+                        });
+                    }
                 } catch (IOException e) {
                     System.err.println("Error occured while opening the directory: " + p.toAbsolutePath().toString());
                     throw new ParameterException(e);
@@ -164,8 +171,8 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                 } catch (IOException ignored) {
                 }
                 if (isPcap) {
-                    inputOutputPaths.put(p, outputPath.resolve(p.getFileName().toString() + Utils.FLOW_SUFFIX));
-                    pcapPath.add(p);
+                    LocalFile file = new LocalSingleFile(p);
+                    inputOutputPaths.put(file, outputPath.resolve(generateOutputFileName(file, oneFile)));
                 } else {
                     System.err.println("Not a Pcap file: " + p.toAbsolutePath().toString());
                     throw new ParameterException("Not a Pcap file: " + p.toAbsolutePath().toString());
@@ -183,6 +190,14 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         }
     }
 
+    private String generateOutputFileName(LocalFile input, boolean oneFile) {
+        if (oneFile) {
+            return Utils.DEFAULT_OUTPUT_FILENAME;
+        } else {
+            return input.getFileName() + Utils.FLOW_SUFFIX;
+        }
+    }
+
     public String debugString() {
         StringBuilder builder = new StringBuilder();
 
@@ -191,11 +206,12 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         builder.append("Flow timeout: ").append(flowTimeout).append("\n");
         builder.append("Activity timeout: ").append(activityTimeout).append("\n");
         builder.append("Disable TCP Reassembling: ").append(disableReassemble).append("\n");
+        builder.append("Continuous File: ").append(continuous).append("\n");
         builder.append("Output one file: ").append(oneFile).append("\n");
         builder.append("Data output: ").append("\n");
         inputOutputPaths.forEach((k, v) -> builder.append("\t").append(k).append(" -> ").append(v).append("\n"));
         if (oneFile) {
-            builder.append("Output path (one file): ").append(outputPath).append("\n");
+            builder.append("Output path (one file): ").append(getOneFilePath()).append("\n");
         }
         builder.append("Ignore List: [").append(ignoreList.stream().reduce("", (r, e) -> r + "," + e)).append("]").append("\n");
 

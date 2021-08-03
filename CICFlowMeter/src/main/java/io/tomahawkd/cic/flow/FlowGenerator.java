@@ -25,6 +25,8 @@ public class FlowGenerator {
 
     private final BiFunction<Flow, Long, Boolean> timeoutStrategy;
 
+    private long flowCount = 0;
+
     public FlowGenerator(long flowTimeout, long activityTimeout, ExecutionMode mode) {
         super();
         this.flowTimeOut = flowTimeout;
@@ -47,6 +49,10 @@ public class FlowGenerator {
 
     public void setFlowLabelSupplier(LabelStrategy supplier) {
         labelStrategy = supplier;
+    }
+
+    public long getFlowCount() {
+        return flowCount;
     }
 
     public void addPacket(PacketInfo packet) {
@@ -172,6 +178,7 @@ public class FlowGenerator {
 
     private void callback(Flow flow) {
         if (flow.getBasicInfo().hasHttp()) {
+            flowCount++;
             listeners.forEach(l -> l.onFlowGenerated(flow));
         } else {
             logger.debug("Discarding flow {} which has no HTTP packets", flow);

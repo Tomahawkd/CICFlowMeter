@@ -136,6 +136,10 @@ public enum FlowFeatureTag {
     invalid_user_agent_count("Invalid User Agent Count"),
     no_user_agent_count("No User Agent Count"),
 
+    set_cookie_count("Set-Cookie Header Count"),
+    cookie_count("Cookie Header Count"),
+    no_cookie_count("No Cookie Header Count"),
+
     Label("Label");                    //85
 
     private final String name;

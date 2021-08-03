@@ -112,10 +112,12 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
             dst.addFeature(Feature.ENCODING, getField(headerMap, Http.Request.Accept_Encoding));
             // dst.addFeature(Feature.PROXY, getField(headerMap, Http.Request.Proxy_Connection));
             dst.addFeature(Feature.CONTENT_TYPE, getField(headerMap, Http.Request.Accept));
+            dst.addFeature(Feature.COOKIE, getField(headerMap, Http.Request.Cookie));
         } else {
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(getField(headerMap, Http.Response.Content_Length)));
             dst.addFeature(Feature.STATUS, firstLineElements[1]);
             dst.addFeature(Feature.CONTENT_TYPE, getField(headerMap, Http.Response.Content_Type));
+            dst.addFeature(Feature.SET_COOKIE, getField(headerMap, Http.Response.Set_Cookie));
         }
         return OK;
     }
@@ -141,10 +143,10 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         // Request
         UA(UserAgent.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
-        PROXY(String.class), PATH(String.class), HOST(String.class),
+        PROXY(String.class), PATH(String.class), HOST(String.class), COOKIE(String.class),
 
         // Response
-        STATUS(String.class);
+        STATUS(String.class), SET_COOKIE(String.class);
 
         private final Class<?> type;
 

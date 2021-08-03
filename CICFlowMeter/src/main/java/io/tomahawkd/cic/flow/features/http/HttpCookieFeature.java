@@ -27,7 +27,7 @@ public class HttpCookieFeature extends HttpFeature {
     private long cookie_partial_match = 0;
     private long cookie_match = 0;
 
-    private Map<String, String> cookies = new HashMap<>();
+    private final Map<String, String> cookies = new HashMap<>();
 
     public HttpCookieFeature(HttpFeatureAdapter httpFeature) {
         super(httpFeature);

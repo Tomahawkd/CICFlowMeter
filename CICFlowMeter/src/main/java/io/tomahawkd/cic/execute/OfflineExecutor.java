@@ -91,8 +91,6 @@ public class OfflineExecutor extends AbstractExecutor {
                     return "DOS";
                 } else return "NORMAL";
             });
-        }  else {
-            flowGen.setFlowLabelSupplier(f -> "NONE");
         }
 
         // counter

@@ -130,7 +130,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         }
 
         // input list
-        StringBuilder builder = new StringBuilder().append(Utils.DEFAULT_OUTPUT_FILENAME_PREFIX);
+        if (oneFile) {
+            outputPath = outputPath.resolve(Utils.DEFAULT_OUTPUT_FILENAME_PREFIX + Utils.FLOW_SUFFIX);
+        }
         for (String pathString : pcapPathStringList) {
             Path p = Paths.get(pathString);
             if (!Files.exists(p)) continue;
@@ -146,22 +148,11 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                             })
                             .forEach(fl -> {
                                 if (oneFile) {
-                                    builder.append(fl.getFileName().toString().substring(0, 3)).append("_");
-                                    inputOutputPaths.put(fl, null);
+                                    inputOutputPaths.put(fl, outputPath);
                                 } else {
                                     inputOutputPaths.put(fl, outputPath.resolve(fl.getFileName().toString() + Utils.FLOW_SUFFIX));
                                 }
                             });
-
-                    if (oneFile) {
-                        builder.deleteCharAt(builder.length() - 1).append(Utils.FLOW_SUFFIX);
-                        Path onefilePath = outputPath.resolve(builder.toString());
-                        for (Path input : inputOutputPaths.keySet()) {
-                            inputOutputPaths.put(input, onefilePath);
-                        }
-                        // At last change output path to the onefile path
-                        outputPath = onefilePath;
-                    }
                 } catch (IOException e) {
                     System.err.println("Error occured while opening the directory: " + p.toAbsolutePath().toString());
                     throw new ParameterException(e);

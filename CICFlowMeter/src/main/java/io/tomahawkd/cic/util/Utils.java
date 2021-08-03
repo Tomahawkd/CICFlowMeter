@@ -16,7 +16,7 @@ public class Utils {
     public static final String LINE_SEP = System.lineSeparator();
     public final static String PCAP = "application/vnd.tcpdump.pcap";
     public static final String FLOW_SUFFIX = "_Flow.csv";
-    public static final String DEFAULT_OUTPUT_FILENAME_PREFIX = "Result_";
+    public static final String DEFAULT_OUTPUT_FILENAME_PREFIX = "Result";
     public static final String DividingLine = "-------------------------------------------------------------------------------";
 
 

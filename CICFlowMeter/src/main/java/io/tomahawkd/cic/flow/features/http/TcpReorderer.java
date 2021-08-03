@@ -69,7 +69,7 @@ public class TcpReorderer {
         } else {
             if (info.seq() == currentSeq) {
                 // TODO: retransmission count
-                logger.warn("Got retransmission packet [{}], expecting {}", info, nextExpectedSeq);
+                logger.debug("Got retransmission packet [{}], expecting {}", info, nextExpectedSeq);
             } else if (info.seq() == nextExpectedSeq - 1) {
                 // Keep-Alive packet
                 // https://datatracker.ietf.org/doc/html/rfc1122#page-102

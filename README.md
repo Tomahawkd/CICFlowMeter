@@ -36,6 +36,9 @@ Usage: <main class> [options] Pcap file or directory.
     -a, --act_time
       Setting timeout interval for an activity.
       Default: 5000000
+    -c, --continue
+      Indicate the files in input dir are continuous.
+      Default: false
     --debug
       Show debug output (sets logLevel to DEBUG)
       Default: false
@@ -50,6 +53,10 @@ Usage: <main class> [options] Pcap file or directory.
       Possible Values: [DEFAULT, SAMPLING, FULL, ONLINE]
     -n, --no
       Ignores specific feature (use as -no <feature1>,<feature2>)
+      Default: []
+    --noassemble
+      Disable TCP Reassembing
+      Default: false
     -1, --one_file
       Output only one file.
       Default: false
@@ -57,5 +64,5 @@ Usage: <main class> [options] Pcap file or directory.
       No output (sets logLevel to NONE)
       Default: false
   * -o, -output
-      Output directory (mandatory).
+      Output directory.
 ```

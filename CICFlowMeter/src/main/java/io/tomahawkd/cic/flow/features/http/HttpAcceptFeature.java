@@ -29,7 +29,7 @@ public class HttpAcceptFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        String accept = info.getFeature(HttpPacketDelegate.Feature.CONTENT_TYPE, String.class);
+        String accept = info.getFeature(HttpPacketDelegate.Feature.ACCEPT, String.class);
         if (accept != null) {
             acceptCount++;
             if (accept.startsWith("*/*")) acceptOnlyUseWildcardCount++;

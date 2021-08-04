@@ -5,5 +5,5 @@ import io.tomahawkd.cic.flow.Flow;
 @FunctionalInterface
 public interface LabelStrategy {
 
-    String get(Flow flow);
+    String getLabel(Flow flow);
 }

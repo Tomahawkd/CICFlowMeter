@@ -1,9 +1,8 @@
 package io.tomahawkd.cic.flow;
 
-import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.flow.features.*;
 import io.tomahawkd.cic.label.LabelStrategy;
-import org.jnetpcap.packet.format.FormatUtils;
+import io.tomahawkd.cic.packet.PacketInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,15 +14,9 @@ public class Flow implements FlowFeature {
     private final List<FlowFeature> features;
 
     private Flow(FlowBasicFeature basicInfo) {
-        basicInfo.reset();
         this.features = new ArrayList<>();
         features.add(basicInfo);
         FlowFeatureBuilder.INSTANCE.buildClasses(this);
-    }
-
-    public Flow(PacketInfo info, Flow flow) {
-        this(flow.getBasicInfo());
-        addPacket(info);
     }
 
     public Flow(PacketInfo info, long flowActivityTimeOut, LabelStrategy supplier) {
@@ -53,7 +46,7 @@ public class Flow implements FlowFeature {
     @Override
     public String exportData() {
         return features.stream().map(FlowFeature::exportData).reduce("", (r, s) -> r + s) +
-                getBasicInfo().getLabelStrategy().get(this);
+                getBasicInfo().getLabelStrategy().getLabel(this);
     }
 
     @Override
@@ -103,11 +96,11 @@ public class Flow implements FlowFeature {
     }
 
     public String getSrc() {
-        return FormatUtils.ip(getBasicInfo().src());
+        return getBasicInfo().getSrc();
     }
 
     public String getDst() {
-        return FormatUtils.ip(getBasicInfo().dst());
+        return getBasicInfo().getDst();
     }
 
     public int getSrcPort() {
@@ -140,6 +133,19 @@ public class Flow implements FlowFeature {
             return getSrc().equals(peer2) && (port2 == PORT_ANY || getSrcPort() == port2);
         }
 
+        return false;
+    }
+
+    public boolean requestFromTo(String reqIp, int reqPort, String resIp, int resPort) {
+        if (!getBasicInfo().needRevert()) {
+            if (getSrc().equals(reqIp) && (reqPort == PORT_ANY || getSrcPort() == reqPort)) {
+                return getDst().equals(resIp) && (resPort == PORT_ANY || getDstPort() == resPort);
+            }
+        } else {
+            if (getDst().equals(reqIp) && (reqPort == PORT_ANY || getDstPort() == reqPort)) {
+                return getSrc().equals(resIp) && (resPort == PORT_ANY || getSrcPort() == resPort);
+            }
+        }
         return false;
     }
 

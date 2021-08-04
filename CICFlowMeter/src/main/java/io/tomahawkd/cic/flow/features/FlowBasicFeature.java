@@ -1,9 +1,10 @@
 package io.tomahawkd.cic.flow.features;
 
+import io.tomahawkd.cic.label.LabelStrategy;
+import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.MetaFeature;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.DateFormatter;
-import io.tomahawkd.cic.label.LabelStrategy;
 import org.jnetpcap.packet.format.FormatUtils;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
     private long flowStartTime = -1L;
     private long flowLastSeen = 0L;
     private boolean hasHttp = false;
+    private boolean needRevert = false;
 
     // settings
     private final long flowActivityTimeOut;
@@ -56,6 +58,12 @@ public class FlowBasicFeature extends AbstractFlowFeature {
         if (!hasHttp) {
             if (Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false)) {
                 hasHttp = true;
+                // if the http is response but it is forward
+                // or the http is request but it is backward, the flow is reverted
+                if ((!fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST)) ||
+                        (fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST, true))) {
+                    needRevert = true;
+                }
             }
         }
     }
@@ -132,12 +140,11 @@ public class FlowBasicFeature extends AbstractFlowFeature {
         return strategy;
     }
 
-    public void reset() {
-        flowStartTime = -1L;
-        flowLastSeen = 0L;
-    }
-
     public boolean hasHttp() {
         return hasHttp;
+    }
+
+    public boolean needRevert() {
+        return needRevert;
     }
 }

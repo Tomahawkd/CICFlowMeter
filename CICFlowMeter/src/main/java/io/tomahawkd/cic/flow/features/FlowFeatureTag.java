@@ -86,7 +86,8 @@ public enum FlowFeatureTag {
     idl_max("Idle Max"),                    //83
     idl_min("Idle Min"),                    //84
 
-    // HTTP layer features
+    // HTTP layer features: 68
+    // HttpBasicFeature: 32
     request_packet_count("Request Packet Count"),
     invalid_request_header_count("Invalid Request Header Count"),
     main_page_count("Request Main Page Count"),
@@ -120,11 +121,13 @@ public enum FlowFeatureTag {
     header_element_max("Header Element Count Max"),
     header_element_total("Header Element Count Total"),
 
+    // HttpRefererFeature: 4
     no_host_count("No Host Header Count"),
     referer_count("Total referer count"),
     referer_from_same_source("Referer Same Source Count"),
     referer_from_search_engine("Referer Search Engine Count"),
 
+    // HttpAcceptFeature: 6
     accept_count("Accept Header Count"),
     accept_use_wildcard_count("Accept Any Count"),
     no_accept_count("No Accept Header Count"),
@@ -132,10 +135,12 @@ public enum FlowFeatureTag {
     lang_use_wildcard_count("Accept Any Language Count"),
     no_lang_count("No Accept Language Header Count"),
 
+    // HttpUserAgentFeature: 3
     valid_user_agent_count("Valid User Agent Count"),
     invalid_user_agent_count("Invalid User Agent Count"),
     no_user_agent_count("No User Agent Count"),
 
+    // HttpCookieFeature: 6
     set_cookie_count("Set-Cookie Header Count"),
     cookie_count("Cookie Header Count"),
     no_cookie_count("No Cookie Header Count"),
@@ -143,6 +148,7 @@ public enum FlowFeatureTag {
     cookie_partial_match_count("Cookie partial matches to Set-Cookie Count"),
     cookie_no_match_count("Cookie not matches to Set-Cookie Count"),
 
+    // HttpResponseContentFeature: 8
     plain_count("Response Plain Count"),
     html_count("Response HTML Count"),
     js_count("Response JS Count"),
@@ -152,6 +158,7 @@ public enum FlowFeatureTag {
     other_count("Response Other Type Count"),
     invalid_content_type("Invalid Content Type Count"),
 
+    // HttpResponseCodeFeature: 9
     ok_count("200 Count"),
     not_modified_count("304 Count"),
     not_found_count("404 Count"),

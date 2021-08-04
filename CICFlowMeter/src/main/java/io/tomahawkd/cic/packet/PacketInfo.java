@@ -43,11 +43,6 @@ public class PacketInfo {
     }
 
     @Nullable
-    public Object getFeature(PacketFeature feature) {
-        return data.get(feature);
-    }
-
-    @Nullable
     @SuppressWarnings("all")
     public <T> T getFeature(PacketFeature feature, Class<T> type) {
         Object o = data.get(feature);
@@ -60,12 +55,16 @@ public class PacketInfo {
                         " but requesting " + type.getName());
     }
 
-    public boolean getBoolFeature(PacketFeature feature) {
+    public boolean getBoolFeature(PacketFeature feature, boolean defaultValue) {
         if (Boolean.class.isAssignableFrom(Primitives.wrap(feature.getType()))) {
             return Optional.ofNullable(
                     this.getFeature(feature, Boolean.class)
-            ).orElse(false);
-        } else return false;
+            ).orElse(defaultValue);
+        } else return defaultValue;
+    }
+
+    public boolean getBoolFeature(PacketFeature feature) {
+        return getBoolFeature(feature, false);
     }
 
     @SuppressWarnings("all")

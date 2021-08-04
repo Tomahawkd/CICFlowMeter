@@ -143,6 +143,25 @@ public enum FlowFeatureTag {
     cookie_partial_match_count("Cookie partial matches to Set-Cookie Count"),
     cookie_no_match_count("Cookie not matches to Set-Cookie Count"),
 
+    plain_count("Response Plain Count"),
+    html_count("Response HTML Count"),
+    js_count("Response JS Count"),
+    css_count("Response CSS Count"),
+    image_count("Response Image Count"),
+    app_count("Response Application Count"),
+    other_count("Response Other Type Count"),
+    invalid_content_type("Invalid Content Type Count"),
+
+    ok_count("200 Count"),
+    not_modified_count("304 Count"),
+    not_found_count("404 Count"),
+    info_count("1xx Count"),
+    success_count("2xx Count"),
+    redirect_count("3xx Count"),
+    client_error_count("4xx Count"),
+    server_error_count("5xx Count"),
+    other_status_count("Other Response Code Count"),
+
     Label("Label");                    //85
 
     private final String name;

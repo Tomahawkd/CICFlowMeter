@@ -58,12 +58,12 @@ public class FlowBasicFeature extends AbstractFlowFeature {
         if (!hasHttp) {
             if (Optional.ofNullable(info.getFeature(MetaFeature.HTTP, Boolean.class)).orElse(false)) {
                 hasHttp = true;
-                // if the http is response but it is forward
-                // or the http is request but it is backward, the flow is reverted
-                if ((!fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST)) ||
-                        (fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST, true))) {
-                    needRevert = true;
-                }
+//                // if the http is response but it is forward
+//                // or the http is request but it is backward, the flow is reverted
+//                if ((!fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST)) ||
+//                        (fwd && info.getBoolFeature(HttpPacketDelegate.Feature.REQUEST, true))) {
+//                    needRevert = true;
+//                }
             }
         }
     }

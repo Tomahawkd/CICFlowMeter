@@ -57,9 +57,9 @@ public class LocalMultiFile implements LocalFile {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("LocalMultiFile[parentDir=").append(parentDir.toAbsolutePath()).append(", segments=[");
-        segments.forEach(f -> builder.append(f).append(", "));
-        builder.append("]]");
+        builder.append("LocalMultiFile[parentDir=").append(parentDir.toAbsolutePath()).append(", segments=[\n");
+        segments.forEach(f -> builder.append('\t').append(f).append(", \n"));
+        builder.append("]\n]");
         return builder.toString();
     }
 }

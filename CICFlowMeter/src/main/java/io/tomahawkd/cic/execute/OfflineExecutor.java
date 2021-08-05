@@ -75,13 +75,13 @@ public class OfflineExecutor extends AbstractExecutor {
         if (inputFile.filenameContains("Wednesday-WorkingHours")) {
             // 172.16.0.1 -> 192.168.10.50:80
             flowGen.setFlowLabelSupplier(f -> {
-                if (f.requestFromTo("172.16.0.1", Flow.PORT_ANY, "192.168.10.50", 80)) {
+                if (f.getSrc().equals("172.16.0.1") && f.getDst().equals("192.168.10.50") && f.getDstPort() == 80) {
                     return "SLOWDOS";
                 } else return "NORMAL";
             });
         } else if (inputFile.filenameContains("Friday-WorkingHours")) {
             flowGen.setFlowLabelSupplier(f -> {
-                if (f.requestFromTo("172.16.0.1", Flow.PORT_ANY, "192.168.10.50", 80)) {
+                if (f.getSrc().equals("172.16.0.1") && f.getDst().equals("192.168.10.50") && f.getDstPort() == 80) {
                     return "DOS";
                 } else return "NORMAL";
             });

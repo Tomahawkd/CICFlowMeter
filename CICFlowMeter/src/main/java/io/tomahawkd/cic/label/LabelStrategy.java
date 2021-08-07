@@ -6,4 +6,7 @@ import io.tomahawkd.cic.flow.Flow;
 public interface LabelStrategy {
 
     String getLabel(Flow flow);
+
+    LabelStrategy NONE = null;
+    LabelStrategy DEFAULT = f -> "NO_LABEL";
 }

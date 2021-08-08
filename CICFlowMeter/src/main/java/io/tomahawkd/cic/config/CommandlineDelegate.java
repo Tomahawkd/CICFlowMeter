@@ -76,6 +76,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-c", "--continue"}, description = "Indicate the files in input dir are continuous.")
     private boolean continuous;
 
+    @Parameter(names = {"-t", "--thread"}, description = "Set the thread count to process flow")
+    private int threads = 1;
+
     public boolean isHelp() {
         return help;
     }
@@ -114,6 +117,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public boolean isContinuous() {
         return continuous;
+    }
+
+    public int getThreadCount() {
+        return threads;
     }
 
     @Override
@@ -188,6 +195,9 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         if (mode == ExecutionMode.DEFAULT) {
             mode = ExecutionMode.FULL;
         }
+
+        // threads
+        if (threads < 1) threads = 1;
     }
 
     private String generateOutputFileName(LocalFile input, boolean oneFile) {

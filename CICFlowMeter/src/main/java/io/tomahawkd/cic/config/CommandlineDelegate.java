@@ -156,14 +156,15 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                                     return false;
                                 }
                             }).collect(Collectors.toList());
+                    if (inputFiles.size() == 0) continue;
 
                     if (continuous) {
                         LocalFile file;
-                        if (inputFiles.size() == 1) {
-                            file = new LocalSingleFile(inputFiles.get(0));
-                        } else {
+                        if (inputFiles.size() > 1) {
                             file = new LocalMultiFile(p);
                             ((LocalMultiFile) file).addSegments(inputFiles);
+                        } else {
+                            file = new LocalSingleFile(inputFiles.get(0));
                         }
                         inputOutputPaths.put(file, outputPath.resolve(generateOutputFileName(file, oneFile)));
                     } else {

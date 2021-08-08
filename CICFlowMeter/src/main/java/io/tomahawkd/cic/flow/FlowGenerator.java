@@ -1,9 +1,8 @@
 package io.tomahawkd.cic.flow;
 
 import io.tomahawkd.cic.execute.ExecutionMode;
-import io.tomahawkd.cic.flow.features.FlowFeature;
-import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.label.LabelStrategy;
+import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +34,6 @@ public class FlowGenerator {
         packetCounter = 0;
         listeners = new ArrayList<>();
 
-        addFlowListener(FlowFeature::finalizeFlow);
         if (mode == ExecutionMode.FULL || mode == ExecutionMode.ONLINE) {
             this.timeoutStrategy = this::fullTimeout;
         } else {

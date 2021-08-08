@@ -158,8 +158,13 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                             }).collect(Collectors.toList());
 
                     if (continuous) {
-                        LocalMultiFile file = new LocalMultiFile(p);
-                        file.addSegments(inputFiles);
+                        LocalFile file;
+                        if (inputFiles.size() == 1) {
+                            file = new LocalSingleFile(inputFiles.get(0));
+                        } else {
+                            file = new LocalMultiFile(p);
+                            ((LocalMultiFile) file).addSegments(inputFiles);
+                        }
                         inputOutputPaths.put(file, outputPath.resolve(generateOutputFileName(file, oneFile)));
                     } else {
                         inputFiles.forEach(f -> {

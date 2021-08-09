@@ -5,20 +5,18 @@ import io.tomahawkd.cic.packet.PacketInfo;
 
 import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     private final FlowGenerator flowGenerator;
-    private boolean working;
-    private final Lock workingLock = new ReentrantLock();
+    private final AtomicBoolean working;
 
     private final Deque<PacketInfo> queue;
 
     public SimpleDispatchFlowWorker(FlowGenerator flowGenerator) {
         this.flowGenerator = flowGenerator;
-        this.working = false;
+        this.working = new AtomicBoolean(false);
         this.queue = new ConcurrentLinkedDeque<>();
     }
 
@@ -31,7 +29,7 @@ public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     @Override
     public void accept(PacketInfo info) {
-        if (!this.working) return;
+        if (!this.working.get()) return;
         queue.add(info);
     }
 
@@ -49,19 +47,19 @@ public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     @Override
     public void run() {
-        this.working = true;
+        this.working.set(true);
 
-        workingLock.lock();
-        while (this.working) {
-            workingLock.unlock();
+        while (true) {
             if (!queue.isEmpty()) {
                 synchronized (this.flowGenerator) {
                     flowGenerator.addPacket(queue.pop());
                 }
             }
-            workingLock.lock();
+
+            synchronized (this.working) {
+                if (!this.working.get()) break;
+            }
         }
-        workingLock.unlock();
 
         while (!queue.isEmpty()) {
             synchronized (this.flowGenerator) {
@@ -76,9 +74,9 @@ public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     @Override
     public void close() {
-        workingLock.lock();
-        this.working = false;
-        workingLock.unlock();
+        synchronized (this.working) {
+            this.working.set(false);
+        }
     }
 
     @Override

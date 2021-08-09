@@ -28,6 +28,8 @@ public class PacketInfo {
     private long seq;
     private long ack;
 
+    public static final PacketInfo NONE = new PacketInfo(-1);
+
     public PacketInfo(long id) {
         data = new HashMap<>();
         this.id = id;

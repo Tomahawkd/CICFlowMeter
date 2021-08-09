@@ -28,7 +28,7 @@ public class Utils {
         }
     }
 
-    public static void insertToFile(String line, Path path) {
+    public static synchronized void insertToFile(String line, Path path) {
         if (path == null || line == null) {
             String ex = String.format("path=%s", path);
             throw new IllegalArgumentException(ex);

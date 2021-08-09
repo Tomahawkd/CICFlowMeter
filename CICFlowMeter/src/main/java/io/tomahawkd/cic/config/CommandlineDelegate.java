@@ -76,8 +76,8 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-c", "--continue"}, description = "Indicate the files in input dir are continuous.")
     private boolean continuous;
 
-    @Parameter(names = {"-t", "--thread"}, description = "Set the thread count to process flow")
-    private int threads = 1;
+    @Parameter(names = {"-t", "--thread"}, description = "Set the thread count to process flows")
+    private int flowThreads = 5;
 
     public boolean isHelp() {
         return help;
@@ -119,8 +119,8 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         return continuous;
     }
 
-    public int getThreadCount() {
-        return threads;
+    public int getFlowThreadCount() {
+        return flowThreads;
     }
 
     @Override
@@ -203,7 +203,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         }
 
         // threads
-        if (threads < 1) threads = 1;
+        if (flowThreads < 1) flowThreads = 1;
     }
 
     private String generateOutputFileName(LocalFile input, boolean oneFile) {
@@ -222,6 +222,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         builder.append("Flow timeout: ").append(flowTimeout).append("\n");
         builder.append("Activity timeout: ").append(activityTimeout).append("\n");
         builder.append("Disable TCP Reassembling: ").append(disableReassemble).append("\n");
+        builder.append("Flow threads: ").append(flowThreads).append("\n");
         builder.append("Continuous File: ").append(continuous).append("\n");
         builder.append("Output one file: ").append(oneFile).append("\n");
         builder.append("Data output: ").append("\n");

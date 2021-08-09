@@ -3,6 +3,7 @@ package io.tomahawkd.cic.execute;
 import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
+import io.tomahawkd.cic.label.LabelStrategy;
 import io.tomahawkd.cic.label.LabelStrategyFactoryManager;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.packet.PacketReader;
@@ -10,6 +11,7 @@ import io.tomahawkd.cic.source.LocalFile;
 import io.tomahawkd.cic.source.LocalFiles;
 import io.tomahawkd.cic.source.LocalMultiFile;
 import io.tomahawkd.cic.source.LocalSingleFile;
+import io.tomahawkd.cic.thread.PacketDispatcher;
 import io.tomahawkd.cic.util.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,23 +40,24 @@ public class OfflineExecutor extends AbstractExecutor {
         boolean oneFile = delegate.isOneFile();
         Path oneOutputPath = delegate.getOneFilePath();
         ExecutionMode mode = delegate.getMode();
+        int threads = delegate.getFlowThreadCount();
 
         if (oneFile) {
             initFile(oneOutputPath);
             inputOutputPaths.forEach((inputFile, ignored) -> {
                 logger.info("Start Processing {}", inputFile.getFileName());
-                readPcapFile(inputFile, oneOutputPath, flowTimeout, activityTimeout, mode);
+                readPcapFile(inputFile, oneOutputPath, flowTimeout, activityTimeout, mode, threads);
             });
         } else {
             inputOutputPaths.forEach((inputFile, outputPath) -> {
                 initFile(outputPath);
                 logger.info("Start Processing {}", inputFile.getFileName());
-                readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout, mode);
+                readPcapFile(inputFile, outputPath, flowTimeout, activityTimeout, mode, threads);
             });
         }
     }
 
-    private void readPcapFile(LocalFile inputFile, Path outputPath, long flowTimeout, long activityTimeout, ExecutionMode mode) {
+    private void readPcapFile(LocalFile inputFile, Path outputPath, long flowTimeout, long activityTimeout, ExecutionMode mode, int threads) {
         if (inputFile == null || outputPath == null) {
             logger.fatal("Got a null path.");
             throw new RuntimeException("Got a null path.");
@@ -70,30 +73,31 @@ public class OfflineExecutor extends AbstractExecutor {
         System.out.printf("Working on... %s%n", fileName);
 
         // setting up
-        FlowGenerator flowGen = new FlowGenerator(flowTimeout, activityTimeout, mode);
-        flowGen.setFlowLabelSupplier(LabelStrategyFactoryManager.get().getStrategy(inputFile));
+        LabelStrategy strategy = LabelStrategyFactoryManager.get().getStrategy(inputFile);
+        PacketDispatcher dispatcher = new PacketDispatcher(threads, () -> {
+            FlowGenerator flowGen = new FlowGenerator(flowTimeout, activityTimeout, mode);
+            flowGen.setFlowLabelSupplier(strategy);
 
-        // data export
-        flowGen.addFlowListener(flow -> Utils.insertToFile(flow.exportData(), outputPath));
+            // data export
+            flowGen.addFlowListener(flow -> Utils.insertToFile(flow.exportData(), outputPath));
+            return flowGen;
+        });
 
+        dispatcher.start();
         if (inputFile instanceof LocalMultiFile) {
             LocalMultiFile file = (LocalMultiFile) inputFile;
-            file.getSegments().forEach(localSingleFile -> readData(flowGen, localSingleFile.getFilePath()));
-
-            flowGen.dumpLabeledCurrentFlow();
-
-            System.out.printf("%s is done. total %d flows %n", inputFile.getFileName(), flowGen.getFlowCount());
-            System.out.println(Utils.DividingLine);
+            file.getSegments().forEach(localSingleFile -> readData(dispatcher, localSingleFile.getFilePath()));
         } else if (inputFile instanceof LocalSingleFile) {
-            readData(flowGen, inputFile.getFilePath());
-            flowGen.dumpLabeledCurrentFlow();
-
-            System.out.printf("%s is done. total %d flows %n", inputFile.getFileName(), flowGen.getFlowCount());
-            System.out.println(Utils.DividingLine);
+            readData(dispatcher, inputFile.getFilePath());
         }
+
+        dispatcher.stop();
+
+        System.out.printf("%s is done. total %d flows %n", inputFile.getFileName(), dispatcher.getFlowCount());
+        System.out.println(Utils.DividingLine);
     }
 
-    private void readData(FlowGenerator flowGen, Path filePath) {
+    private void readData(PacketDispatcher dispatcher, Path filePath) {
         PacketReader packetReader = new PacketReader(filePath.toString());
         long nTotal = 0;
         long nValid = 0;
@@ -102,10 +106,10 @@ public class OfflineExecutor extends AbstractExecutor {
                 PacketInfo basicPacket = packetReader.nextPacket();
                 nTotal++;
                 if (basicPacket != null) {
-                    flowGen.addPacket(basicPacket);
+                    dispatcher.dispatch(basicPacket);
                     nValid++;
                 }
-                System.out.printf("%s -> %d packets, %d flows \r", filePath.getFileName(), nTotal, flowGen.getFlowCount());
+                System.out.printf("%s -> %d packets, %d flows \r", filePath.getFileName(), nTotal, dispatcher.getFlowCount());
             } catch (PcapClosedException e) {
                 break;
             }

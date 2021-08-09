@@ -147,4 +147,8 @@ public class HttpFeatureAdapter extends AbstractFlowFeature {
     public final int getHttpPackets() {
         return httpPackets;
     }
+
+    public final Flow getFlow() {
+        return flow;
+    }
 }

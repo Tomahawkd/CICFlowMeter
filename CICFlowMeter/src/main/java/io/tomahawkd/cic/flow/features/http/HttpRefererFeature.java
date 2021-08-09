@@ -35,8 +35,8 @@ public class HttpRefererFeature extends HttpFlowFeature {
         if (host == null) {
             noHostCount++;
             logger.warn("Packet {} has no host in HTTP protocol, use destination ip {}",
-                    info.getFlowId(), info.getDestinationIP());
-            host = info.getDestinationIP();
+                    httpFeatures.getFlow().getFlowId(), httpFeatures.getFlow().getDst());
+            host = httpFeatures.getFlow().getDst();
         }
 
         String referer = info.getFeature(HttpPacketFeature.REFERER, String.class);

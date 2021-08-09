@@ -1,26 +1,19 @@
 package io.tomahawkd.cic.packet;
 
-import org.jnetpcap.packet.PcapPacket;
-import org.jnetpcap.protocol.network.Ip4;
+import io.tomahawkd.cic.pcap.EthernetFrame;
+import io.tomahawkd.cic.pcap.Ipv4Packet;
 
 @Layer(LayerType.INTERNET)
-public class Ipv4PacketDelegate extends AbstractPacketDelegate {
+public class Ipv4PacketDelegate {
 
+    public Ipv4Packet parse(PacketInfo dst, EthernetFrame frame) {
 
-    public Ipv4PacketDelegate() {
-        super(Ip4.ID);
-    }
+        Ipv4Packet ipv4 = frame.body();
+        if (ipv4 == null) return null;
 
-    @Override
-    public boolean parse(PacketInfo dst, PcapPacket packet) {
-        Ip4 ipv4 = new Ip4();
-        if (!packet.hasHeader(ipv4)) {
-            return false;
-        }
-
-        dst.addFeature(MetaFeature.SRC, ipv4.source());
-        dst.addFeature(MetaFeature.DST, ipv4.destination());
+        dst.addFeature(MetaFeature.SRC, ipv4.srcIpAddr());
+        dst.addFeature(MetaFeature.DST, ipv4.dstIpAddr());
         dst.addFeature(MetaFeature.IPV4, true);
-        return true;
+        return ipv4;
     }
 }

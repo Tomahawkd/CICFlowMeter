@@ -1,17 +1,11 @@
 package io.tomahawkd.cic.packet;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.jnetpcap.packet.PcapPacket;
 
 @Layer(LayerType.APPLICATION)
-public class HttpPreprocessPacketDelegate extends AbstractPacketDelegate {
+public class HttpPreprocessPacketDelegate {
 
-    public HttpPreprocessPacketDelegate() {
-        super(0);
-    }
-
-    @Override
-    public boolean parse(PacketInfo dst, PcapPacket packet) {
+    public boolean parse(PacketInfo dst) {
         byte[] payload = dst.getFeature(MetaFeature.APP_DATA, byte[].class);
         boolean readable = false;
         if (payload != null && payload.length > 0) {

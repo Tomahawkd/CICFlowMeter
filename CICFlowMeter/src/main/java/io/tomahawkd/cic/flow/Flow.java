@@ -136,19 +136,6 @@ public class Flow implements FlowFeature {
         return false;
     }
 
-    public boolean requestFromTo(String reqIp, int reqPort, String resIp, int resPort) {
-        if (!getBasicInfo().needRevert()) {
-            if (getSrc().equals(reqIp) && (reqPort == PORT_ANY || getSrcPort() == reqPort)) {
-                return getDst().equals(resIp) && (resPort == PORT_ANY || getDstPort() == resPort);
-            }
-        } else {
-            if (getDst().equals(reqIp) && (reqPort == PORT_ANY || getDstPort() == reqPort)) {
-                return getSrc().equals(resIp) && (resPort == PORT_ANY || getSrcPort() == resPort);
-            }
-        }
-        return false;
-    }
-
     public final <T extends FlowFeature> T getDep(Class<T> depClass) {
         for (FlowFeature item: features) {
             if (item.getClass().equals(depClass)) return depClass.cast(item);

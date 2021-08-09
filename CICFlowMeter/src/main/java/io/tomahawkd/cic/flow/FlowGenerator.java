@@ -54,6 +54,12 @@ public class FlowGenerator {
     }
 
     public boolean containsFlow(PacketInfo packet) {
+        packetCounter++;
+        if (packetCounter > 0x8000) {
+            flushTimeoutFlows(packet.getTimestamp());
+            packetCounter = 0;
+        }
+
         if (this.currentFlows.containsKey(packet.fwdFlowId())) {
             packet.setFwd();
             return true;
@@ -69,12 +75,6 @@ public class FlowGenerator {
         if (packet == null) return;
 
         logger.debug("Received packet with id {}", packet.getFlowId());
-        packetCounter++;
-        if (packetCounter > 0x8000) {
-            flushTimeoutFlows(packet.getTimestamp());
-            packetCounter = 0;
-        }
-
         String id = packet.getFlowId();
         if (!this.currentFlows.containsKey(id)) {
             currentFlows.put(id, new Flow(packet, flowActivityTimeOut, labelStrategy));

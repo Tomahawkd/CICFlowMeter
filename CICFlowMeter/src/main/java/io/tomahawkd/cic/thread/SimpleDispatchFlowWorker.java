@@ -8,16 +8,15 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class SimpleDispatchWorker implements DispatchWorker {
+public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     private final FlowGenerator flowGenerator;
     private boolean working;
     private final Lock workingLock = new ReentrantLock();
-    private final Lock flowLock = new ReentrantLock();
 
     private final Deque<PacketInfo> queue;
 
-    public SimpleDispatchWorker(FlowGenerator flowGenerator) {
+    public SimpleDispatchFlowWorker(FlowGenerator flowGenerator) {
         this.flowGenerator = flowGenerator;
         this.working = false;
         this.queue = new ConcurrentLinkedDeque<>();
@@ -25,14 +24,14 @@ public class SimpleDispatchWorker implements DispatchWorker {
 
     @Override
     public boolean containsFlow(PacketInfo info) {
-        flowLock.lock();
-        boolean contains = flowGenerator.containsFlow(info);
-        flowLock.unlock();
-        return contains;
+        synchronized (flowGenerator) {
+            return flowGenerator.containsFlow(info);
+        }
     }
 
     @Override
     public void accept(PacketInfo info) {
+        if (!this.working) return;
         queue.add(info);
     }
 
@@ -43,10 +42,9 @@ public class SimpleDispatchWorker implements DispatchWorker {
 
     @Override
     public long getFlowCount() {
-        flowLock.lock();
-        long flows = flowGenerator.getFlowCount();
-        flowLock.unlock();
-        return flows;
+        synchronized (flowGenerator) {
+            return flowGenerator.getFlowCount();
+        }
     }
 
     @Override
@@ -57,18 +55,23 @@ public class SimpleDispatchWorker implements DispatchWorker {
         while (this.working) {
             workingLock.unlock();
             if (!queue.isEmpty()) {
-                flowLock.lock();
-                flowGenerator.addPacket(queue.pop());
-                flowLock.unlock();
+                synchronized (this.flowGenerator) {
+                    flowGenerator.addPacket(queue.pop());
+                }
             }
             workingLock.lock();
         }
         workingLock.unlock();
 
         while (!queue.isEmpty()) {
-            flowGenerator.addPacket(queue.pop());
+            synchronized (this.flowGenerator) {
+                flowGenerator.addPacket(queue.pop());
+            }
         }
-        flowGenerator.dumpLabeledCurrentFlow();
+
+        synchronized (this.flowGenerator) {
+            flowGenerator.dumpLabeledCurrentFlow();
+        }
     }
 
     @Override

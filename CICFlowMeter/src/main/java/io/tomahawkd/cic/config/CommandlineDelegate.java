@@ -82,12 +82,6 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-fq", "--flow_queue"}, description = "Set the queue length waiting for flow process")
     private long flowQueueSize = 256;
 
-    @Parameter(names = {"-pt", "--packet_thread"}, description = "Set the thread count to parse packets")
-    private int packetThreads = 3;
-
-    @Parameter(names = {"-pq", "--packet_queue"}, description = "Set the queue length waiting for packet parse")
-    private long packetQueueSize = 128;
-
     public boolean isHelp() {
         return help;
     }
@@ -134,14 +128,6 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public long getFlowQueueSize() {
         return flowQueueSize;
-    }
-
-    public int getPacketThreadCount() {
-        return packetThreads;
-    }
-
-    public long getPacketQueueSize() {
-        return packetQueueSize;
     }
 
     @Override
@@ -225,7 +211,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
         // threads
         if (flowThreads < 1) flowThreads = 1;
-        if (packetThreads < 1) packetThreads = 1;
+        if (flowQueueSize < 0) flowQueueSize = 256;
     }
 
     private String generateOutputFileName(LocalFile input, boolean oneFile) {
@@ -246,8 +232,6 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         builder.append("Disable TCP Reassembling: ").append(disableReassemble).append("\n");
         builder.append("Flow threads: ").append(flowThreads).append("\n");
         builder.append("Flow Queue Size: ").append(flowQueueSize).append("\n");
-        builder.append("Packet threads: ").append(packetThreads).append("\n");
-        builder.append("Packet Queue Size: ").append(packetQueueSize).append("\n");
         builder.append("Continuous File: ").append(continuous).append("\n");
         builder.append("Output one file: ").append(oneFile).append("\n");
         builder.append("Data output: ").append("\n");

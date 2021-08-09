@@ -4,17 +4,16 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.jnetpcap.packet.PcapPacket;
 
 @Layer(LayerType.APPLICATION)
-public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
+public class HttpPreprocessPacketDelegate extends AbstractPacketDelegate {
 
-    public UnknownAppLayerPacketDelegate() {
+    public HttpPreprocessPacketDelegate() {
         super(0);
     }
 
     @Override
     public boolean parse(PacketInfo dst, PcapPacket packet) {
-        dst.addFeature(MetaFeature.HTTP, false);
-
         byte[] payload = dst.getFeature(MetaFeature.APP_DATA, byte[].class);
+        boolean readable = false;
         if (payload != null && payload.length > 0) {
             int i = 0;
             int terminationCount = 0;
@@ -47,8 +46,12 @@ public class UnknownAppLayerPacketDelegate extends AbstractPacketDelegate {
                 dst.addFeature(Feature.CRLF, false);
             }
 
-            String readableString = new String(ArrayUtils.subarray(payload, 0, i + 1));
-            dst.addFeature(Feature.PAYLOAD, readableString);
+            if (i != 0) {
+                String readableString = new String(ArrayUtils.subarray(payload, 0, i + 1));
+                readable = true;
+                dst.addFeature(Feature.PAYLOAD, readableString);
+            }
+            dst.addFeature(MetaFeature.READABLE, readable);
         }
         dst.removeFeature(MetaFeature.APP_DATA);
 

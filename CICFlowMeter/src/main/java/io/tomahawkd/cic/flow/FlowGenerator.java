@@ -53,6 +53,18 @@ public class FlowGenerator {
         return flowCount;
     }
 
+    public boolean containsFlow(PacketInfo packet) {
+        if (this.currentFlows.containsKey(packet.fwdFlowId())) {
+            packet.setFwd();
+            return true;
+        } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
+            packet.setBwd();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void addPacket(PacketInfo packet) {
         if (packet == null) return;
 
@@ -63,13 +75,9 @@ public class FlowGenerator {
             packetCounter = 0;
         }
 
-        String id;
-        if (this.currentFlows.containsKey(packet.fwdFlowId())) {
-            id = packet.setFwd().getFlowId();
-        } else if (this.currentFlows.containsKey(packet.bwdFlowId())) {
-            id = packet.setBwd().getFlowId();
-        } else {
-            currentFlows.put(packet.setFwd().getFlowId(), new Flow(packet, flowActivityTimeOut, labelStrategy));
+        String id = packet.getFlowId();
+        if (!this.currentFlows.containsKey(id)) {
+            currentFlows.put(id, new Flow(packet, flowActivityTimeOut, labelStrategy));
             return;
         }
 

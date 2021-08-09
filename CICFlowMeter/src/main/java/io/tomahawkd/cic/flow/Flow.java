@@ -13,23 +13,25 @@ public class Flow implements FlowFeature {
     // features
     private final List<FlowFeature> features;
 
-    private Flow(FlowBasicFeature basicInfo) {
+    private Flow() {
         this.features = new ArrayList<>();
-        features.add(basicInfo);
+        features.add(new FlowBasicFeature(
+                "", new byte[0], new byte[0], 0, 0, null, 0, null));
         FlowFeatureBuilder.INSTANCE.buildClasses(this);
     }
 
     public Flow(PacketInfo info, long flowActivityTimeOut, LabelStrategy supplier) {
-        this(new FlowBasicFeature(info.getFlowId(),
+        this.features = new ArrayList<>();
+        features.add(new FlowBasicFeature(info.getFlowId(),
                 info.getSrc(), info.getDst(),
                 info.getSrcPort(), info.getDstPort(),
-                supplier, flowActivityTimeOut));
+                supplier, flowActivityTimeOut, this));
+        FlowFeatureBuilder.INSTANCE.buildClasses(this);
         addPacket(info);
     }
 
     public static String getHeaders() {
-        Flow flow = new Flow(new FlowBasicFeature(
-                "", new byte[0], new byte[0], 0, 0, null, 0));
+        Flow flow = new Flow();
         return flow.headers();
     }
 

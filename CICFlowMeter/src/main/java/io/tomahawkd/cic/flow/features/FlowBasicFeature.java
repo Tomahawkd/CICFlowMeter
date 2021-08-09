@@ -1,5 +1,6 @@
 package io.tomahawkd.cic.flow.features;
 
+import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.features.http.HttpFeatureAdapter;
 import io.tomahawkd.cic.label.LabelStrategy;
 import io.tomahawkd.cic.packet.PacketInfo;
@@ -38,8 +39,8 @@ public class FlowBasicFeature extends AbstractFlowFeature {
                             byte[] src, byte[] dst,
                             int srcPort, int dstPort,
                             LabelStrategy strategy,
-                            long flowActivityTimeOut) {
-        super(null);
+                            long flowActivityTimeOut, Flow flow) {
+        super(flow);
 
         this.flowId = flowId;
         this.src = Arrays.copyOf(src, src.length);

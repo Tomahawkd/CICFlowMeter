@@ -1,8 +1,7 @@
 package io.tomahawkd.cic.flow.features.http;
 
-import io.tomahawkd.cic.packet.*;
+import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,13 +72,6 @@ public class HttpPacketParser {
                 logger.warn("Not a legal request header [{}]", header);
                 return Status.INVALID;
             }
-        } else {
-            // Response
-            // code must be digits
-            if (StringUtils.isNumeric(firstLineElements[1])) {
-                logger.warn("Expecting Status Code but got {}", firstLineElements[1]);
-                return Status.INVALID;
-            }
         }
 
         // remaining headers
@@ -139,7 +131,6 @@ public class HttpPacketParser {
     }
 
     // hard-coded
-    private static final int HTTP_METHODS_STRING_MAX_LEN = 7;
     private static final String[] HTTP_METHODS = {
             "GET", "POST", "HEAD", "PUT", "DELETE", "CONNECT", "OPTIONS", "TRACE", "PATCH"
     };

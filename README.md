@@ -11,6 +11,8 @@ but is completely different in code structure.
 3. Remove live capture and GUI (currently focus on feature extraction)
 4. Introduce TCP Reassembler for analysing application layer protocol (e.g., HTTP)
 5. Support for multi-file as one input
+6. Introducing multi-threading for flow process
+7. Use modified Kaitai generated source code for Pcap file parse
 
 ## Prerequisite
 1. Java 8

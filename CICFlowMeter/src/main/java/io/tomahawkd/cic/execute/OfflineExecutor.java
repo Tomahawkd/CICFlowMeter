@@ -3,7 +3,7 @@ package io.tomahawkd.cic.execute;
 import io.tomahawkd.cic.config.CommandlineDelegate;
 import io.tomahawkd.cic.flow.Flow;
 import io.tomahawkd.cic.flow.FlowGenerator;
-import io.tomahawkd.cic.label.*;
+import io.tomahawkd.cic.label.LabelStrategyFactoryManager;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.packet.PacketReader;
 import io.tomahawkd.cic.source.LocalFile;
@@ -54,13 +54,6 @@ public class OfflineExecutor extends AbstractExecutor {
         }
     }
 
-    private static final LabelStrategyFactory[] factories = {
-            new CICIDS2017LabelStrategyFactory(),
-            new ISCXTOR2016LabelStrategyFactory(),
-            new CSECICIDS2018LabelStrategyFactory(),
-            new BOTIOTLabelStrategyFactory(),
-    };
-
     private void readPcapFile(LocalFile inputFile, Path outputPath, long flowTimeout, long activityTimeout, ExecutionMode mode) {
         if (inputFile == null || outputPath == null) {
             logger.fatal("Got a null path.");
@@ -78,18 +71,7 @@ public class OfflineExecutor extends AbstractExecutor {
 
         // setting up
         FlowGenerator flowGen = new FlowGenerator(flowTimeout, activityTimeout, mode);
-
-        LabelStrategy strategy = null;
-        for (LabelStrategyFactory factory : factories) {
-            strategy = factory.getStrategy(inputFile);
-            if (strategy != LabelStrategy.NONE) {
-                flowGen.setFlowLabelSupplier(strategy);
-                break;
-            }
-        }
-        if (strategy == LabelStrategy.NONE) {
-            flowGen.setFlowLabelSupplier(LabelStrategy.DEFAULT);
-        }
+        flowGen.setFlowLabelSupplier(LabelStrategyFactoryManager.get().getStrategy(inputFile));
 
         // data export
         flowGen.addFlowListener(flow -> Utils.insertToFile(flow.exportData(), outputPath));

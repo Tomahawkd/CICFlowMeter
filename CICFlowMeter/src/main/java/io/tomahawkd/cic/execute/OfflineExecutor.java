@@ -84,25 +84,31 @@ public class OfflineExecutor extends AbstractExecutor {
         });
 
         dispatcher.start();
-        if (inputFile instanceof LocalMultiFile) {
-            LocalMultiFile file = (LocalMultiFile) inputFile;
-            file.getSegments().forEach(localSingleFile -> readData(dispatcher, localSingleFile.getFilePath()));
-        } else if (inputFile instanceof LocalSingleFile) {
-            readData(dispatcher, inputFile.getFilePath());
-        }
-
-        dispatcher.stop();
-
-        long waitTime = System.currentTimeMillis();
-        while (dispatcher.running()) {
-            System.out.printf("Termination: %s -> %d flows\r", inputFile.getFileName(), dispatcher.getFlowCount());
-            if (System.currentTimeMillis() - waitTime > 1000 * 60 * 10) {
-                dispatcher.forceStop();
+        try {
+            if (inputFile instanceof LocalMultiFile) {
+                LocalMultiFile file = (LocalMultiFile) inputFile;
+                file.getSegments().forEach(localSingleFile -> readData(dispatcher, localSingleFile.getFilePath()));
+            } else if (inputFile instanceof LocalSingleFile) {
+                readData(dispatcher, inputFile.getFilePath());
             }
-        }
 
-        System.out.printf("%s is done. total %d flows %n", inputFile.getFileName(), dispatcher.getFlowCount());
-        System.out.println(Utils.DividingLine);
+            dispatcher.stop();
+
+            long waitTime = System.currentTimeMillis();
+            while (dispatcher.running()) {
+                System.out.printf("Termination: %s -> %d flows\r", inputFile.getFileName(), dispatcher.getFlowCount());
+                if (System.currentTimeMillis() - waitTime > 1000 * 60 * 10) {
+                    dispatcher.forceStop();
+                }
+            }
+
+            System.out.printf("%s is done. total %d flows %n", inputFile.getFileName(), dispatcher.getFlowCount());
+            System.out.println(Utils.DividingLine);
+        } catch (Exception e) {
+            dispatcher.stop();
+            dispatcher.forceStop();
+            throw e;
+        }
     }
 
     private void readData(PacketDispatcher dispatcher, Path filePath) {

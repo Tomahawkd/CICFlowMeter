@@ -1,7 +1,5 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.util.UserAgentAnalyzerHelper;
-import nl.basjes.parse.useragent.UserAgent;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -101,7 +99,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         if (request) {
             dst.addFeature(Feature.CONTENT_LEN, NumberUtils.toInt(getField(headerMap, Http.Request.Content_Length)));
             dst.addFeature(Feature.METHOD, firstLineElements[0]);
-            dst.addFeature(Feature.UA, UserAgentAnalyzerHelper.INSTANCE.parseUserAgent(getField(headerMap, Http.Request.User_Agent)));
+            dst.addFeature(Feature.UA, getField(headerMap, Http.Request.User_Agent));
             dst.addFeature(Feature.CONNECTION, getField(headerMap, Http.Request.Connection));
             dst.addFeature(Feature.CACHE, getField(headerMap, Http.Request.Cache_Control));
             dst.addFeature(Feature.PATH, firstLineElements[1]);
@@ -142,7 +140,7 @@ public class HttpPacketDelegate extends AbstractPacketDelegate {
         CONTENT_TYPE(String.class),
 
         // Request
-        UA(UserAgent.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
+        UA(String.class), CONNECTION(String.class), CACHE(String.class), CHARSET(String.class),
         REFERER(String.class), METHOD(String.class), LANGUAGE(String.class), ENCODING(String.class),
         PROXY(String.class), PATH(String.class), HOST(String.class), COOKIE(String.class), ACCEPT(String.class),
 

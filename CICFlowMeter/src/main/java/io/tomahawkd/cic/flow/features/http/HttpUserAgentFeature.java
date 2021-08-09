@@ -5,6 +5,7 @@ import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
 import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
+import io.tomahawkd.cic.util.UserAgentAnalyzerHelper;
 import nl.basjes.parse.useragent.AgentField;
 import nl.basjes.parse.useragent.UserAgent;
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,7 +27,8 @@ public class HttpUserAgentFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        UserAgent ua = info.getFeature(HttpPacketDelegate.Feature.UA, UserAgent.class);
+        UserAgent ua = UserAgentAnalyzerHelper.INSTANCE.parseUserAgent(
+                info.getFeature(HttpPacketDelegate.Feature.UA, String.class));
         if (ua == null) noUserAgentCount++;
         else {
             AgentField device = ua.get(UserAgent.DEVICE_CLASS);

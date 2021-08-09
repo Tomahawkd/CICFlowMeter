@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +46,7 @@ import java.util.Optional;
         FlowFeatureTag.header_element_max,
         FlowFeatureTag.header_element_total,
 }, ordinal = 1, type = FeatureType.HTTP)
-public class HttpBasicFeature extends HttpFeature {
+public class HttpBasicFeature extends HttpFlowFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpBasicFeature.class);
 
@@ -69,12 +68,12 @@ public class HttpBasicFeature extends HttpFeature {
     @Override
     public void addGenericPacket(PacketInfo info, boolean isRequest) {
         int contentLength = Optional.ofNullable(
-                info.getFeature(HttpPacketDelegate.Feature.CONTENT_LEN, Integer.class))
+                info.getFeature(HttpPacketFeature.CONTENT_LEN, Integer.class))
                 .orElse(0);
         content_length.addValue(contentLength);
 
         headerElement_state.addValue(Optional.ofNullable(
-                        info.getFeature(HttpPacketDelegate.Feature.HEADER_LINE_COUNT, Integer.class))
+                        info.getFeature(HttpPacketFeature.HEADER_LINE_COUNT, Integer.class))
                 .orElse(0));
 
         if (isRequest) {
@@ -86,12 +85,12 @@ public class HttpBasicFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        if (info.getBoolFeature(TcpReassembler.Feature.INVALID) ||
-                info.getBoolFeature(HttpPacketDelegate.Feature.INCOMPLETE)) {
+        if (info.getBoolFeature(HttpPacketFeature.INVALID)) {
             invalid_request_header++;
+            return;
         }
 
-        String path = info.getFeature(HttpPacketDelegate.Feature.PATH, String.class);
+        String path = info.getFeature(HttpPacketFeature.PATH, String.class);
         if (path != null) {
             if (path.equals("/") || path.contains("index.html")) access_main_page_count++;
 
@@ -105,12 +104,12 @@ public class HttpBasicFeature extends HttpFeature {
             }
         }
 
-        String connection = info.getFeature(HttpPacketDelegate.Feature.CONNECTION, String.class);
+        String connection = info.getFeature(HttpPacketFeature.CONNECTION, String.class);
         if (connection != null) {
             if (connection.equalsIgnoreCase("keep-alive")) keepAliveCount++;
         }
 
-        String method = info.getFeature(HttpPacketDelegate.Feature.METHOD, String.class);
+        String method = info.getFeature(HttpPacketFeature.METHOD, String.class);
         if (method != null) {
             if (method.equalsIgnoreCase("get")) getCount++;
             else if (method.equalsIgnoreCase("post")) postCount++;

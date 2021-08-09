@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.tika.mime.MediaType;
 
@@ -17,7 +16,7 @@ import org.apache.tika.mime.MediaType;
         FlowFeatureTag.other_count,
         FlowFeatureTag.invalid_content_type,
 }, ordinal = 6, type = FeatureType.HTTP)
-public class HttpResponseContentFeature extends HttpFeature {
+public class HttpResponseContentFeature extends HttpFlowFeature {
 
     private long plain_count = 0;
     private long html_count = 0;
@@ -35,7 +34,7 @@ public class HttpResponseContentFeature extends HttpFeature {
 
     @Override
     public void addResponsePacket(PacketInfo info) {
-        String contentType = info.getFeature(HttpPacketDelegate.Feature.CONTENT_TYPE, String.class);
+        String contentType = info.getFeature(HttpPacketFeature.CONTENT_TYPE, String.class);
         if (contentType != null) {
             MediaType type = MediaType.parse(contentType);
             if (type == null) {

@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 
 import java.util.HashMap;
@@ -17,7 +16,7 @@ import java.util.Map;
         FlowFeatureTag.cookie_partial_match_count,
         FlowFeatureTag.cookie_no_match_count
 }, ordinal = 5, type = FeatureType.HTTP)
-public class HttpCookieFeature extends HttpFeature {
+public class HttpCookieFeature extends HttpFlowFeature {
 
     private long set_cookie_count = 0;
     private long cookie_count = 0;
@@ -35,7 +34,7 @@ public class HttpCookieFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        String cookie = info.getFeature(HttpPacketDelegate.Feature.COOKIE, String.class);
+        String cookie = info.getFeature(HttpPacketFeature.COOKIE, String.class);
         if (cookie == null) {
             no_cookie_count++;
             return;
@@ -60,7 +59,7 @@ public class HttpCookieFeature extends HttpFeature {
 
     @Override
     public void addResponsePacket(PacketInfo info) {
-        String set_cookie = info.getFeature(HttpPacketDelegate.Feature.SET_COOKIE, String.class);
+        String set_cookie = info.getFeature(HttpPacketFeature.SET_COOKIE, String.class);
         if (set_cookie != null) {
             set_cookie_count++;
             cookies.clear();

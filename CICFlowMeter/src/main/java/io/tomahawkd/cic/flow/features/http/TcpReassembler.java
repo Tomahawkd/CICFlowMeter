@@ -13,11 +13,13 @@ public class TcpReassembler {
     // used for building incomplete string
     private StringBuilder incompleteStringBuilder = new StringBuilder();
 
+    private final HttpPacketParser parser;
+
     private final Consumer<PacketInfo> flowFeature;
 
     public TcpReassembler(Consumer<PacketInfo> releaseCallback) {
         this.flowFeature = releaseCallback;
-        reset();
+        this.parser = new HttpPacketParser();
     }
 
     /**
@@ -25,56 +27,51 @@ public class TcpReassembler {
      * @see TcpReorderer
      */
     public void addPacket(PacketInfo info) {
-        // contains http header
-        if (info.getBoolFeature(MetaFeature.HTTP)) {
-            // clear all for that this packet is the first one
-            if (incompleteStringBuilder.length() > 0) {
-                forceParse();
-            }
 
-            // if complete, the packet is already parsed at packet layer feature extraction
-            if (!info.getBoolFeature(HttpPacketDelegate.Feature.INCOMPLETE)) {
+        String readableString = info.getFeature(HttpPreprocessPacketDelegate.Feature.PAYLOAD, String.class);
+        if (readableString == null || readableString.isEmpty()) {
+            logger.warn("The payload is empty.");
+            return;
+        }
+
+        // check the payload first
+        HttpPacketParser.Status parsed = parser.parseFeatures(info, readableString, false);
+
+        if (parsed != HttpPacketParser.Status.INVALID) {
+
+            // if parsed packet is not invalid, that is, it is a http header
+            // so that we need to clear the stringBuilder
+            if (incompleteStringBuilder.length() != 0) forceParse();
+
+            if (parsed == HttpPacketParser.Status.OK) {
                 flowFeature.accept(info);
                 return;
-            }
-
-            String incompleteString = info.getFeature(HttpPacketDelegate.Feature.INCOM_SEGMENT, String.class);
-            // discard the packet
-            if (incompleteString == null || incompleteString.isEmpty()) {
-                logger.warn("The first HTTP header segment is empty.");
-            }
-
-            incompleteStringBuilder.append(incompleteString);
-        } else {
-            // not http section
-
-            // the first packet must be http
-            // so the packet should be discarded
-            if (incompleteStringBuilder.length() == 0) {
+            } else if (parsed == HttpPacketParser.Status.INCOMPLETE) {
+                incompleteStringBuilder.append(readableString);
                 return;
             }
+        }
 
-            String readableString = info.getFeature(UnknownAppLayerPacketDelegate.Feature.PAYLOAD, String.class);
-            if (readableString == null || readableString.isEmpty()) {
-                logger.warn("The HTTP header segment (not first) is empty.");
-            }
-
-            // exact the next segment
+        // parsed == HttpPacketParser.Status.INVALID
+        // parse reassembled packets
+        if (incompleteStringBuilder.length() != 0) {
+            // we still have incomplete string
+            // exactly the next segment
             incompleteStringBuilder.append(readableString);
 
             // terminate by CRLF * 2, that is, the header ends
-            if (info.getBoolFeature(UnknownAppLayerPacketDelegate.Feature.CRLF)) {
+            if (info.getBoolFeature(HttpPreprocessPacketDelegate.Feature.CRLF)) {
                 String header = incompleteStringBuilder.toString();
                 logger.debug("Complete one header [{}]", header);
-                int parsed = HttpPacketDelegate.parseFeatures(info, header, false);
-                if (parsed != HttpPacketDelegate.OK) {
+                parsed = parser.parseFeatures(info, header, false);
+                if (parsed != HttpPacketParser.Status.OK) {
                     logger.warn("The header [{}] parsed failed which is not expected.", header);
-                    info.addFeature(Feature.INVALID, true);
+                    info.addFeature(HttpPacketFeature.INVALID, true);
                 }
 
+                flowFeature.accept(info);
                 // since it is complete, delete all
                 reset();
-                flowFeature.accept(info);
             }
         }
     }
@@ -83,34 +80,19 @@ public class TcpReassembler {
         if (incompleteStringBuilder.length() == 0) return;
         PacketInfo info = new PacketInfo(-1);
         String header = incompleteStringBuilder.toString();
-        int parsed = HttpPacketDelegate.parseFeatures(info, header, false);
-        if (parsed != HttpPacketDelegate.OK) {
-            info.addFeature(Feature.INVALID, true);
+        HttpPacketParser.Status parsed = parser.parseFeatures(info, header, true);
+        if (parsed == HttpPacketParser.Status.OK) {
+            flowFeature.accept(info);
+        } else {
+            logger.debug("Discarded forcibly parsed packet");
         }
 
         // since it is complete, delete all
         reset();
-        flowFeature.accept(info);
     }
 
     public void reset() {
         if (incompleteStringBuilder.length() == 0) return;
         incompleteStringBuilder = new StringBuilder();
-    }
-
-    public enum Feature implements PacketFeature {
-
-        INVALID(Boolean.class);
-
-        private final Class<?> type;
-
-        Feature(Class<?> type) {
-            this.type = type;
-        }
-
-        @Override
-        public Class<?> getType() {
-            return type;
-        }
     }
 }

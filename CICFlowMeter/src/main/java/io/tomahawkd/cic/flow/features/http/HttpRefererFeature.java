@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +16,7 @@ import java.net.URL;
         FlowFeatureTag.referer_from_same_source,
         FlowFeatureTag.referer_from_search_engine,
 }, ordinal = 2, type = FeatureType.HTTP)
-public class HttpRefererFeature extends HttpFeature {
+public class HttpRefererFeature extends HttpFlowFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpRefererFeature.class);
 
@@ -32,14 +31,15 @@ public class HttpRefererFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        String host = info.getFeature(HttpPacketDelegate.Feature.HOST, String.class);
+        String host = info.getFeature(HttpPacketFeature.HOST, String.class);
         if (host == null) {
             noHostCount++;
-            logger.warn("Packet {} has no host in HTTP protocol.", info.getFlowId());
-            logger.warn("Packet Content: {}", info.toString());
+            logger.warn("Packet {} has no host in HTTP protocol, use destination ip {}",
+                    info.getFlowId(), info.getDestinationIP());
+            host = info.getDestinationIP();
         }
 
-        String referer = info.getFeature(HttpPacketDelegate.Feature.REFERER, String.class);
+        String referer = info.getFeature(HttpPacketFeature.REFERER, String.class);
         if (referer != null) {
             try {
                 URL url = new URL(referer);

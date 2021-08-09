@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 
 @Feature(name = "HttpAcceptFeature", tags = {
@@ -14,7 +13,7 @@ import io.tomahawkd.cic.packet.PacketInfo;
         FlowFeatureTag.lang_use_wildcard_count,
         FlowFeatureTag.no_lang_count
 }, ordinal = 3, type = FeatureType.HTTP)
-public class HttpAcceptFeature extends HttpFeature {
+public class HttpAcceptFeature extends HttpFlowFeature {
 
     private long acceptCount = 0;
     private long acceptOnlyUseWildcardCount = 0;
@@ -29,13 +28,13 @@ public class HttpAcceptFeature extends HttpFeature {
 
     @Override
     public void addRequestPacket(PacketInfo info) {
-        String accept = info.getFeature(HttpPacketDelegate.Feature.ACCEPT, String.class);
+        String accept = info.getFeature(HttpPacketFeature.ACCEPT, String.class);
         if (accept != null) {
             acceptCount++;
             if (accept.startsWith("*/*")) acceptOnlyUseWildcardCount++;
         } else noAcceptCount++;
 
-        String lang = info.getFeature(HttpPacketDelegate.Feature.LANGUAGE, String.class);
+        String lang = info.getFeature(HttpPacketFeature.LANGUAGE, String.class);
         if (lang != null) {
             languageCount++;
             if (lang.startsWith("*")) languageOnlyUseWildcardCount++;

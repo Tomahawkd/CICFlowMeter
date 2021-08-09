@@ -2,12 +2,12 @@ package io.tomahawkd.cic.flow.features.http;
 
 import io.tomahawkd.cic.packet.PacketInfo;
 
-public abstract class HttpFeature {
+public abstract class HttpFlowFeature {
 
     protected final String SEPARATOR = ",";
     protected final HttpFeatureAdapter httpFeatures;
 
-    protected HttpFeature(HttpFeatureAdapter httpFeatures) {
+    protected HttpFlowFeature(HttpFeatureAdapter httpFeatures) {
         this.httpFeatures = httpFeatures;
     }
 
@@ -31,7 +31,7 @@ public abstract class HttpFeature {
         }
     }
 
-    protected final <T extends HttpFeature> T getDep(Class<T> type) {
+    protected final <T extends HttpFlowFeature> T getDep(Class<T> type) {
         return httpFeatures.getByType(type);
     }
 }

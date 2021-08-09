@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +18,7 @@ import org.apache.logging.log4j.Logger;
         FlowFeatureTag.server_error_count,
         FlowFeatureTag.other_status_count,
 }, ordinal = 7, type = FeatureType.HTTP)
-public class HttpResponseCodeFeature extends HttpFeature {
+public class HttpResponseCodeFeature extends HttpFlowFeature {
 
     private static final Logger logger = LogManager.getLogger(HttpResponseCodeFeature.class);
 
@@ -49,7 +48,7 @@ public class HttpResponseCodeFeature extends HttpFeature {
 
     @Override
     public void addResponsePacket(PacketInfo info) {
-        String code = info.getFeature(HttpPacketDelegate.Feature.STATUS, String.class);
+        String code = info.getFeature(HttpPacketFeature.STATUS, String.class);
         if (code == null) {
             logger.warn("Response HTTP with no status code.");
             logger.warn("Packet data: {}", info);

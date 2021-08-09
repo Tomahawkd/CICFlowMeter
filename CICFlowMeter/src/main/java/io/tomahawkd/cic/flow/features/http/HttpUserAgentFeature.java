@@ -3,7 +3,6 @@ package io.tomahawkd.cic.flow.features.http;
 import io.tomahawkd.cic.flow.features.Feature;
 import io.tomahawkd.cic.flow.features.FeatureType;
 import io.tomahawkd.cic.flow.features.FlowFeatureTag;
-import io.tomahawkd.cic.packet.HttpPacketDelegate;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.UserAgentAnalyzerHelper;
 import nl.basjes.parse.useragent.AgentField;
@@ -15,7 +14,7 @@ import org.apache.commons.lang3.ArrayUtils;
         FlowFeatureTag.invalid_user_agent_count,
         FlowFeatureTag.no_user_agent_count
 }, ordinal = 4, type = FeatureType.HTTP)
-public class HttpUserAgentFeature extends HttpFeature {
+public class HttpUserAgentFeature extends HttpFlowFeature {
 
     private long validUserAgentCount = 0;
     private long invalidUserAgentCount = 0;
@@ -28,7 +27,7 @@ public class HttpUserAgentFeature extends HttpFeature {
     @Override
     public void addRequestPacket(PacketInfo info) {
         UserAgent ua = UserAgentAnalyzerHelper.INSTANCE.parseUserAgent(
-                info.getFeature(HttpPacketDelegate.Feature.UA, String.class));
+                info.getFeature(HttpPacketFeature.UA, String.class));
         if (ua == null) noUserAgentCount++;
         else {
             AgentField device = ua.get(UserAgent.DEVICE_CLASS);

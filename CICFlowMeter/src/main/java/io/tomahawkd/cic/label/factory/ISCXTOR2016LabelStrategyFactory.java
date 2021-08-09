@@ -1,5 +1,6 @@
-package io.tomahawkd.cic.label;
+package io.tomahawkd.cic.label.factory;
 
+import io.tomahawkd.cic.label.LabelStrategy;
 import io.tomahawkd.cic.source.LocalFile;
 
 @LabelFactory(name = "ISCXTOR2016LabelStrategyFactory", dataset = "ISCXTor2016")

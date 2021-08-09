@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.label;
+package io.tomahawkd.cic.label.factory;
 
 public @interface LabelFactory {
 

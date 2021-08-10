@@ -112,7 +112,7 @@ public class OfflineExecutor extends AbstractExecutor {
     }
 
     private void readData(PacketDispatcher dispatcher, Path filePath) {
-        PcapReader pcapReader = new PcapReader(filePath.toString());
+        PcapReader pcapReader = new PcapReader(filePath);
         long nTotal = 0;
         long nValid = 0;
         while (true) {

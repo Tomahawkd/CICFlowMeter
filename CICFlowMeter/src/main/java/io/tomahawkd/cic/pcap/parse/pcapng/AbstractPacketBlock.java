@@ -1,6 +1,8 @@
 package io.tomahawkd.cic.pcap.parse.pcapng;
 
 import io.kaitai.struct.KaitaiStream;
+import io.tomahawkd.cic.pcap.data.Ipv4Packet;
+import io.tomahawkd.cic.pcap.data.TcpSegment;
 import io.tomahawkd.cic.pcap.parse.EthernetFrame;
 import io.tomahawkd.cic.pcap.parse.PcapPacket;
 
@@ -17,8 +19,16 @@ public abstract class AbstractPacketBlock extends GenericBlock implements PcapPa
 
     public abstract void readBody(KaitaiStream stream);
 
-    public final EthernetFrame ethernet() {
-        return body;
+    @Override
+    public Ipv4Packet ip() {
+        if (body == null) return null;
+        return body.body();
+    }
+
+    @Override
+    public TcpSegment tcp() {
+        if (body == null || body.body() == null) return null;
+        return body.body().body();
     }
 
     public abstract long getInterfaceId();

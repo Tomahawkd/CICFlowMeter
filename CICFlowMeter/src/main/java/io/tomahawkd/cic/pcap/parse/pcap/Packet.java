@@ -3,6 +3,8 @@ package io.tomahawkd.cic.pcap.parse.pcap;
 import io.kaitai.struct.ByteBufferKaitaiStream;
 import io.kaitai.struct.KaitaiStream;
 import io.kaitai.struct.KaitaiStruct;
+import io.tomahawkd.cic.pcap.data.Ipv4Packet;
+import io.tomahawkd.cic.pcap.data.TcpSegment;
 import io.tomahawkd.cic.pcap.parse.EthernetFrame;
 import io.tomahawkd.cic.pcap.parse.LinkType;
 import io.tomahawkd.cic.pcap.parse.PcapPacket;
@@ -64,9 +66,20 @@ public class Packet extends KaitaiStruct implements PcapPacket {
         }
     }
 
-    @Override
     public EthernetFrame ethernet() {
         return this.body;
+    }
+
+    @Override
+    public Ipv4Packet ip() {
+        if (body == null) return null;
+        return body.body();
+    }
+
+    @Override
+    public TcpSegment tcp() {
+        if (body == null || body.body() == null) return null;
+        return body.body().body();
     }
 
     /**

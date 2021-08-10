@@ -1,7 +1,8 @@
 package io.tomahawkd.cic.packet;
 
 import io.tomahawkd.cic.pcap.PcapFileReaderProvider;
-import io.tomahawkd.cic.pcap.parse.*;
+import io.tomahawkd.cic.pcap.parse.PcapFileReader;
+import io.tomahawkd.cic.pcap.parse.PcapPacket;
 import io.tomahawkd.cic.util.IdGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +17,22 @@ public class PcapReader {
     private final PcapFileReader pcapReader;
 
     private final IdGenerator generator = new IdGenerator();
+
+    // e.g., IPv4
+    private final PacketDelegate[] internetLayerDelegates =
+            new PacketDelegate[] {
+                    new Ipv4PacketDelegate()
+            };
+    // e.g., TCP
+    private final PacketDelegate[] transportLayerDelegates =
+            new PacketDelegate[] {
+                    new TcpPacketDelegate()
+            };
+    // e.g., HTTP
+    private final PacketDelegate[] appLayerDelegates =
+            new PacketDelegate[] {
+                    new HttpPreprocessPacketDelegate()
+            };
 
     public PcapReader(Path file) {
         logger.debug("Read file {} with reader.", file);
@@ -40,19 +57,22 @@ public class PcapReader {
     }
 
     private PacketInfo parsePacket(PcapPacket packet, PacketInfo info) {
-        info.setTimestamp(packet.getTimestamp());
-        EthernetFrame frame = packet.ethernet();
-        if (frame == null) return null;
-
-        Ipv4Packet ipv4 = new Ipv4PacketDelegate().parse(info, frame);
-        if (ipv4 == null) return null;
-
-        TcpSegment tcp = new TcpPacketDelegate().parse(info, ipv4);
-        if (tcp == null) return null;
-
-        if (new HttpPreprocessPacketDelegate().parse(info)) {
-            info.finishParse();
-            return info;
-        } else return null;
+        for (PacketDelegate delegate : internetLayerDelegates) {
+            if (delegate.parse(info, packet)) {
+                info.setTimestamp(packet.getTimestamp());
+                for (PacketDelegate transport: transportLayerDelegates) {
+                    if (transport.parse(info, packet)) {
+                        for (PacketDelegate app: appLayerDelegates) {
+                            if (app.parse(info, packet)) {
+                                // post-parse works
+                                info.finishParse();
+                                return info;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

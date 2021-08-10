@@ -35,7 +35,7 @@ public class SimpleDispatchFlowWorker implements DispatchFlowWorker {
 
     @Override
     public long getWorkload() {
-        return queue.size() + getFlowCount();
+        return queue.size();
     }
 
     @Override

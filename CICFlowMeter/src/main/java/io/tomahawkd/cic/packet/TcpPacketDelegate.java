@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.pcap.Ipv4Packet;
-import io.tomahawkd.cic.pcap.TcpSegment;
+import io.tomahawkd.cic.pcap.parse.Ipv4Packet;
+import io.tomahawkd.cic.pcap.parse.TcpSegment;
 
 @Layer(LayerType.TRANSPORT)
 public class TcpPacketDelegate {

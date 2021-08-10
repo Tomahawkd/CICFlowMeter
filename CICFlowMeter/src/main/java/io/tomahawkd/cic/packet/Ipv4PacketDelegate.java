@@ -1,7 +1,7 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.pcap.EthernetFrame;
-import io.tomahawkd.cic.pcap.Ipv4Packet;
+import io.tomahawkd.cic.pcap.parse.EthernetFrame;
+import io.tomahawkd.cic.pcap.parse.Ipv4Packet;
 
 @Layer(LayerType.INTERNET)
 public class Ipv4PacketDelegate {

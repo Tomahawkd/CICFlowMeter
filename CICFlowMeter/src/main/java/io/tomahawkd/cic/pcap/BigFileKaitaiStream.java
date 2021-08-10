@@ -237,11 +237,13 @@ public class BigFileKaitaiStream extends KaitaiStream {
     @Override
     public byte[] readBytes(long n) {
         long remaining = fileSize - this.pos.overallPos();
-        if (n > remaining) throw new BufferUnderflowException();
-
         int length = toByteArrayLength(n);
         byte[] buf = new byte[length];
-        readBytes(buf, 0, length);
+
+        // pad the missing bytes with 0 and terminate stream
+        if (n > remaining) {
+            readBytes(buf, 0, toByteArrayLength(remaining));
+        } else readBytes(buf, 0, length);
         return buf;
     }
 

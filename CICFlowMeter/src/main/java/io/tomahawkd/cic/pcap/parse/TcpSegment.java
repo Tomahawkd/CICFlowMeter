@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.pcap;
+package io.tomahawkd.cic.pcap.parse;
 
 // This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 

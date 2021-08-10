@@ -1,4 +1,4 @@
-package io.tomahawkd.cic.pcap;
+package io.tomahawkd.cic.pcap.parse;
 
 import java.util.HashMap;
 import java.util.Map;

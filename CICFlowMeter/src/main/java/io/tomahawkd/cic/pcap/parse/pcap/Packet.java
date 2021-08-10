@@ -1,13 +1,16 @@
-package io.tomahawkd.cic.pcap;
+package io.tomahawkd.cic.pcap.parse.pcap;
 
 import io.kaitai.struct.ByteBufferKaitaiStream;
 import io.kaitai.struct.KaitaiStream;
 import io.kaitai.struct.KaitaiStruct;
+import io.tomahawkd.cic.pcap.parse.EthernetFrame;
+import io.tomahawkd.cic.pcap.parse.LinkType;
+import io.tomahawkd.cic.pcap.parse.PcapPacket;
 
 /**
  * @see <a href="https://wiki.wireshark.org/Development/LibpcapFileFormat#Record_.28Packet.29_Header">Source</a>
  */
-public class Packet extends KaitaiStruct {
+public class Packet extends KaitaiStruct implements PcapPacket {
 
     /**
      * The date and time when this packet was captured. This value is in seconds since January 1, 1970 00:00:00 GMT.
@@ -51,19 +54,18 @@ public class Packet extends KaitaiStruct {
         this.tsUsec = this._io.readU4le();
         this.inclLen = this._io.readU4le();
         this.origLen = this._io.readU4le();
-        {
-            Pcap.Linktype on = _root.hdr().network();
-            if (on != null) {
-                if (_root.hdr().network() == Pcap.Linktype.ETHERNET) {
-                    byte[] _raw_body = this._io.readBytes(inclLen());
-                    KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
-                    this.body = new EthernetFrame(_io__raw_body);
-                }
+        LinkType on = _root.hdr().network();
+        if (on != null) {
+            if (_root.hdr().network() == LinkType.ETHERNET) {
+                byte[] _raw_body = this._io.readBytes(inclLen());
+                KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
+                this.body = new EthernetFrame(_io__raw_body);
             }
         }
     }
 
-    public EthernetFrame getEthernetPacket() {
+    @Override
+    public EthernetFrame ethernet() {
         return this.body;
     }
 

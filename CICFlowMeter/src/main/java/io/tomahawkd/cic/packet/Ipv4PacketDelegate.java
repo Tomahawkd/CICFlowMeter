@@ -1,19 +1,19 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.pcap.parse.EthernetFrame;
-import io.tomahawkd.cic.pcap.parse.Ipv4Packet;
+import io.tomahawkd.cic.pcap.data.Ipv4Packet;
+import io.tomahawkd.cic.pcap.parse.PcapPacket;
 
 @Layer(LayerType.INTERNET)
-public class Ipv4PacketDelegate {
+public class Ipv4PacketDelegate implements PacketDelegate {
 
-    public Ipv4Packet parse(PacketInfo dst, EthernetFrame frame) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
 
-        Ipv4Packet ipv4 = frame.body();
-        if (ipv4 == null) return null;
+        Ipv4Packet ip4 = packet.ip();
+        if (ip4 == null) return false;
 
-        dst.addFeature(MetaFeature.SRC, ipv4.srcIpAddr());
-        dst.addFeature(MetaFeature.DST, ipv4.dstIpAddr());
+        dst.addFeature(MetaFeature.SRC, ip4.source());
+        dst.addFeature(MetaFeature.DST, ip4.destination());
         dst.addFeature(MetaFeature.IPV4, true);
-        return ipv4;
+        return true;
     }
 }

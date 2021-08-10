@@ -1,11 +1,12 @@
 package io.tomahawkd.cic.packet;
 
+import io.tomahawkd.cic.pcap.parse.PcapPacket;
 import org.apache.commons.lang3.ArrayUtils;
 
 @Layer(LayerType.APPLICATION)
-public class HttpPreprocessPacketDelegate {
+public class HttpPreprocessPacketDelegate implements PacketDelegate {
 
-    public boolean parse(PacketInfo dst) {
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
         byte[] payload = dst.getFeature(MetaFeature.APP_DATA, byte[].class);
         boolean readable = false;
         if (payload != null && payload.length > 0) {

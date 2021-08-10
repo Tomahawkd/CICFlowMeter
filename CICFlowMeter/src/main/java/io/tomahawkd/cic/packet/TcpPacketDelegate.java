@@ -1,26 +1,26 @@
 package io.tomahawkd.cic.packet;
 
-import io.tomahawkd.cic.pcap.parse.Ipv4Packet;
-import io.tomahawkd.cic.pcap.parse.TcpSegment;
+import io.tomahawkd.cic.pcap.data.TcpSegment;
+import io.tomahawkd.cic.pcap.parse.PcapPacket;
 
 @Layer(LayerType.TRANSPORT)
-public class TcpPacketDelegate {
+public class TcpPacketDelegate implements PacketDelegate {
 
-    public TcpSegment parse(PacketInfo dst, Ipv4Packet packet) {
-        TcpSegment tcp = packet.body();
-        if (tcp == null) return null;
+    public boolean parse(PacketInfo dst, PcapPacket packet) {
+        TcpSegment tcp = packet.tcp();
+        if (tcp == null) return false;
 
         dst.addFeature(MetaFeature.SRC_PORT, tcp.srcPort());
         dst.addFeature(MetaFeature.DST_PORT, tcp.dstPort());
-        dst.addFeature(Feature.TCP_WINDOW, tcp.windowSize());
+        dst.addFeature(Feature.TCP_WINDOW, tcp.window());
         dst.addFeature(Feature.FLAG, tcp.flags());
-        dst.addFeature(MetaFeature.PAYLOAD_LEN, tcp.body().length);
-        dst.addFeature(MetaFeature.HEADER_LEN, tcp.offset() * 4);
-        dst.addFeature(Feature.SEQ, tcp.seqNum());
-        dst.addFeature(Feature.ACK, tcp.ackNum());
-        dst.addFeature(MetaFeature.APP_DATA, tcp.body());
+        dst.addFeature(MetaFeature.PAYLOAD_LEN, tcp.payloadLength());
+        dst.addFeature(MetaFeature.HEADER_LEN, tcp.headerLength());
+        dst.addFeature(Feature.SEQ, tcp.seq());
+        dst.addFeature(Feature.ACK, tcp.ack());
+        dst.addFeature(MetaFeature.APP_DATA, tcp.payload());
         dst.addFeature(MetaFeature.TCP, true);
-        return tcp;
+        return true;
     }
 
     public enum Feature implements PacketFeature {

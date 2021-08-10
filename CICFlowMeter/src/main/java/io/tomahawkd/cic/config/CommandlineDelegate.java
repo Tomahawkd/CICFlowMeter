@@ -76,11 +76,14 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
     @Parameter(names = {"-c", "--continue"}, description = "Indicate the files in input dir are continuous.")
     private boolean continuous;
 
-    @Parameter(names = {"-ft", "--flow_thread"}, description = "Set the thread count to process flows")
+    @Parameter(names = {"-t", "--flow_thread"}, description = "Set the thread count to process flows")
     private int flowThreads = 5;
 
-    @Parameter(names = {"-fq", "--flow_queue"}, description = "Set the queue length waiting for flow process")
+    @Parameter(names = {"-q", "--flow_queue"}, description = "Set the queue length waiting for flow process")
     private long flowQueueSize = 256;
+
+    @Parameter(names = {"--old"}, description = "Use Jnetpcap Parser which is stable but slow.")
+    private boolean useOldParser = false;
 
     public boolean isHelp() {
         return help;
@@ -128,6 +131,10 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
 
     public long getFlowQueueSize() {
         return flowQueueSize;
+    }
+
+    public boolean useOldParser() {
+        return useOldParser;
     }
 
     @Override
@@ -232,6 +239,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
         builder.append("Disable TCP Reassembling: ").append(disableReassemble).append("\n");
         builder.append("Flow threads: ").append(flowThreads).append("\n");
         builder.append("Flow Queue Size: ").append(flowQueueSize).append("\n");
+        builder.append("Use Old Packet Reader: ").append(useOldParser).append("\n");
         builder.append("Continuous File: ").append(continuous).append("\n");
         builder.append("Output one file: ").append(oneFile).append("\n");
         builder.append("Data output: ").append("\n");

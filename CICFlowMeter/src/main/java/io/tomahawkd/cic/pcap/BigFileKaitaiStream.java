@@ -4,6 +4,7 @@ import io.kaitai.struct.KaitaiStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -51,8 +52,7 @@ public class BigFileKaitaiStream extends KaitaiStream {
     private void loadNextBlock() {
         try {
             this.pos.nextBlock();
-            this.cachedByteBuffer = fc.map(
-                    FileChannel.MapMode.READ_ONLY, this.pos.blockPos(), this.cacheSize);
+            readBlock();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -75,11 +75,17 @@ public class BigFileKaitaiStream extends KaitaiStream {
                             " is greater than file has (" + bufferBlockCount + ')');
 
         try {
-            this.cachedByteBuffer = fc.map(
-                    FileChannel.MapMode.READ_ONLY, this.pos.blockPos(), this.cacheSize);
+            readBlock();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void readBlock() throws IOException {
+        long readSize = this.cacheSize;
+        if (fileSize - this.pos.blockPos() < this.cacheSize) readSize = fileSize - this.pos.blockPos();
+        this.cachedByteBuffer = fc.map(
+                FileChannel.MapMode.READ_ONLY, this.pos.blockPos(), readSize);
     }
 
     @Override
@@ -230,6 +236,9 @@ public class BigFileKaitaiStream extends KaitaiStream {
 
     @Override
     public byte[] readBytes(long n) {
+        long remaining = fileSize - this.pos.overallPos();
+        if (n > remaining) throw new BufferUnderflowException();
+
         int length = toByteArrayLength(n);
         byte[] buf = new byte[length];
         readBytes(buf, 0, length);
@@ -245,6 +254,11 @@ public class BigFileKaitaiStream extends KaitaiStream {
             this.pos.advance(length);
         } else if (left == length) {
             cachedByteBuffer.get(dst, offset, length);
+            // end of the file
+            if (this.pos.currentBlock + 1 == bufferBlockCount) {
+                this.pos.advance(length);
+                return;
+            }
             loadNextBlock();
         } else {
             cachedByteBuffer.get(dst, offset, left);

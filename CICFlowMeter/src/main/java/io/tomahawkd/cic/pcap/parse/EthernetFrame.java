@@ -24,7 +24,7 @@ public class EthernetFrame extends KaitaiStruct {
     private EtherTypeEnum etherType1;
     private TagControlInfo tci;
     private EtherTypeEnum etherType2;
-    private Ipv4Packet body = null;
+    private Ipv4PacketImpl body;
     private EtherTypeEnum etherType;
 
     private final EthernetFrame _root;
@@ -55,7 +55,7 @@ public class EthernetFrame extends KaitaiStruct {
             if (etherType() == EtherTypeEnum.IPV4) {
                 byte[] _raw_body = this._io.readBytesFull();
                 KaitaiStream _io__raw_body = new ByteBufferKaitaiStream(_raw_body);
-                this.body = new Ipv4Packet(_io__raw_body);
+                this.body = new Ipv4PacketImpl(_io__raw_body);
             }
         }
 
@@ -102,7 +102,7 @@ public class EthernetFrame extends KaitaiStruct {
         return etherType2;
     }
 
-    public Ipv4Packet body() {
+    public Ipv4PacketImpl body() {
         return body;
     }
 

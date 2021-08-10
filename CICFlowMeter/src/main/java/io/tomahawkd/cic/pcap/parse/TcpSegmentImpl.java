@@ -4,6 +4,7 @@ package io.tomahawkd.cic.pcap.parse;
 
 import io.kaitai.struct.KaitaiStream;
 import io.kaitai.struct.KaitaiStruct;
+import io.tomahawkd.cic.pcap.data.TcpSegment;
 
 
 /**
@@ -12,7 +13,7 @@ import io.kaitai.struct.KaitaiStruct;
  * guarantees of delivery, order of segments and avoidance of duplicate
  * delivery.
  */
-public class TcpSegment extends KaitaiStruct {
+public class TcpSegmentImpl extends KaitaiStruct implements TcpSegment {
 
     private int srcPort;
     private int dstPort;
@@ -25,14 +26,14 @@ public class TcpSegment extends KaitaiStruct {
     private int urgentPointer;
     private byte[] optionsAndPaddings;
     private byte[] body;
-    private final TcpSegment _root;
+    private final TcpSegmentImpl _root;
     private final KaitaiStruct _parent;
 
-    public TcpSegment(KaitaiStream _io) {
+    public TcpSegmentImpl(KaitaiStream _io) {
         this(_io, null, null);
     }
 
-    public TcpSegment(KaitaiStream _io, KaitaiStruct _parent, TcpSegment _root) {
+    public TcpSegmentImpl(KaitaiStream _io, KaitaiStruct _parent, TcpSegmentImpl _root) {
         super(_io);
         this._parent = _parent;
         this._root = _root == null ? this : _root;
@@ -66,74 +67,97 @@ public class TcpSegment extends KaitaiStruct {
         this.body = this._io.readBytesFull();
     }
 
+    @Override
     public int srcPort() {
         return srcPort;
     }
 
+    @Override
     public int dstPort() {
         return dstPort;
     }
 
-    public long seqNum() {
+    @Override
+    public long seq() {
         return seqNum;
     }
 
-    public long ackNum() {
+    @Override
+    public long ack() {
         return ackNum;
     }
 
+    @Override
     public int offset() {
         return offset;
     }
 
+    @Override
+    public int headerLength() {
+        return offset * 4;
+    }
+
+    @Override
     public int flags() {
         return flags;
     }
 
+    @Override
     public boolean getFlag(int mask) {
         return (flags & mask) != 0;
     }
 
+    @Override
     public boolean flag_cwr() {
         return getFlag(FLAG_CWR);
     }
 
+    @Override
     public boolean flag_ece() {
         return getFlag(FLAG_ECE);
     }
 
+    @Override
     public boolean flag_urg() {
         return getFlag(FLAG_URG);
     }
 
+    @Override
     public boolean flag_ack() {
         return getFlag(FLAG_ACK);
     }
 
+    @Override
     public boolean flag_psh() {
         return getFlag(FLAG_PSH);
     }
 
+    @Override
     public boolean flag_rst() {
         return getFlag(FLAG_RST);
     }
 
+    @Override
     public boolean flag_syn() {
         return getFlag(FLAG_SYN);
     }
 
+    @Override
     public boolean flag_fin() {
         return getFlag(FLAG_FIN);
     }
 
-    public int windowSize() {
+    @Override
+    public int window() {
         return windowSize;
     }
 
+    @Override
     public int checksum() {
         return checksum;
     }
 
+    @Override
     public int urgentPointer() {
         return urgentPointer;
     }
@@ -142,25 +166,21 @@ public class TcpSegment extends KaitaiStruct {
         return optionsAndPaddings;
     }
 
-    public byte[] body() {
+    @Override
+    public byte[] payload() {
         return body;
     }
 
-    public TcpSegment _root() {
+    @Override
+    public int payloadLength() {
+        return body.length;
+    }
+
+    public TcpSegmentImpl _root() {
         return _root;
     }
 
     public KaitaiStruct _parent() {
         return _parent;
     }
-
-    // flag mask
-    public static final int FLAG_CWR = 0b10000000;
-    public static final int FLAG_ECE = 0b01000000;
-    public static final int FLAG_URG = 0b00100000;
-    public static final int FLAG_ACK = 0b00010000;
-    public static final int FLAG_PSH = 0b00001000;
-    public static final int FLAG_RST = 0b00000100;
-    public static final int FLAG_SYN = 0b00000010;
-    public static final int FLAG_FIN = 0b00000001;
 }

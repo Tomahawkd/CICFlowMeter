@@ -1,6 +1,7 @@
 package io.tomahawkd.cic.pcap;
 
 import io.tomahawkd.cic.pcap.parse.PcapFileReader;
+import io.tomahawkd.cic.pcap.parse.jnetpcap.JnetpcapReader;
 import io.tomahawkd.cic.pcap.parse.pcap.Pcap;
 import io.tomahawkd.cic.pcap.parse.pcapng.Pcapng;
 
@@ -25,6 +26,6 @@ public enum PcapFileReaderProvider {
             case UNKNOWN: break;
         }
 
-        throw new IllegalArgumentException("Type not found");
+        return new JnetpcapReader(file);
     }
 }

@@ -1,3 +1,7 @@
+### This Repo is achieved and no longer receive updates.
+
+### For newer version of this tool, please check [JFlowInspector](https://github.com/Tomahawkd/JFlowInspector)
+
 # CICFlowMeter Mk.6
 The repo is forked from [here](https://github.com/CanadianInstituteForCybersecurity/CICFlowMeter) 
 but is completely different in code structure.

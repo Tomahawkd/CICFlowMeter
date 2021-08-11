@@ -132,6 +132,7 @@ public enum FlowFeatureTag {
     accept_use_wildcard_count("Accept Any Count"),
     no_accept_count("No Accept Header Count"),
     lang_count("Accept Language Header Count"),
+    lang_subtag_count("Accept Language subtag count"),
     lang_use_wildcard_count("Accept Any Language Count"),
     no_lang_count("No Accept Language Header Count"),
 

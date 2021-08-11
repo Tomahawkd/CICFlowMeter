@@ -10,6 +10,7 @@ import io.tomahawkd.cic.packet.PacketInfo;
         FlowFeatureTag.accept_use_wildcard_count,
         FlowFeatureTag.no_accept_count,
         FlowFeatureTag.lang_count,
+        FlowFeatureTag.lang_subtag_count,
         FlowFeatureTag.lang_use_wildcard_count,
         FlowFeatureTag.no_lang_count
 }, ordinal = 3, type = FeatureType.HTTP)
@@ -19,6 +20,7 @@ public class HttpAcceptFeature extends HttpFlowFeature {
     private long acceptOnlyUseWildcardCount = 0;
     private long noAcceptCount = 0;
     private long languageCount = 0;
+    private long languageSubtagCount = 0;
     private long languageOnlyUseWildcardCount = 0;
     private long noLanguageCount = 0;
 
@@ -38,6 +40,7 @@ public class HttpAcceptFeature extends HttpFlowFeature {
         if (lang != null) {
             languageCount++;
             if (lang.startsWith("*")) languageOnlyUseWildcardCount++;
+            else if (lang.contains("-")) languageSubtagCount++;
         } else noLanguageCount++;
     }
 
@@ -48,6 +51,7 @@ public class HttpAcceptFeature extends HttpFlowFeature {
         builder.append(acceptOnlyUseWildcardCount).append(SEPARATOR); // FlowFeatureTag.accept_use_wildcard_count,
         builder.append(noAcceptCount).append(SEPARATOR); // FlowFeatureTag.no_accept_count,
         builder.append(languageCount).append(SEPARATOR); // FlowFeatureTag.lang_count,
+        builder.append(languageSubtagCount).append(SEPARATOR); // FlowFeatureTag.lang_subtag_count,
         builder.append(languageOnlyUseWildcardCount).append(SEPARATOR); // FlowFeatureTag.lang_use_wildcard_count,
         builder.append(noLanguageCount).append(SEPARATOR); // FlowFeatureTag.no_lang_count
         return builder.toString();

@@ -1,7 +1,6 @@
 package io.tomahawkd.cic.flow.features;
 
 import io.tomahawkd.cic.flow.Flow;
-import io.tomahawkd.cic.flow.features.http.HttpFeatureAdapter;
 import io.tomahawkd.cic.label.LabelStrategy;
 import io.tomahawkd.cic.packet.PacketInfo;
 import io.tomahawkd.cic.util.DateFormatter;
@@ -30,7 +29,6 @@ public class FlowBasicFeature extends AbstractFlowFeature {
 
     private long flowStartTime = -1L;
     private long flowLastSeen = 0L;
-    private boolean hasHttp = false;
 
     // settings
     private final long flowActivityTimeOut;
@@ -53,10 +51,7 @@ public class FlowBasicFeature extends AbstractFlowFeature {
 
     @Override
     public void addPacket(PacketInfo info, boolean fwd) {
-        if (!hasHttp) {
-            HttpFeatureAdapter adapter = flow.getDep(HttpFeatureAdapter.class);
-            if (adapter != null && adapter.getHttpPackets() > 0) hasHttp = true;
-        }
+
     }
 
     @Override
@@ -129,9 +124,5 @@ public class FlowBasicFeature extends AbstractFlowFeature {
 
     public LabelStrategy getLabelStrategy() {
         return strategy;
-    }
-
-    public boolean hasHttp() {
-        return hasHttp;
     }
 }

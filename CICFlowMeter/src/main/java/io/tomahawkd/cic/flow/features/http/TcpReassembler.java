@@ -28,6 +28,8 @@ public class TcpReassembler {
      */
     public void addPacket(PacketInfo info) {
 
+        if (info.getPayloadBytes() == 0) return;
+
         String readableString = info.getFeature(HttpPreprocessPacketDelegate.Feature.PAYLOAD, String.class);
         if (readableString == null || readableString.isEmpty()) {
             logger.warn("The payload is empty.");

@@ -34,7 +34,7 @@ public class HttpPacketParser {
 
         // header should end with double CRLF (\r\n\r\n)
         // if forcibly, continue parsing
-        boolean incomplete = header.endsWith("\r\n\r\n");
+        boolean incomplete = !header.endsWith("\r\n\r\n");
         if (!force && incomplete) return Status.INCOMPLETE;
 
         String[] headers = header.trim().split("\r\n");

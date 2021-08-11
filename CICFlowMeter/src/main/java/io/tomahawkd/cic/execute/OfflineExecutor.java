@@ -115,6 +115,7 @@ public class OfflineExecutor extends AbstractExecutor {
         PcapReader pcapReader = new PcapReader(filePath);
         long nTotal = 0;
         long nValid = 0;
+        long nInvalid = 0;
         while (true) {
             try {
                 PacketInfo basicPacket = pcapReader.nextPacket();
@@ -122,14 +123,16 @@ public class OfflineExecutor extends AbstractExecutor {
                 if (basicPacket != null) {
                     dispatcher.dispatch(basicPacket);
                     nValid++;
-                }
-                System.out.printf("%s -> %d packets, %d flows \r", filePath.getFileName(), nTotal, dispatcher.getFlowCount());
+                } else nInvalid++;
+
+                System.out.printf("%s -> Total: %d,Valid: %d,Discarded: %d, %d flows \r",
+                        filePath.getFileName(), nTotal, nValid, nInvalid, dispatcher.getFlowCount());
             } catch (EOFException e) {
                 break;
             }
         }
 
-        System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nTotal - nValid);
+        System.out.printf("Packet stats: Total=%d,Valid=%d,Discarded=%d%n", nTotal, nValid, nInvalid);
     }
 
     private void initFile(Path file) {

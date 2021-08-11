@@ -3,6 +3,7 @@ package io.tomahawkd.cic.config;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import io.tomahawkd.cic.execute.ExecutionMode;
+import io.tomahawkd.cic.pcap.PcapFileReaderProvider;
 import io.tomahawkd.cic.source.LocalFile;
 import io.tomahawkd.cic.source.LocalMultiFile;
 import io.tomahawkd.cic.source.LocalSingleFile;
@@ -16,7 +17,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.tika.Tika;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -165,7 +165,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
                     List<Path> inputFiles = entries.filter(Files::isRegularFile)
                             .filter(fl -> {
                                 try {
-                                    return Utils.PCAP.equalsIgnoreCase(new Tika().detect(fl));
+                                    return PcapFileReaderProvider.INSTANCE.isPcapFile(fl);
                                 } catch (IOException e) {
                                     return false;
                                 }
@@ -194,7 +194,7 @@ public class CommandlineDelegate extends AbstractConfigDelegate {
             } else if (Files.isRegularFile(p)) {
                 boolean isPcap = false;
                 try {
-                    isPcap = Utils.PCAP.equalsIgnoreCase(new Tika().detect(p));
+                    isPcap = PcapFileReaderProvider.INSTANCE.isPcapFile(p);
                 } catch (IOException ignored) {
                 }
                 if (isPcap) {

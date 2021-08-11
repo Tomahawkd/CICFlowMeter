@@ -14,7 +14,6 @@ import java.util.Map;
 public class Utils {
     private static final Logger logger = LogManager.getLogger(Utils.class);
     public static final String LINE_SEP = System.lineSeparator();
-    public final static String PCAP = "application/vnd.tcpdump.pcap";
     public static final String FLOW_SUFFIX = "_Flow.csv";
     public static final String DEFAULT_OUTPUT_FILENAME = "Result" + FLOW_SUFFIX;
     public static final String DividingLine = "-------------------------------------------------------------------------------";
